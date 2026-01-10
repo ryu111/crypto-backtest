@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data files (large)
+data/ohlcv/*.parquet
+data/ohlcv/*.csv
+data/funding_rates/*.parquet
+data/funding_rates/*.csv
+
+# Results (can be large)
+results/*.html
+results/*.pdf
+results/plots/
+
+# Secrets
+.env
+.env.local
+*.key
+credentials.json
+secrets.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+.pytest_cache/
+
+# Keep directory structure
+!data/ohlcv/.gitkeep
+!data/funding_rates/.gitkeep
+!results/.gitkeep

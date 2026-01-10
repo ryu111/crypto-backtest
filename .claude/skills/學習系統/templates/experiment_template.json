@@ -1,0 +1,100 @@
+{
+  "$schema": "實驗記錄模板",
+  "id": "exp_YYYYMMDD_HHMMSS",
+  "timestamp": "2026-01-11T00:00:00Z",
+
+  "strategy": {
+    "name": "strategy_name_timeframe_version",
+    "type": "trend|momentum|mean_reversion|arbitrage",
+    "version": "1.0",
+    "description": "策略描述"
+  },
+
+  "config": {
+    "symbol": "BTCUSDT",
+    "timeframe": "4h",
+    "period": {
+      "start": "2024-01-01",
+      "end": "2025-12-31"
+    },
+    "initial_capital": 10000,
+    "leverage": 5,
+    "fees": {
+      "maker": 0.0002,
+      "taker": 0.0004
+    },
+    "slippage": 0.001
+  },
+
+  "parameters": {
+    "param1": 10,
+    "param2": 30,
+    "stop_loss": 0.02
+  },
+
+  "results": {
+    "total_return": 0.0,
+    "annual_return": 0.0,
+    "sharpe_ratio": 0.0,
+    "sortino_ratio": 0.0,
+    "calmar_ratio": 0.0,
+    "max_drawdown": 0.0,
+    "win_rate": 0.0,
+    "profit_factor": 0.0,
+    "total_trades": 0,
+    "avg_trade_return": 0.0,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "max_consecutive_wins": 0,
+    "max_consecutive_losses": 0
+  },
+
+  "validation": {
+    "stage1_basic": {
+      "passed": false,
+      "checks": {}
+    },
+    "stage2_statistical": {
+      "passed": false,
+      "p_value": 0.0,
+      "sharpe_ci": [0.0, 0.0]
+    },
+    "stage3_robustness": {
+      "passed": false,
+      "sensitivity": 0.0,
+      "time_consistency": false,
+      "asset_consistency": false
+    },
+    "stage4_walk_forward": {
+      "passed": false,
+      "efficiency": 0.0,
+      "oos_returns": []
+    },
+    "stage5_monte_carlo": {
+      "passed": false,
+      "simulations": 1000,
+      "percentile_5": 0.0,
+      "percentile_95": 0.0
+    },
+    "grade": "D",
+    "passed_stages": 0
+  },
+
+  "insights": [
+    {
+      "type": "parameter|market|risk|general",
+      "content": "洞察內容",
+      "confidence": "high|medium|low"
+    }
+  ],
+
+  "tags": ["crypto", "btc", "trend"],
+
+  "lineage": {
+    "parent_experiment": null,
+    "improvement_from_parent": 0.0,
+    "iteration": 1
+  },
+
+  "notes": "額外備註"
+}
