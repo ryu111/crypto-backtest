@@ -20,6 +20,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from ui.styles import get_common_css, GRADE_COLORS
+from ui.utils import render_sidebar_navigation
 
 
 # ===== 設定頁面 =====
@@ -552,6 +553,9 @@ def plot_drawdown_comparison(events: Dict) -> go.Figure:
 # ===== 主程式 =====
 
 def main():
+    # 渲染中文 sidebar 導航
+    render_sidebar_navigation()
+
     st.title("📊 策略驗證")
     st.markdown("評估策略的統計顯著性與穩健性")
 
@@ -647,12 +651,32 @@ def main():
             config=get_chart_config()
         )
 
+        # [D1] Bootstrap 分布解讀
+        st.caption("""
+        **[D1] Bootstrap 分布解讀**：
+        - **藍色直方圖**：重抽樣 10,000 次後的報酬率分布
+        - **紅色虛線**：95% 信賴區間上下界，區間內的報酬有 95% 可信度
+        - **綠色實線**：平均報酬率
+        - **判讀標準**：若信賴區間下界 > 0%，代表策略報酬顯著為正
+        - **區間越窄**：估計越精確，結果越可靠
+        """)
+
         # Permutation Test 結果
         st.plotly_chart(
             plot_permutation_test(permutation_data),
             use_container_width=True,
             config=get_chart_config()
         )
+
+        # [D2] Permutation Test 解讀
+        st.caption("""
+        **[D2] Permutation Test 解讀**：
+        - **灰色直方圖**：隨機打亂交易順序後的報酬分布（虛無假設）
+        - **綠色實線**：實際策略報酬
+        - **p-value**：實際報酬優於隨機的機率，<0.05 代表統計顯著
+        - **判讀標準**：若實際報酬明顯超出隨機分布右側，代表策略非運氣
+        - **意義**：排除「隨機交易也能達到此報酬」的可能性
+        """)
 
     # ===== TAB 2: 交叉驗證 =====
     with tab2:
@@ -707,12 +731,33 @@ def main():
             config=get_chart_config()
         )
 
+        # [D3] 交叉驗證折線圖解讀
+        st.caption("""
+        **[D3] 交叉驗證折線圖解讀**：
+        - **藍線 (IS)**：樣本內報酬，策略在訓練數據上的表現
+        - **橘線 (OOS)**：樣本外報酬，策略在未見過數據上的表現
+        - **兩線差距**：差距越小 = 過擬合風險越低
+        - **理想狀態**：兩線接近且穩定，波動不大
+        - **警訊**：OOS 大幅低於 IS = 過擬合警告
+        """)
+
         # WFA 效率長條圖
         st.plotly_chart(
             plot_wfa_efficiency(folds),
             use_container_width=True,
             config=get_chart_config()
         )
+
+        # [D4] WFA 效率解讀
+        st.caption("""
+        **[D4] Walk-Forward 效率解讀**：
+        - **效率 = OOS報酬 / IS報酬**，衡量樣本外表現保持度
+        - **綠色 (≥0.7)**：優秀，樣本外保持 70%+ 表現
+        - **黃色 (0.5-0.7)**：可接受，有輕微過擬合
+        - **紅色 (<0.5)**：過擬合嚴重，樣本外表現大幅衰退
+        - **虛線 (1.0)**：完美效率，OOS = IS
+        - **點線 (0.7)**：可接受門檻
+        """)
 
     # ===== TAB 3: Sharpe 校正 =====
     with tab3:
@@ -754,6 +799,17 @@ def main():
             config=get_chart_config()
         )
 
+        # [D5] Sharpe 比較解讀
+        st.caption("""
+        **[D5] Sharpe Ratio 校正解讀**：
+        - **淺藍色**：原始 Sharpe，未經調整
+        - **深藍色**：校正後 Sharpe，考慮多重測試後的真實估計
+        - **校正幅度**：測試次數越多，懲罰越大
+        - **虛線 (1.0)**：顯著性基準，>1.0 才有統計意義
+        - **判讀標準**：校正後 Sharpe >1.5 = 優秀，>1.0 = 及格
+        - **意義**：避免因多次測試而高估策略表現
+        """)
+
         # PBO 儀表板
         st.markdown("### 🎲 過擬合機率 (PBO)")
 
@@ -771,6 +827,17 @@ def main():
             use_container_width=True,
             config=get_chart_config()
         )
+
+        # [D6] PBO 儀表板解讀
+        st.caption("""
+        **[D6] PBO 儀表板解讀**：
+        - **PBO (Probability of Backtest Overfitting)**：過擬合機率
+        - **綠色區域 (0-50%)**：過擬合風險低，策略可信
+        - **黃色區域 (50-70%)**：中等風險，需謹慎使用
+        - **紅色區域 (70-100%)**：高風險，策略可能不可靠
+        - **紅色門檻線 (70%)**：警戒線，超過需重新評估策略
+        - **數值意義**：PBO 35% = 有 35% 機率是過擬合產生的虛假績效
+        """)
 
         st.info(
             f"**解讀說明**\n\n"
@@ -848,6 +915,19 @@ def main():
                 config=get_chart_config()
             )
 
+            # [D7] 壓力測試權益曲線解讀
+            st.caption("""
+            **[D7] 壓力測試權益曲線解讀**：
+            - **藍線**：策略在極端事件期間的權益變化
+            - **灰色虛線**：基準（買入持有）表現
+            - **紅色陰影區域**：事件發生期間
+            - **最低點標註**：權益最低時刻和金額
+            - **判讀標準**：
+              - 策略線在基準線上方 = 抗壓能力強
+              - 最低點後快速回升 = 恢復能力佳
+              - 回撤幅度 <15% = 優秀，<25% = 及格
+            """)
+
         else:
             # 顯示所有事件的回撤比較
             st.plotly_chart(
@@ -855,6 +935,18 @@ def main():
                 use_container_width=True,
                 config=get_chart_config()
             )
+
+            # [D8] 回撤比較解讀
+            st.caption("""
+            **[D8] 各事件回撤比較解讀**：
+            - **綠色 (>-15%)**：抗壓能力強，極端市況影響有限
+            - **黃色 (-15% ~ -25%)**：中等回撤，需注意風控
+            - **紅色 (<-25%)**：風險過高，極端市況下損失嚴重
+            - **事件類型**：不同黑天鵝事件代表不同市場壓力
+              - COVID-19：快速暴跌後反彈
+              - LUNA/FTX：信心崩潰型下跌
+            - **選擇建議**：選擇各事件都保持綠/黃色的策略
+            """)
 
             # 事件摘要表
             st.markdown("### 📋 事件摘要")

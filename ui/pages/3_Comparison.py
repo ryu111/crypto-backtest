@@ -22,7 +22,10 @@ import sys
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.validator.stages import ValidationGrade
+# 注意：避免 import src.validator.stages，因為會觸發 vectorbt/numba 載入
+# 導致 NumPy 版本衝突（Numba 需要 NumPy <= 2.3，但系統有 NumPy 2.4）
+from ui.utils import render_sidebar_navigation
+from ui.styles import get_common_css
 
 
 # ========== 設計 Token ==========
@@ -48,6 +51,15 @@ SPACING = {
     'lg': '24px',
     'xl': '32px',
 }
+
+
+def hex_to_rgba(hex_color: str, alpha: float = 0.2) -> str:
+    """將 hex 顏色轉換為 rgba 格式（Plotly 需要）"""
+    hex_color = hex_color.lstrip('#')
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    return f'rgba({r}, {g}, {b}, {alpha})'
 
 
 # ========== 資料載入 ==========
@@ -221,6 +233,17 @@ def render_metrics_comparison_table(strategies: Dict, selected_names: List[str])
         hide_index=True,
     )
 
+    # [C1] 指標對比表解讀
+    st.caption("""
+    **[C1] 指標對比表解讀**：
+    - **總報酬率**：回測期間累積收益，>30% 優秀
+    - **Sharpe Ratio**：每單位風險的收益，>2.0 卓越，>1.5 良好
+    - **最大回撤**：歷史最大虧損幅度，<15% 優秀，>25% 需注意
+    - **Profit Factor**：總獲利/總虧損，>2.0 優秀，>1.5 及格
+    - **Calmar Ratio**：年化報酬/最大回撤，>2.0 表示風險報酬比良好
+    - **最佳欄位**：標註各指標表現最佳的策略，幫助快速判斷
+    """)
+
 
 def render_equity_curves(strategies: Dict, selected_names: List[str]):
     """渲染權益曲線疊加圖"""
@@ -270,6 +293,15 @@ def render_equity_curves(strategies: Dict, selected_names: List[str]):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    # [C2] 權益曲線說明
+    st.caption("""
+    **[C2] 權益曲線解讀**：
+    - **正規化起點**：所有策略從 100% 開始，方便比較相對表現
+    - **曲線走勢**：持續上升且波動小 = 穩定成長；劇烈波動 = 風險較高
+    - **曲線交叉**：當曲線交叉時，代表策略相對表現發生變化
+    - **選擇建議**：優先選擇曲線平滑向上、回撤期間恢復快的策略
+    """)
 
 
 def render_drawdown_comparison(strategies: Dict, selected_names: List[str]):
@@ -322,6 +354,16 @@ def render_drawdown_comparison(strategies: Dict, selected_names: List[str]):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    # [C3] 回撤圖解讀
+    st.caption("""
+    **[C3] 回撤圖解讀**：
+    - **回撤深度**：負值越大代表虧損越深，-10% 表示從高點下跌 10%
+    - **回撤頻率**：頻繁觸底代表策略波動大，需要更強心理素質
+    - **恢復速度**：回撤後快速回到 0% = 恢復能力強
+    - **重疊期間**：多策略同時回撤 = 系統性風險，需注意市場環境
+    - **選擇建議**：優先選擇回撤淺、恢復快的策略
+    """)
 
 
 def render_monthly_returns_comparison(strategies: Dict, selected_names: List[str]):
@@ -409,13 +451,17 @@ def render_radar_chart(strategies: Dict, selected_names: List[str]):
             {'A': 100, 'B': 80, 'C': 60, 'D': 40, 'F': 20}.get(metrics['validation_grade'], 50),  # 等級
         ]
 
+        color = colors[i % len(colors)]
+        # 將顏色轉換為 rgba 格式用於填充（Plotly 不支援 8 位 hex）
+        fill_color = hex_to_rgba(color, 0.2) if color.startswith('#') else color.replace(')', ', 0.2)').replace('rgb', 'rgba')
+
         fig.add_trace(go.Scatterpolar(
             r=values + [values[0]],  # 閉合圖形
             theta=dimensions + [dimensions[0]],
             name=name,
             fill='toself',
-            line=dict(color=colors[i % len(colors)]),
-            fillcolor=colors[i % len(colors)].replace(')', ', 0.2)').replace('rgb', 'rgba') if 'rgb' in colors[i % len(colors)] else colors[i % len(colors)] + '33',
+            line=dict(color=color),
+            fillcolor=fill_color,
         ))
 
     fig.update_layout(
@@ -437,6 +483,19 @@ def render_radar_chart(strategies: Dict, selected_names: List[str]):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    # [C4] 雷達圖說明
+    st.caption("""
+    **[C4] 雷達圖解讀**：
+    - **覆蓋面積**：面積越大代表綜合表現越好
+    - **形狀平衡**：五邊形越均勻 = 各方面表現平衡；凸出/凹陷 = 優勢/劣勢明顯
+    - **報酬率**：回測期間累積收益能力
+    - **Sharpe**：風險調整後收益（正規化：Sharpe×20）
+    - **穩定性**：基於最大回撤計算，越高越穩定
+    - **勝率**：獲利交易佔比
+    - **驗證等級**：A=100, B=80, C=60, D=40, F=20
+    - **選擇建議**：選擇面積大且形狀平衡的策略
+    """)
 
 
 def render_parameter_comparison(strategies: Dict, selected_names: List[str]):
@@ -621,6 +680,12 @@ def main():
         page_icon="⚖️",
         layout="wide"
     )
+
+    # 共用樣式（包含隱藏英文導航）
+    st.markdown(get_common_css(), unsafe_allow_html=True)
+
+    # 渲染中文 sidebar 導航
+    render_sidebar_navigation()
 
     st.title("⚖️ 策略比較")
     st.markdown("比較多個策略的績效指標，選擇最佳策略")

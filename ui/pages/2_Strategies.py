@@ -18,6 +18,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from ui.styles import get_common_css, GRADE_COLORS
+from ui.utils import render_sidebar_navigation
 
 
 # ===== 設定頁面 =====
@@ -228,7 +229,101 @@ def plot_monthly_heatmap(strategy_name: str) -> go.Figure:
 
 # ===== 主程式 =====
 
+def render_filter_summary(df_all: pd.DataFrame, df_filtered: pd.DataFrame, filters: dict):
+    """[B1] 渲染篩選結果摘要"""
+    total = len(df_all)
+    filtered = len(df_filtered)
+    filter_rate = filtered / total * 100 if total > 0 else 0
+
+    # 計算篩選後的統計
+    if filtered > 0:
+        avg_sharpe = df_filtered['sharpe_ratio'].mean()
+        a_count = len(df_filtered[df_filtered['grade'] == 'A'])
+        b_count = len(df_filtered[df_filtered['grade'] == 'B'])
+        good_rate = (a_count + b_count) / filtered * 100
+    else:
+        avg_sharpe = 0
+        good_rate = 0
+
+    # 判斷篩選結果品質
+    if filter_rate < 10:
+        status = "⚠️ 篩選條件過嚴"
+        status_color = "orange"
+    elif good_rate >= 50:
+        status = "✅ 篩選結果優質"
+        status_color = "green"
+    else:
+        status = "📊 篩選結果一般"
+        status_color = "blue"
+
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                border-left: 4px solid {'#22c55e' if status_color == 'green' else '#eab308' if status_color == 'orange' else '#3b82f6'};
+                padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600;">[B1] 篩選結果摘要 {status}</span>
+            <span style="color: #6b7280; font-size: 0.9em;">
+                符合 {filtered}/{total} 筆 ({filter_rate:.0f}%) | 平均 Sharpe {avg_sharpe:.2f} | A+B 級 {good_rate:.0f}%
+            </span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def render_column_explanation():
+    """[B2] 渲染欄位說明"""
+    with st.expander("📖 [B2] 欄位說明（點擊展開）"):
+        st.markdown("""
+        | 欄位 | 說明 | 判讀標準 |
+        |------|------|----------|
+        | **策略名稱** | 策略識別名稱 | - |
+        | **報酬率** | 回測期間總報酬 | >30% 優秀，>10% 及格 |
+        | **年化報酬** | 年化換算報酬率 | >20% 優秀，>10% 及格 |
+        | **Sharpe** | 風險調整後收益 | >2.0 卓越，>1.5 優良，>1.0 及格 |
+        | **MaxDD** | 最大回撤幅度 | <15% 優秀，<25% 及格，>30% 危險 |
+        | **交易筆數** | 總交易次數 | >50 較可靠，<20 樣本不足 |
+        | **勝率** | 獲利交易比例 | >55% 優秀，>50% 及格 |
+        | **等級** | 綜合評分 | A/B 可實盤，C 需優化，D/F 不建議 |
+        | **過擬合率** | WFA 效率指標 | >0.8 可靠，<0.6 可能過擬合 |
+        """)
+
+
+def render_quick_recommendations(df: pd.DataFrame):
+    """[B4] 渲染頁尾快速建議"""
+    if df.empty:
+        return
+
+    st.markdown("---")
+    st.subheader("💡 [B4] 快速建議")
+
+    recommendations = []
+
+    # 分析當前篩選結果
+    avg_sharpe = df['sharpe_ratio'].mean()
+    avg_dd = df['max_drawdown'].mean()
+    a_strategies = df[df['grade'] == 'A']['strategy_name'].tolist()
+
+    if a_strategies:
+        recommendations.append(f"✅ **推薦策略**：{', '.join(a_strategies[:3])} 表現優異，可優先考慮")
+
+    if avg_sharpe < 1.0:
+        recommendations.append("⚠️ **平均 Sharpe 偏低**：考慮放寬篩選條件或優化現有策略")
+
+    if avg_dd > 25:
+        recommendations.append("⚠️ **回撤風險較高**：建議降低最大回撤篩選門檻，或加強止損機制")
+
+    best_type = df.groupby('strategy_type')['sharpe_ratio'].mean().idxmax() if len(df) > 0 else None
+    if best_type:
+        recommendations.append(f"📊 **最佳策略類型**：{best_type} 類型平均表現最好")
+
+    for rec in recommendations:
+        st.markdown(rec)
+
+
 def main():
+    # 渲染中文 sidebar 導航
+    render_sidebar_navigation()
+
     st.title("📊 策略列表")
     st.markdown("篩選和查看所有策略實驗結果")
 
@@ -331,6 +426,9 @@ def main():
     df_filtered = apply_filters(df_all, filters)
     df_sorted = sort_dataframe(df_filtered, sort_by)
 
+    # [B1] 篩選結果摘要
+    render_filter_summary(df_all, df_filtered, filters)
+
     # ===== 概覽指標 =====
     st.subheader("📈 概覽")
 
@@ -359,6 +457,9 @@ def main():
 
     # ===== 結果表格 =====
     st.subheader("📋 策略列表")
+
+    # [B2] 欄位說明
+    render_column_explanation()
 
     if len(df_sorted) == 0:
         st.warning("沒有符合篩選條件的策略")
@@ -470,14 +571,51 @@ def main():
                 use_container_width=True
             )
 
-            # AI 洞察（範例）
-            st.markdown("**🤖 AI 洞察**")
-            st.info(
-                f"此策略在 {strategy_data['timeframe']} 時間框架下表現{strategy_data['grade']}級，"
-                f"Sharpe Ratio 為 {strategy_data['sharpe_ratio']:.2f}，"
-                f"顯示出良好的風險調整後報酬。最大回撤為 {strategy_data['max_drawdown']:.1f}%，"
-                f"處於可接受範圍。建議進一步監控過擬合率 ({strategy_data['wfa_efficiency']:.2f})。"
-            )
+            # [B3] AI 洞察（增強版）
+            st.markdown("**🤖 [B3] AI 洞察**")
+
+            # 綜合評估
+            sharpe = strategy_data['sharpe_ratio']
+            dd = strategy_data['max_drawdown']
+            wfa = strategy_data['wfa_efficiency']
+            win_rate = strategy_data['win_rate']
+
+            insights = []
+
+            # Sharpe 評估
+            if sharpe >= 2.0:
+                insights.append(f"✅ **Sharpe 卓越** ({sharpe:.2f})：風險調整收益優異，可考慮實盤")
+            elif sharpe >= 1.5:
+                insights.append(f"✅ **Sharpe 良好** ({sharpe:.2f})：表現穩定，建議進一步驗證")
+            elif sharpe >= 1.0:
+                insights.append(f"📊 **Sharpe 及格** ({sharpe:.2f})：有改善空間，可優化入場時機")
+            else:
+                insights.append(f"⚠️ **Sharpe 偏低** ({sharpe:.2f})：需重新檢視策略邏輯")
+
+            # 回撤評估
+            if dd <= 15:
+                insights.append(f"✅ **回撤控制優秀** ({dd:.1f}%)：風險管理得當")
+            elif dd <= 25:
+                insights.append(f"📊 **回撤可接受** ({dd:.1f}%)：建議設定止損保護")
+            else:
+                insights.append(f"⚠️ **回撤風險高** ({dd:.1f}%)：強烈建議降低槓桿或加強止損")
+
+            # 過擬合評估
+            if wfa >= 0.8:
+                insights.append(f"✅ **樣本外表現穩定** (WFA {wfa:.2f})：過擬合風險低")
+            elif wfa >= 0.6:
+                insights.append(f"📊 **樣本外表現普通** (WFA {wfa:.2f})：可能存在輕微過擬合")
+            else:
+                insights.append(f"⚠️ **過擬合風險** (WFA {wfa:.2f})：建議簡化策略或增加訓練數據")
+
+            # 勝率評估
+            if win_rate >= 60:
+                insights.append(f"✅ **勝率優秀** ({win_rate:.1f}%)：入場時機把握準確")
+            elif win_rate >= 50:
+                insights.append(f"📊 **勝率普通** ({win_rate:.1f}%)：可優化出場邏輯提升盈虧比")
+
+            for insight in insights:
+                st.markdown(insight)
 
     # ===== 匯出功能 =====
     st.divider()
@@ -505,6 +643,9 @@ def main():
                 mime="application/json",
                 use_container_width=True
             )
+
+    # [B4] 頁尾快速建議
+    render_quick_recommendations(df_sorted)
 
 
 if __name__ == "__main__":

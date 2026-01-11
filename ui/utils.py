@@ -245,6 +245,40 @@ def calculate_summary_stats(experiments: List[Dict]) -> Dict:
     }
 
 
+def render_sidebar_navigation():
+    """渲染共用的中文 sidebar 導航
+
+    在每個頁面調用此函數以顯示統一的中文導航。
+    """
+    import streamlit as st
+
+    with st.sidebar:
+        st.title("📊 AI 合約回測")
+        st.markdown("---")
+
+        # 頁面導航
+        st.subheader("🧭 導航")
+        st.page_link("app.py", label="首頁", icon="🏠")
+        st.page_link("pages/1_📊_Dashboard.py", label="數據儀表板", icon="📈")
+        st.page_link("pages/2_Strategies.py", label="策略列表", icon="📋")
+        st.page_link("pages/3_Comparison.py", label="策略比較", icon="⚖️")
+        st.page_link("pages/4_Validation.py", label="策略驗證", icon="🔬")
+        st.page_link("pages/5_RiskDashboard.py", label="風險管理", icon="🛡️")
+
+        st.markdown("---")
+
+        # 資料來源狀態
+        st.subheader("💾 資料狀態")
+        status = get_data_source_status()
+
+        if status["available"]:
+            st.markdown("✅ 資料可用")
+            st.caption(f"實驗數: {status['experiment_count']}")
+            st.caption(f"更新: {status['last_updated']}")
+        else:
+            st.markdown("❌ 資料不可用")
+
+
 def get_data_source_status() -> Dict:
     """檢查資料來源狀態
 

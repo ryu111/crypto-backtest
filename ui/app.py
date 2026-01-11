@@ -36,6 +36,11 @@ st.set_page_config(
 common_css = get_common_css()
 page_specific_css = """
 <style>
+    /* 隱藏 Streamlit 自動產生的頁面導航（英文）*/
+    [data-testid="stSidebarNav"] {
+        display: none !important;
+    }
+
     /* 主要容器 */
     .main > div {
         padding-top: 2rem;
@@ -109,6 +114,8 @@ def render_sidebar():
         st.page_link("pages/1_📊_Dashboard.py", label="數據儀表板", icon="📈")
         st.page_link("pages/2_Strategies.py", label="策略列表", icon="📋")
         st.page_link("pages/3_Comparison.py", label="策略比較", icon="⚖️")
+        st.page_link("pages/4_Validation.py", label="策略驗證", icon="🔬")
+        st.page_link("pages/5_RiskDashboard.py", label="風險管理", icon="🛡️")
 
         st.markdown("---")
 

@@ -28,6 +28,8 @@ from src.risk.position_sizing import kelly_criterion, PositionSizeResult, KellyP
 from src.risk.correlation import CorrelationAnalyzer, CorrelationMatrix, RollingCorrelation
 from src.optimizer.portfolio import PortfolioOptimizer, PortfolioWeights
 from src.validator.stress_test import StressTestResult
+from ui.utils import render_sidebar_navigation
+from ui.styles import get_common_css
 
 # 頁面配置
 st.set_page_config(
@@ -406,6 +408,17 @@ def render_kelly_curve(kelly_data: Dict):
 
     st.plotly_chart(fig, use_container_width=True)
 
+    # [E1] Kelly 曲線說明
+    st.caption("""
+    **[E1] Kelly 曲線解讀**：
+    - **藍線（成長率）**：不同部位大小對應的預期年化成長率
+    - **紅色虛線（破產風險）**：過大部位導致的破產機率
+    - **Full Kelly（綠色虛線）**：數學最優，但波動極大
+    - **Half Kelly（黃色實線⭐）**：推薦設定，平衡成長與波動
+    - **Quarter Kelly（藍色虛線）**：保守設定，穩定優先
+    - **判讀標準**：成長率曲線在 Kelly 點前上升，之後下降（過高部位反而有害）
+    """)
+
 
 # ============================================================================
 # Tab 2: 相關性分析
@@ -519,6 +532,19 @@ def render_correlation_heatmap(corr_matrix: pd.DataFrame):
 
     st.plotly_chart(fig, use_container_width=True)
 
+    # [E2] 相關性矩陣熱圖說明
+    st.caption("""
+    **[E2] 相關性矩陣解讀**：
+    - **藍色 (負相關)**：策略走勢相反，有對沖效果
+    - **白色 (零相關)**：策略獨立，分散效果最佳
+    - **紅色 (正相關)**：策略走勢一致，風險疊加
+    - **數值意義**：-1 到 1 之間，絕對值越大相關性越強
+    - **判讀標準**：
+      - < 0.3 = 低相關，適合組合
+      - 0.3~0.7 = 中度相關，需注意
+      - > 0.7 = 高相關，風險集中
+    """)
+
 
 def render_rolling_correlation(returns_df: pd.DataFrame, window: int = 30):
     """滾動相關性時間序列"""
@@ -573,6 +599,17 @@ def render_rolling_correlation(returns_df: pd.DataFrame, window: int = 30):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    # [E3] 滾動相關性說明
+    st.caption("""
+    **[E3] 滾動相關性解讀**：
+    - **Y 軸**：相關係數（-1 到 1）
+    - **灰色虛線 (0)**：無相關基準
+    - **橘色虛線 (0.5)**：中度相關警戒線
+    - **曲線波動**：相關性會隨市場環境變化
+    - **警訊**：當多條線同時上升到 0.5 以上，代表策略同質化風險增加
+    - **建議**：關注相關性飆升期間，可能需要調整組合權重
+    """)
 
 
 # ============================================================================
@@ -736,6 +773,18 @@ def render_efficient_frontier(optimizer: PortfolioOptimizer, optimal_weights: Po
 
     st.plotly_chart(fig, use_container_width=True)
 
+    # [E4] 效率前緣說明
+    st.caption("""
+    **[E4] 效率前緣解讀**：
+    - **藍色曲線**：所有可能組合的最優風險-報酬邊界
+    - **綠色星號⭐**：當前選擇方法的最優組合點
+    - **X 軸（波動率）**：風險越大，波動越高
+    - **Y 軸（報酬率）**：預期年化收益
+    - **曲線上方**：無法達到（除非承擔更多風險）
+    - **曲線下方**：次優組合（同風險下報酬較低）
+    - **選擇建議**：根據風險承受度選擇曲線上的點
+    """)
+
 
 def render_weight_allocation(weights: Dict[str, float]):
     """權重分配圓餅圖"""
@@ -765,6 +814,18 @@ def render_weight_allocation(weights: Dict[str, float]):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    # [E5] 權重分配說明
+    st.caption("""
+    **[E5] 權重分配解讀**：
+    - **圓餅大小**：各策略佔組合的資金比例
+    - **分散程度**：權重越均勻，分散效果越好
+    - **集中風險**：若單一策略 >50%，風險過度集中
+    - **建議配置**：
+      - 單一策略不超過 40%
+      - 至少 3 個策略各佔 15%+
+      - 考慮相關性，低相關策略可給予更多權重
+    """)
 
 
 def render_weight_table(optimizer: PortfolioOptimizer, returns_df: pd.DataFrame):
@@ -937,6 +998,20 @@ def render_drawdown_curve(equity_curve: pd.Series, drawdown: pd.Series):
 
     st.plotly_chart(fig, use_container_width=True)
 
+    # [E6] 回撤曲線說明
+    st.caption("""
+    **[E6] 回撤曲線解讀**：
+    - **紅色曲線**：權益相對歷史高點的跌幅百分比
+    - **0% 線**：代表權益處於歷史新高
+    - **紅色陰影**：視覺化回撤深度
+    - **最大回撤標記**：歷史上最嚴重的虧損點
+    - **判讀標準**：
+      - <10% = 優秀的風控
+      - 10-20% = 可接受
+      - >20% = 需要加強風控
+      - >30% = 高風險策略
+    """)
+
 
 def render_var_distribution(returns: pd.Series, var_95: float, cvar_95: float):
     """VaR / CVaR 分布圖"""
@@ -993,6 +1068,21 @@ def render_var_distribution(returns: pd.Series, var_95: float, cvar_95: float):
 
     st.plotly_chart(fig, use_container_width=True)
 
+    # [E7] VaR 分布說明
+    st.caption("""
+    **[E7] VaR / CVaR 分布解讀**：
+    - **藍色直方圖**：歷史日收益率分布
+    - **黃色虛線 (VaR 95%)**：95% 信心水準下的單日最大損失
+      - 意義：有 5% 機率損失超過此值
+    - **紅色實線 (CVaR 95%)**：超過 VaR 時的平均損失（尾部風險）
+      - 意義：當最壞情況發生時，平均會損失多少
+    - **粉色陰影區域**：尾部風險區域（最壞 5% 的情況）
+    - **判讀標準**：
+      - VaR >-3% = 日風險可控
+      - CVaR >-5% = 尾部風險可控
+      - 兩者差距越大，極端風險越高
+    """)
+
 
 # ============================================================================
 # 主要 UI
@@ -1000,6 +1090,12 @@ def render_var_distribution(returns: pd.Series, var_95: float, cvar_95: float):
 
 def main():
     """主要 Dashboard"""
+
+    # 共用樣式（包含隱藏英文導航）
+    st.markdown(get_common_css(), unsafe_allow_html=True)
+
+    # 渲染中文 sidebar 導航
+    render_sidebar_navigation()
 
     # 標題
     st.title("🛡️ 風險管理儀表板")
@@ -1042,6 +1138,22 @@ def main():
     with col3:
         if st.button("🔄 重新計算", use_container_width=True):
             st.rerun()
+
+    # [E8] 頁首風險總覽
+    if selected_strategies:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+                    border-left: 4px solid #ef4444;
+                    padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="font-weight: 600; margin-bottom: 8px;">🛡️ [E8] 風險管理提醒</div>
+            <div style="color: #374151; font-size: 0.9em;">
+                • <b>Kelly Criterion</b>：建議使用 Half Kelly，平衡成長與風險<br>
+                • <b>相關性</b>：策略間相關性 < 0.3 為佳，避免同質化風險<br>
+                • <b>組合優化</b>：單一策略權重不超過 40%<br>
+                • <b>風險指標</b>：MaxDD < 20%，VaR 95% > -3%
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
 

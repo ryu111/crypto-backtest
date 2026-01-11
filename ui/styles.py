@@ -60,6 +60,11 @@ def get_common_css() -> str:
     """
     return """
 <style>
+/* 隱藏 Streamlit 自動產生的頁面導航（英文）*/
+[data-testid="stSidebarNav"] {
+    display: none !important;
+}
+
 /* Design Tokens */
 :root {
     /* Colors */

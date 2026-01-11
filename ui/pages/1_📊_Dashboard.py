@@ -12,6 +12,12 @@ import json
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
+import sys
+
+# 加入專案路徑
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from ui.utils import render_sidebar_navigation
+from ui.styles import get_common_css
 
 # 設定頁面配置
 st.set_page_config(
@@ -174,6 +180,20 @@ def render_sharpe_distribution(df: pd.DataFrame):
 
     st.plotly_chart(fig, use_container_width=True)
 
+    # [A2] Sharpe 分布解讀
+    above_1 = len(df[df['sharpe_ratio'] >= 1.0])
+    above_2 = len(df[df['sharpe_ratio'] >= 2.0])
+    total = len(df)
+    median_sharpe = df['sharpe_ratio'].median()
+
+    st.caption(f"""
+    **[A2] 圖表解讀**：此圖顯示所有策略的 Sharpe Ratio 分布。
+    - **橘線（1.0）**：基本門檻，超過代表策略有正向風險調整收益
+    - **綠線（2.0）**：優秀門檻，超過代表策略表現優異
+    - **目前狀況**：{above_1}/{total} ({above_1/total*100:.0f}%) 策略達基本門檻，{above_2}/{total} ({above_2/total*100:.0f}%) 達優秀門檻
+    - **中位數**：{median_sharpe:.2f}（{'✅ 良好' if median_sharpe >= 1.0 else '⚠️ 需改善'}）
+    """)
+
 
 def render_grade_distribution(grade_counts: Dict[str, int]):
     """渲染評級分布圓餅圖"""
@@ -210,6 +230,23 @@ def render_grade_distribution(grade_counts: Dict[str, int]):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    # [A3] 評級分布說明
+    a_count = grade_counts.get('A', 0)
+    b_count = grade_counts.get('B', 0)
+    f_count = grade_counts.get('F', 0)
+    total_count = sum(grade_counts.values())
+    good_rate = (a_count + b_count) / total_count * 100 if total_count > 0 else 0
+
+    st.caption(f"""
+    **[A3] 評級說明**：基於 Sharpe Ratio 分級。
+    - **A 級（≥2.0）**：卓越，可直接實盤考慮
+    - **B 級（≥1.5）**：優良，建議進一步驗證後使用
+    - **C 級（≥1.0）**：及格，需要優化參數
+    - **D 級（≥0.5）**：偏弱，不建議使用
+    - **F 級（<0.5）**：不及格，需重新設計
+    - **目前狀況**：A+B 級佔 {good_rate:.0f}%（{a_count + b_count}/{total_count}），{'✅ 品質良好' if good_rate >= 30 else '⚠️ 需要更多優質策略'}
+    """)
 
 
 def render_time_trend(df: pd.DataFrame):
@@ -285,6 +322,16 @@ def render_top_strategies(df: pd.DataFrame, n: int = 10):
         }
     )
 
+    # [A4] 排行榜說明
+    st.caption("""
+    **[A4] 排行榜說明**：按 Sharpe Ratio 排序的前 10 名策略。
+    - **Sharpe**：風險調整收益，>2.0 優秀，>1.0 及格
+    - **報酬率**：總回報百分比，越高越好
+    - **MaxDD**：最大回撤，代表歷史最大虧損幅度，越小越好（<20% 理想）
+    - **評級**：綜合評分，A/B 級可考慮實盤
+    - **建議**：選擇排行靠前且 MaxDD 可接受的策略
+    """)
+
 
 def render_strategy_type_analysis(stats: Dict):
     """渲染策略類型分析"""
@@ -333,6 +380,64 @@ def render_strategy_type_analysis(stats: Dict):
             st.metric(label=t, value=f"{c} 個")
 
 
+def render_overall_recommendations(data: Dict):
+    """[A5] 渲染整體建議"""
+    total = data['total_experiments']
+    validated = data['validated_count']
+    avg_sharpe = data['avg_sharpe']
+    best_sharpe = data['best_sharpe']
+    df = data['experiments_df']
+
+    recommendations = []
+
+    # 基於驗證率的建議
+    validation_rate = validated / total if total > 0 else 0
+    if validation_rate < 0.1:
+        recommendations.append("⚠️ **驗證率過低**：僅 {:.0f}% 策略通過驗證，建議重新審視策略設計或調整參數範圍".format(validation_rate * 100))
+    elif validation_rate < 0.3:
+        recommendations.append("📊 **驗證率一般**：{:.0f}% 策略通過驗證，可嘗試優化表現較好的策略".format(validation_rate * 100))
+    else:
+        recommendations.append("✅ **驗證率良好**：{:.0f}% 策略通過驗證，可進行實盤前的最終壓力測試".format(validation_rate * 100))
+
+    # 基於 Sharpe 的建議
+    if avg_sharpe < 0.5:
+        recommendations.append("⚠️ **平均 Sharpe 過低**：{:.2f}，策略整體風險調整收益不佳，需重新設計".format(avg_sharpe))
+    elif avg_sharpe < 1.0:
+        recommendations.append("📊 **平均 Sharpe 普通**：{:.2f}，有改善空間，建議優化入場/出場邏輯".format(avg_sharpe))
+    else:
+        recommendations.append("✅ **平均 Sharpe 良好**：{:.2f}，策略品質不錯".format(avg_sharpe))
+
+    # 基於最大回撤的建議
+    if not df.empty:
+        max_dd = df['max_drawdown'].max()
+        if max_dd > 0.3:
+            recommendations.append("⚠️ **回撤風險高**：最大回撤達 {:.1f}%，建議加強止損機制".format(max_dd * 100))
+        elif max_dd > 0.2:
+            recommendations.append("📊 **回撤風險中等**：最大回撤 {:.1f}%，可考慮降低槓桿".format(max_dd * 100))
+        else:
+            recommendations.append("✅ **回撤控制良好**：最大回撤 {:.1f}%，風險管理得當".format(max_dd * 100))
+
+    # 下一步建議
+    recommendations.append("")
+    recommendations.append("**📋 下一步建議：**")
+    if best_sharpe >= 2.0:
+        recommendations.append("1. 對 A 級策略進行壓力測試（Validation 頁面）")
+        recommendations.append("2. 檢查策略間相關性（Risk Dashboard）")
+        recommendations.append("3. 準備小資金實盤測試")
+    elif best_sharpe >= 1.0:
+        recommendations.append("1. 優化 B/C 級策略的參數")
+        recommendations.append("2. 增加更多回測樣本")
+        recommendations.append("3. 分析失敗策略的共同點")
+    else:
+        recommendations.append("1. 重新檢視策略邏輯")
+        recommendations.append("2. 考慮更換指標組合")
+        recommendations.append("3. 增加訓練數據量")
+
+    for rec in recommendations:
+        if rec:
+            st.markdown(rec)
+
+
 def render_recent_activity(df: pd.DataFrame, n: int = 10):
     """渲染最近活動"""
     if df.empty:
@@ -367,8 +472,59 @@ def render_recent_activity(df: pd.DataFrame, n: int = 10):
 # 主要 UI
 # ============================================================================
 
+def render_summary_box(data: Dict):
+    """[A1] 渲染整體績效摘要框"""
+    total = data['total_experiments']
+    validated = data['validated_count']
+    avg_sharpe = data['avg_sharpe']
+    best_sharpe = data['best_sharpe']
+
+    # 判斷整體狀態
+    validation_rate = validated / total if total > 0 else 0
+
+    if validation_rate >= 0.3 and avg_sharpe >= 1.5:
+        status = "✅ 優秀"
+        status_color = "green"
+        summary = f"有 {validation_rate*100:.0f}% 策略通過驗證，平均 Sharpe {avg_sharpe:.2f}，表現優於基準"
+    elif validation_rate >= 0.1 or avg_sharpe >= 1.0:
+        status = "⚠️ 普通"
+        status_color = "orange"
+        summary = f"有 {validation_rate*100:.0f}% 策略通過驗證，平均 Sharpe {avg_sharpe:.2f}，仍有改善空間"
+    else:
+        status = "❌ 需改善"
+        status_color = "red"
+        summary = f"僅 {validation_rate*100:.0f}% 策略通過驗證，建議調整策略參數或增加回測樣本"
+
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                border-left: 4px solid {'#22c55e' if status_color == 'green' else '#eab308' if status_color == 'orange' else '#ef4444'};
+                padding: 16px 20px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span style="font-size: 1.2em; font-weight: 600;">整體績效摘要</span>
+                <span style="margin-left: 12px; padding: 4px 12px; border-radius: 12px;
+                       background: {'#dcfce7' if status_color == 'green' else '#fef9c3' if status_color == 'orange' else '#fee2e2'};
+                       color: {'#166534' if status_color == 'green' else '#854d0e' if status_color == 'orange' else '#991b1b'};">
+                    {status}
+                </span>
+            </div>
+            <div style="color: #6b7280; font-size: 0.9em;">
+                共 {total} 個策略 | {validated} 個通過驗證 | 最佳 Sharpe {best_sharpe:.2f}
+            </div>
+        </div>
+        <p style="margin: 8px 0 0 0; color: #374151;">{summary}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 def main():
     """主要 Dashboard"""
+
+    # 共用樣式（包含隱藏英文導航）
+    st.markdown(get_common_css(), unsafe_allow_html=True)
+
+    # 渲染中文 sidebar 導航
+    render_sidebar_navigation()
 
     # 標題
     st.title("📊 AI 回測系統 Dashboard")
@@ -382,6 +538,9 @@ def main():
         st.warning("尚未記錄任何實驗。請先執行回測並記錄結果。")
         st.info("💡 範例：執行 `examples/learning/record_experiment.py`")
         return
+
+    # [A1] 整體績效摘要
+    render_summary_box(data)
 
     # 核心指標卡片
     st.subheader("核心指標")
@@ -441,6 +600,11 @@ def main():
     # 最近活動
     st.subheader("最近活動")
     render_recent_activity(data['experiments_df'], n=10)
+
+    # [A5] 整體建議
+    st.markdown("---")
+    st.subheader("💡 整體建議")
+    render_overall_recommendations(data)
 
     # Footer
     st.markdown("---")
