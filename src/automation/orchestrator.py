@@ -11,7 +11,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, Union
 
 import pandas as pd
 import numpy as np
@@ -24,6 +24,27 @@ from ..learning.memory import MemoryIntegration, StrategyInsight, TradingLesson
 from ..backtester.engine import BacktestEngine, BacktestConfig
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class OrchestratorConfig:
+    """Orchestrator 配置"""
+    # 優化參數
+    n_trials: int = 50
+    min_sharpe: float = 1.0
+    min_stages: int = 3
+    max_overfit: float = 0.5
+
+    # 交易參數
+    symbols: List[str] = field(default_factory=lambda: ['BTCUSDT', 'ETHUSDT'])
+    timeframes: List[str] = field(default_factory=lambda: ['4h'])
+    leverage: int = 5
+    initial_capital: float = 10000.0
+
+    # 手續費
+    maker_fee: float = 0.0002
+    taker_fee: float = 0.0004
+    slippage: float = 0.0001
 
 
 @dataclass
@@ -140,7 +161,7 @@ class Orchestrator:
 
     def __init__(
         self,
-        config: Optional[Dict[str, Any]] = None,
+        config: Optional[Union[Dict[str, Any], OrchestratorConfig]] = None,
         verbose: bool = True,
         seed: Optional[int] = None
     ):
@@ -148,7 +169,8 @@ class Orchestrator:
         初始化協調器
 
         Args:
-            config: 配置字典
+            config: 配置（支援 dict 或 OrchestratorConfig）
+                Dict 格式:
                 {
                     'n_trials': 50,           # Optuna 試驗次數
                     'min_sharpe': 1.0,        # 最低 Sharpe
@@ -164,9 +186,13 @@ class Orchestrator:
             verbose: 是否顯示詳細訊息
             seed: 隨機數種子（用於可重現性）
         """
-        self.config = self._load_default_config()
-        if config:
-            self.config.update(config)
+        # 支援 dict 或 dataclass
+        if isinstance(config, dict):
+            self.config = OrchestratorConfig(**config)
+        elif isinstance(config, OrchestratorConfig):
+            self.config = config
+        else:
+            self.config = OrchestratorConfig()
 
         self.verbose = verbose
 
@@ -189,22 +215,6 @@ class Orchestrator:
             failed_iterations=0,
             recorded_experiments=0
         )
-
-    def _load_default_config(self) -> Dict[str, Any]:
-        """載入預設配置"""
-        return {
-            'n_trials': 50,
-            'min_sharpe': 1.0,
-            'min_stages': 3,
-            'max_overfit': 0.5,
-            'symbols': ['BTCUSDT', 'ETHUSDT'],
-            'timeframes': ['4h'],
-            'leverage': 5,
-            'initial_capital': 10000.0,
-            'maker_fee': 0.0002,
-            'taker_fee': 0.0004,
-            'slippage': 0.0001,
-        }
 
     def run_iteration(
         self,
@@ -250,7 +260,7 @@ class Orchestrator:
 
             # 3. 貝葉斯優化
             if self.verbose:
-                print(f"[3/6] 貝葉斯優化 ({self.config['n_trials']} trials)...")
+                print(f"[3/6] 貝葉斯優化 ({self.config.n_trials} trials)...")
 
             opt_result = self._optimize(
                 strategy_name,
@@ -395,6 +405,33 @@ class Orchestrator:
         return self.loop_summary
 
     # ===== 私有方法 =====
+
+    def _create_backtest_config(
+        self,
+        symbol: str,
+        data: pd.DataFrame
+    ) -> BacktestConfig:
+        """
+        建立回測配置
+
+        Args:
+            symbol: 交易標的
+            data: 市場資料
+
+        Returns:
+            BacktestConfig: 回測配置
+        """
+        return BacktestConfig(
+            symbol=symbol,
+            timeframe=self.config.timeframes[0],
+            start_date=data.index[0],
+            end_date=data.index[-1],
+            initial_capital=self.config.initial_capital,
+            leverage=self.config.leverage,
+            maker_fee=self.config.maker_fee,
+            taker_fee=self.config.taker_fee,
+            slippage=self.config.slippage
+        )
 
     def _select_strategy(self) -> str:
         """
@@ -541,16 +578,9 @@ class Orchestrator:
         strategy = strategy_class()
 
         # 建立回測配置
-        config = BacktestConfig(
-            symbol=self.config['symbols'][0],
-            timeframe=self.config['timeframes'][0],
-            start_date=data.index[0],
-            end_date=data.index[-1],
-            initial_capital=self.config['initial_capital'],
-            leverage=self.config['leverage'],
-            maker_fee=self.config['maker_fee'],
-            taker_fee=self.config['taker_fee'],
-            slippage=self.config['slippage']
+        config = self._create_backtest_config(
+            symbol=self.config.symbols[0],
+            data=data
         )
 
         # 建立回測引擎
@@ -559,7 +589,7 @@ class Orchestrator:
         # 建立優化器
         optimizer = BayesianOptimizer(
             engine=engine,
-            n_trials=self.config['n_trials'],
+            n_trials=self.config.n_trials,
             n_jobs=1,
             verbose=False
         )
@@ -600,16 +630,9 @@ class Orchestrator:
         strategy = strategy_class()
 
         # 建立回測配置
-        config = BacktestConfig(
+        config = self._create_backtest_config(
             symbol='BTCUSDT',
-            timeframe=self.config['timeframes'][0],
-            start_date=data_btc.index[0],
-            end_date=data_btc.index[-1],
-            initial_capital=self.config['initial_capital'],
-            leverage=self.config['leverage'],
-            maker_fee=self.config['maker_fee'],
-            taker_fee=self.config['taker_fee'],
-            slippage=self.config['slippage']
+            data=data_btc
         )
 
         # 執行驗證
@@ -642,14 +665,14 @@ class Orchestrator:
             bool: 是否記錄
         """
         # 1. 通過階段數
-        if validation_result.passed_stages < self.config['min_stages']:
+        if validation_result.passed_stages < self.config.min_stages:
             return False
 
         # 2. Sharpe Ratio（從驗證結果的 details 中取得）
         base_result = validation_result.details.get('base_result', {})
         sharpe = base_result.get('sharpe_ratio', 0)
 
-        if sharpe < self.config['min_sharpe']:
+        if sharpe < self.config.min_sharpe:
             return False
 
         # 3. 過擬合率（WFA Efficiency）
@@ -658,7 +681,7 @@ class Orchestrator:
             efficiency = wfa_stage.details.get('efficiency', 0)
             overfit_rate = 1 - efficiency
 
-            if overfit_rate > self.config['max_overfit']:
+            if overfit_rate > self.config.max_overfit:
                 return False
 
         return True
@@ -692,10 +715,10 @@ class Orchestrator:
 
         # 提取配置
         config = {
-            'symbol': self.config['symbols'][0],
-            'timeframe': self.config['timeframes'][0],
-            'leverage': self.config['leverage'],
-            'initial_capital': self.config['initial_capital']
+            'symbol': self.config.symbols[0],
+            'timeframe': self.config.timeframes[0],
+            'leverage': self.config.leverage,
+            'initial_capital': self.config.initial_capital
         }
 
         # 1. 記錄到 experiments.json
@@ -738,8 +761,8 @@ class Orchestrator:
         # 建立洞察
         insight = StrategyInsight(
             strategy_name=strategy_name,
-            symbol=self.config['symbols'][0],
-            timeframe=self.config['timeframes'][0],
+            symbol=self.config.symbols[0],
+            timeframe=self.config.timeframes[0],
             best_params=opt_result.best_params,
             sharpe_ratio=opt_result.best_value,
             total_return=opt_result.best_backtest_result.total_return,

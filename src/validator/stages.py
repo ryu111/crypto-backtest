@@ -134,6 +134,47 @@ class StageValidator:
             },
         }
 
+    def _create_stage_result(
+        self,
+        checks: Dict[str, bool],
+        thresholds: Dict[str, Any],
+        details: Dict[str, Any],
+        pass_message: str,
+        fail_message_prefix: str
+    ) -> StageResult:
+        """
+        建立階段驗證結果（統一處理）
+
+        Args:
+            checks: 檢查結果字典
+            thresholds: 門檻值
+            details: 詳細資訊（會自動加入 checks）
+            pass_message: 通過時的訊息
+            fail_message_prefix: 失敗時的訊息前綴
+
+        Returns:
+            StageResult: 階段驗證結果
+        """
+        passed = all(checks.values())
+        score = sum(checks.values()) / len(checks) * 100
+
+        # 將 checks 加入 details
+        details['checks'] = checks
+
+        if passed:
+            message = pass_message
+        else:
+            failed = [k for k, v in checks.items() if not v]
+            message = f"{fail_message_prefix}: {', '.join(failed)}"
+
+        return StageResult(
+            passed=passed,
+            score=score,
+            details=details,
+            message=message,
+            threshold=thresholds
+        )
+
     def validate(
         self,
         strategy: Any,
@@ -250,30 +291,20 @@ class StageValidator:
             'profit_factor': result.profit_factor > thresholds['profit_factor'],
         }
 
-        passed = all(checks.values())
-        score = sum(checks.values()) / len(checks) * 100
-
         details = {
             'total_return': result.total_return,
             'total_trades': result.total_trades,
             'sharpe_ratio': result.sharpe_ratio,
             'max_drawdown': result.max_drawdown,
             'profit_factor': result.profit_factor,
-            'checks': checks,
         }
 
-        if passed:
-            message = "基礎績效符合要求"
-        else:
-            failed_checks = [k for k, v in checks.items() if not v]
-            message = f"未通過檢查: {', '.join(failed_checks)}"
-
-        return StageResult(
-            passed=passed,
-            score=score,
+        return self._create_stage_result(
+            checks=checks,
+            thresholds=thresholds,
             details=details,
-            message=message,
-            threshold=thresholds
+            pass_message="基礎績效符合要求",
+            fail_message_prefix="未通過檢查"
         )
 
     def stage2_statistical_tests(self, returns: pd.Series) -> StageResult:
@@ -309,30 +340,20 @@ class StageValidator:
             'skewness': skew_pass,
         }
 
-        passed = all(checks.values())
-        score = sum(checks.values()) / len(checks) * 100
-
         details = {
             't_statistic': t_stat,
             'p_value': p_value,
             'sharpe_ratio': sharpe,
             'sharpe_ci': (ci_lower, ci_upper),
             'skewness': skewness,
-            'checks': checks,
         }
 
-        if passed:
-            message = "統計檢驗通過，非隨機結果"
-        else:
-            failed = [k for k, v in checks.items() if not v]
-            message = f"統計檢驗未通過: {', '.join(failed)}"
-
-        return StageResult(
-            passed=passed,
-            score=score,
+        return self._create_stage_result(
+            checks=checks,
+            thresholds=thresholds,
             details=details,
-            message=message,
-            threshold=thresholds
+            pass_message="統計檢驗通過，非隨機結果",
+            fail_message_prefix="統計檢驗未通過"
         )
 
     def stage3_robustness_tests(
@@ -378,28 +399,18 @@ class StageValidator:
             'asset_consistency': asset_pass,
         }
 
-        passed = all(checks.values())
-        score = sum(checks.values()) / len(checks) * 100
-
         details = {
             'param_sensitivity_pct': param_sensitivity * 100,
             'time_consistent': time_consistency,
             'asset_consistent': asset_consistency,
-            'checks': checks,
         }
 
-        if passed:
-            message = "穩健性測試通過"
-        else:
-            failed = [k for k, v in checks.items() if not v]
-            message = f"穩健性不足: {', '.join(failed)}"
-
-        return StageResult(
-            passed=passed,
-            score=score,
+        return self._create_stage_result(
+            checks=checks,
+            thresholds=thresholds,
             details=details,
-            message=message,
-            threshold=thresholds
+            pass_message="穩健性測試通過",
+            fail_message_prefix="穩健性不足"
         )
 
     def _test_parameter_sensitivity(
@@ -531,29 +542,19 @@ class StageValidator:
             'max_oos_dd': max_oos_dd > -thresholds['max_single_window_dd'],
         }
 
-        passed = all(checks.values())
-        score = sum(checks.values()) / len(checks) * 100
-
         details = {
             'efficiency': efficiency,
             'oos_win_rate': oos_win_rate,
             'max_oos_dd': max_oos_dd,
             'oos_returns': wfa_result['oos_returns'],
-            'checks': checks,
         }
 
-        if passed:
-            message = "Walk-Forward 驗證通過"
-        else:
-            failed = [k for k, v in checks.items() if not v]
-            message = f"Walk-Forward 未通過: {', '.join(failed)}"
-
-        return StageResult(
-            passed=passed,
-            score=score,
+        return self._create_stage_result(
+            checks=checks,
+            thresholds=thresholds,
             details=details,
-            message=message,
-            threshold=thresholds
+            pass_message="Walk-Forward 驗證通過",
+            fail_message_prefix="Walk-Forward 未通過"
         )
 
     def _perform_walk_forward(
@@ -640,6 +641,7 @@ class StageValidator:
         """
         thresholds = self.thresholds['stage5']
 
+        # Early return: 交易數不足
         if len(trades) < 30:
             return StageResult(
                 passed=False,
@@ -674,30 +676,20 @@ class StageValidator:
             'median_vs_original': median > original_return * thresholds['median_vs_original'],
         }
 
-        passed = all(checks.values())
-        score = sum(checks.values()) / len(checks) * 100
-
         details = {
             'original_return': original_return,
             'p1': p1,
             'p5': p5,
             'median': median,
             'p95': np.percentile(simulated_returns, 95),
-            'checks': checks,
         }
 
-        if passed:
-            message = "Monte Carlo 模擬通過，風險可控"
-        else:
-            failed = [k for k, v in checks.items() if not v]
-            message = f"Monte Carlo 風險過高: {', '.join(failed)}"
-
-        return StageResult(
-            passed=passed,
-            score=score,
+        return self._create_stage_result(
+            checks=checks,
+            thresholds=thresholds,
             details=details,
-            message=message,
-            threshold=thresholds
+            pass_message="Monte Carlo 模擬通過，風險可控",
+            fail_message_prefix="Monte Carlo 風險過高"
         )
 
     def _calculate_grade(self, passed_stages: int) -> ValidationGrade:

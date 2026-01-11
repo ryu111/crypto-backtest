@@ -488,6 +488,70 @@ class BacktestEngine:
 
         return total_funding_fees, avg_leverage
 
+    def _calculate_trade_statistics(
+        self,
+        trades_df: pd.DataFrame
+    ) -> Dict[str, float]:
+        """
+        計算交易統計
+
+        Args:
+            trades_df: 交易記錄 DataFrame
+
+        Returns:
+            包含交易統計的字典：
+            - total_trades
+            - win_rate
+            - avg_win
+            - avg_loss
+            - profit_factor
+            - expectancy
+            - avg_duration
+        """
+        total_trades = len(trades_df)
+
+        if total_trades == 0:
+            return {
+                'total_trades': 0,
+                'win_rate': 0.0,
+                'avg_win': 0.0,
+                'avg_loss': 0.0,
+                'profit_factor': 0.0,
+                'expectancy': 0.0,
+                'avg_duration': 0.0,
+            }
+
+        win_trades = trades_df[trades_df['PnL'] > 0]
+        loss_trades = trades_df[trades_df['PnL'] < 0]
+
+        win_rate = len(win_trades) / total_trades
+        avg_win = win_trades['PnL'].mean() if len(win_trades) > 0 else 0.0
+        avg_loss = loss_trades['PnL'].mean() if len(loss_trades) > 0 else 0.0
+
+        # 獲利因子
+        total_wins = win_trades['PnL'].sum() if len(win_trades) > 0 else 0.0
+        total_losses = abs(loss_trades['PnL'].sum()) if len(loss_trades) > 0 else 0.0
+        profit_factor = total_wins / total_losses if total_losses > 0 else 0.0
+
+        # 期望值
+        expectancy = avg_win * win_rate + avg_loss * (1 - win_rate)
+
+        # 平均持倉時間
+        trades_df['duration'] = (
+            trades_df['Exit Timestamp'] - trades_df['Entry Timestamp']
+        ).dt.total_seconds() / 3600
+        avg_duration = trades_df['duration'].mean()
+
+        return {
+            'total_trades': total_trades,
+            'win_rate': win_rate,
+            'avg_win': avg_win,
+            'avg_loss': avg_loss,
+            'profit_factor': profit_factor,
+            'expectancy': expectancy,
+            'avg_duration': avg_duration,
+        }
+
     def _calculate_metrics(self, portfolio, strategy) -> BacktestResult:
         """計算完整績效指標"""
 
@@ -510,35 +574,14 @@ class BacktestEngine:
         volatility = daily_returns.std() * np.sqrt(TRADING_DAYS_PER_YEAR)
 
         # 交易統計
-        total_trades = len(trades_df)
-        if total_trades > 0:
-            win_trades = trades_df[trades_df['PnL'] > 0]
-            loss_trades = trades_df[trades_df['PnL'] < 0]
-
-            win_rate = len(win_trades) / total_trades
-            avg_win = win_trades['PnL'].mean() if len(win_trades) > 0 else 0
-            avg_loss = loss_trades['PnL'].mean() if len(loss_trades) > 0 else 0
-
-            # 獲利因子
-            total_wins = win_trades['PnL'].sum() if len(win_trades) > 0 else 0
-            total_losses = abs(loss_trades['PnL'].sum()) if len(loss_trades) > 0 else 0
-            profit_factor = total_wins / total_losses if total_losses > 0 else 0
-
-            # 期望值
-            expectancy = avg_win * win_rate + avg_loss * (1 - win_rate)
-
-            # 平均持倉時間
-            trades_df['duration'] = (
-                trades_df['Exit Timestamp'] - trades_df['Entry Timestamp']
-            ).dt.total_seconds() / 3600  # 轉為小時
-            avg_duration = trades_df['duration'].mean()
-        else:
-            win_rate = 0
-            avg_win = 0
-            avg_loss = 0
-            profit_factor = 0
-            expectancy = 0
-            avg_duration = 0
+        trade_stats = self._calculate_trade_statistics(trades_df)
+        total_trades = trade_stats['total_trades']
+        win_rate = trade_stats['win_rate']
+        avg_win = trade_stats['avg_win']
+        avg_loss = trade_stats['avg_loss']
+        profit_factor = trade_stats['profit_factor']
+        expectancy = trade_stats['expectancy']
+        avg_duration = trade_stats['avg_duration']
 
         # 進階指標
         calmar = self.metrics_calc.calculate_calmar(annual_return, max_dd)

@@ -85,7 +85,7 @@ def temp_recorder():
 def test_init_files(temp_recorder):
     """測試檔案初始化"""
     assert temp_recorder.experiments_file.exists()
-    assert temp_recorder.insights_file.exists()
+    assert temp_recorder.insights_manager.insights_file.exists()
 
     # 檢查初始內容
     data = json.loads(temp_recorder.experiments_file.read_text())
