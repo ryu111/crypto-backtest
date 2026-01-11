@@ -20,7 +20,8 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from ui.styles import get_common_css, GRADE_COLORS
-from ui.utils import render_sidebar_navigation
+from ui.utils import render_sidebar_navigation, render_page_header, load_experiments
+from ui.theme_switcher import apply_theme, get_current_theme
 
 
 # ===== 設定頁面 =====
@@ -31,94 +32,73 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ===== 套用主題 =====
+apply_theme()
+theme = get_current_theme()
+
 # ===== 自訂樣式 =====
-st.markdown(get_common_css(), unsafe_allow_html=True)
+st.markdown(get_common_css(theme), unsafe_allow_html=True)
 
 
 # ===== 資料載入函數 =====
 
-@st.cache_data
-def load_validation_results() -> Dict[str, Any]:
+def load_validation_results(exp_id: str) -> Optional[Dict[str, Any]]:
     """
     載入驗證結果
 
-    TODO: 實際從檔案系統載入結果
-    目前返回範例資料，結構符合設計規格預期
+    Args:
+        exp_id: 實驗 ID
+
+    Returns:
+        驗證結果字典，如果沒有驗證結果則返回 None
     """
-    # 範例資料結構
-    return {
-        'bootstrap': {
-            'ci_lower': 12.3,
-            'ci_upper': 45.2,
-            'pass': True,
-            'confidence': 0.95,
-            'distribution': np.random.normal(28.5, 8.2, 10000)  # Bootstrap 分布
-        },
-        'permutation': {
-            'p_value': 0.032,
-            'pass': True,
-            'actual_value': 28.5,
-            'null_distribution': np.random.normal(0, 10, 10000),
-            'n_permutations': 10000
-        },
-        'cross_validation': {
-            'folds': [
-                {'fold_id': 1, 'is_return': 25.3, 'oos_return': 21.5, 'period': '2023-01 ~ 2023-03'},
-                {'fold_id': 2, 'is_return': 30.2, 'oos_return': 28.1, 'period': '2023-04 ~ 2023-06'},
-                {'fold_id': 3, 'is_return': 28.9, 'oos_return': 25.8, 'period': '2023-07 ~ 2023-09'},
-                {'fold_id': 4, 'is_return': 27.5, 'oos_return': 24.2, 'period': '2023-10 ~ 2023-12'},
-            ],
-            'mean': 28.5,
-            'std': 4.2,
-            'stability': 0.87
-        },
-        'sharpe_correction': {
-            'original': 2.15,
-            'deflated': 1.45,
-            'trials': 120,
-            'pbo': 0.35,
-            'adjustment_factor': 0.674
-        },
-        'stress_test': {
-            'events': {
-                'covid_crash_2020': {
-                    'name': 'COVID-19 崩盤 (2020/03)',
-                    'max_drawdown': -18.5,
-                    'recovery_days': 45,
-                    'sharpe': 0.82,
-                    'equity_curve': 100 * (1 + np.cumsum(np.random.randn(90) * 0.03)),
-                    'dates': pd.date_range('2020-02-15', periods=90, freq='D')
-                },
-                'luna_crash_2022': {
-                    'name': 'LUNA 崩盤 (2022/05)',
-                    'max_drawdown': -25.3,
-                    'recovery_days': 68,
-                    'sharpe': 0.65,
-                    'equity_curve': 100 * (1 + np.cumsum(np.random.randn(90) * 0.04)),
-                    'dates': pd.date_range('2022-04-20', periods=90, freq='D')
-                },
-                'ftx_collapse_2022': {
-                    'name': 'FTX 崩盤 (2022/11)',
-                    'max_drawdown': -15.2,
-                    'recovery_days': 38,
-                    'sharpe': 0.95,
-                    'equity_curve': 100 * (1 + np.cumsum(np.random.randn(90) * 0.025)),
-                    'dates': pd.date_range('2022-10-25', periods=90, freq='D')
-                },
-            }
-        }
-    }
+    # 從 learning/experiments.json 載入實驗
+    experiments = load_experiments()
+
+    # 找到對應的實驗
+    exp = None
+    for e in experiments:
+        if e.get('id') == exp_id or e.get('strategy_name') == exp_id:
+            exp = e
+            break
+
+    if not exp:
+        return None
+
+    # 檢查是否有驗證結果
+    validation = exp.get('validation', {})
+    if not validation:
+        return None
+
+    return validation
 
 
-@st.cache_data
-def get_available_strategies() -> List[Dict[str, str]]:
-    """取得可用的策略清單"""
-    # TODO: 實際從檔案系統載入
-    return [
-        {'name': 'MA Cross (10/30)', 'symbol': 'BTCUSDT', 'timeframe': '4h'},
-        {'name': 'RSI Mean Reversion', 'symbol': 'ETHUSDT', 'timeframe': '1h'},
-        {'name': 'Supertrend Momentum', 'symbol': 'BTCUSDT', 'timeframe': '1d'},
-    ]
+def get_available_strategies() -> List[Dict[str, Any]]:
+    """取得可用的策略清單（從真實實驗資料）"""
+    experiments = load_experiments()
+
+    if not experiments:
+        return []
+
+    strategies = []
+    for exp in experiments:
+        strategy_name = exp.get('strategy_name', exp.get('strategy', {}).get('name', 'Unknown'))
+        symbol = exp.get('symbol', exp.get('strategy', {}).get('symbol', 'BTCUSDT'))
+        timeframe = exp.get('timeframe', exp.get('strategy', {}).get('timeframe', '1h'))
+        exp_id = exp.get('id', exp.get('experiment_id', ''))
+        sharpe = exp.get('sharpe_ratio', exp.get('results', {}).get('sharpe_ratio', 0))
+        grade = exp.get('grade', 'N/A')
+
+        strategies.append({
+            'id': exp_id,
+            'name': strategy_name,
+            'symbol': symbol,
+            'timeframe': timeframe,
+            'sharpe': sharpe,
+            'grade': grade,
+        })
+
+    return strategies
 
 
 # ===== 圖表繪製函數 =====
@@ -556,32 +536,20 @@ def main():
     # 渲染中文 sidebar 導航
     render_sidebar_navigation()
 
-    st.title("📊 策略驗證")
-    st.markdown("評估策略的統計顯著性與穩健性")
+    # 渲染頁面標題（含右上角主題切換）
+    render_page_header("📊 策略驗證", "評估策略的統計顯著性與穩健性")
 
-    # ===== 選擇器列 =====
-    col_select, col_export = st.columns([3, 1])
+    # ===== 取得策略清單 =====
+    strategies = get_available_strategies()
 
-    with col_select:
-        strategies = get_available_strategies()
-        strategy_options = [
-            f"{s['name']} ({s['symbol']} {s['timeframe']})"
-            for s in strategies
-        ]
-        selected_strategy = st.selectbox(
-            "選擇策略",
-            options=strategy_options,
-            label_visibility="collapsed"
-        )
+    if not strategies:
+        st.warning("""
+        ⚠️ 目前沒有可用的實驗資料
 
-    with col_export:
-        if st.button("📥 匯出報告", type="primary", use_container_width=True):
-            st.info("匯出功能開發中...")
-
-    # ===== 載入資料 =====
-    if not selected_strategy:
-        st.info("""
-        👈 請先從上方選擇一個策略
+        請先執行回測以產生實驗資料：
+        ```bash
+        python examples/trend_strategies_example.py
+        ```
 
         驗證頁面將顯示：
         - 統計檢定結果
@@ -591,7 +559,51 @@ def main():
         """)
         st.stop()
 
-    validation_result = load_validation_results()
+    # ===== 選擇器列 =====
+    col_select, col_export = st.columns([3, 1])
+
+    with col_select:
+        strategy_options = [
+            f"{s['name']} ({s['symbol']} {s['timeframe']}) - Sharpe: {s['sharpe']:.2f}"
+            for s in strategies
+        ]
+        selected_idx = st.selectbox(
+            "選擇策略",
+            options=range(len(strategy_options)),
+            format_func=lambda x: strategy_options[x],
+            label_visibility="collapsed"
+        )
+
+    with col_export:
+        if st.button("📥 匯出報告", type="primary", use_container_width=True):
+            st.info("匯出功能開發中...")
+
+    # 取得選中的策略
+    selected_strategy = strategies[selected_idx]
+    exp_id = selected_strategy['id']
+
+    # ===== 載入驗證資料 =====
+    validation_result = load_validation_results(exp_id)
+
+    if not validation_result:
+        st.info(f"""
+        ℹ️ **{selected_strategy['name']}** 尚未執行完整驗證
+
+        此策略目前沒有驗證結果。請執行驗證流程以產生資料：
+        - Stage 1: 基本績效檢查
+        - Stage 2: Bootstrap / Permutation Test
+        - Stage 3: Walk-Forward Analysis
+        - Stage 4: Monte Carlo 模擬
+        - Stage 5: 跨標的驗證
+
+        當前策略資訊：
+        - **策略名稱**: {selected_strategy['name']}
+        - **交易對**: {selected_strategy['symbol']}
+        - **時間週期**: {selected_strategy['timeframe']}
+        - **Sharpe Ratio**: {selected_strategy['sharpe']:.2f}
+        - **評級**: {selected_strategy['grade']}
+        """)
+        st.stop()
 
     # ===== Tab 切換 =====
     tab1, tab2, tab3, tab4 = st.tabs([

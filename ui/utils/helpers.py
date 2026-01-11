@@ -249,6 +249,7 @@ def render_sidebar_navigation():
     """渲染共用的中文 sidebar 導航
 
     在每個頁面調用此函數以顯示統一的中文導航。
+    注意：主題切換已移至 render_page_header()，統一放在頁面右上角。
     """
     import streamlit as st
 
@@ -258,7 +259,7 @@ def render_sidebar_navigation():
 
         # 頁面導航
         st.subheader("🧭 導航")
-        st.page_link("app.py", label="首頁", icon="🏠")
+        st.page_link("Home.py", label="首頁", icon="🏠")
         st.page_link("pages/1_📊_Dashboard.py", label="數據儀表板", icon="📈")
         st.page_link("pages/2_Strategies.py", label="策略列表", icon="📋")
         st.page_link("pages/3_Comparison.py", label="策略比較", icon="⚖️")
@@ -277,6 +278,26 @@ def render_sidebar_navigation():
             st.caption(f"更新: {status['last_updated']}")
         else:
             st.markdown("❌ 資料不可用")
+
+
+def render_page_header(title: str, subtitle: str = "") -> None:
+    """渲染頁面標題與副標題
+
+    Args:
+        title: 頁面標題（含 emoji）
+        subtitle: 副標題（可選）
+
+    範例:
+        render_page_header("📊 策略驗證", "評估策略的統計顯著性與穩健性")
+    """
+    import streamlit as st
+
+    # 頁面標題
+    st.title(title)
+
+    # 副標題
+    if subtitle:
+        st.markdown(subtitle)
 
 
 def get_data_source_status() -> Dict:

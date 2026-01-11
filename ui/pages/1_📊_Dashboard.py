@@ -16,8 +16,10 @@ import sys
 
 # 加入專案路徑
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from ui.utils import render_sidebar_navigation
+from ui.utils import render_sidebar_navigation, render_page_header
 from ui.styles import get_common_css
+from ui.theme_switcher import apply_theme, get_current_theme
+from ui.chart_config import get_chart_layout, get_chart_colors
 
 # 設定頁面配置
 st.set_page_config(
@@ -26,6 +28,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# 套用主題
+apply_theme()
+theme = get_current_theme()
 
 
 # ============================================================================
@@ -154,12 +160,14 @@ def render_sharpe_distribution(df: pd.DataFrame):
 
     fig = go.Figure()
 
+    colors = get_chart_colors(theme, n=1)
+
     # 直方圖
     fig.add_trace(go.Histogram(
         x=df['sharpe_ratio'],
         nbinsx=20,
         name='Sharpe 分布',
-        marker_color='#3b82f6',
+        marker_color=colors[0],
         opacity=0.7
     ))
 
@@ -169,14 +177,15 @@ def render_sharpe_distribution(df: pd.DataFrame):
     fig.add_vline(x=2.0, line_dash="dash", line_color="green",
                   annotation_text="門檻 2.0", annotation_position="top")
 
-    fig.update_layout(
+    fig.update_layout(**get_chart_layout(
+        theme=theme,
         title="Sharpe Ratio 分布",
         xaxis_title="Sharpe Ratio",
         yaxis_title="實驗數量",
         height=400,
         showlegend=False,
         hovermode='x unified'
-    )
+    ))
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -223,11 +232,12 @@ def render_grade_distribution(grade_counts: Dict[str, int]):
         textposition='auto'
     )])
 
-    fig.update_layout(
+    fig.update_layout(**get_chart_layout(
+        theme=theme,
         title="評級分布",
         height=400,
         showlegend=True
-    )
+    ))
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -272,13 +282,14 @@ def render_time_trend(df: pd.DataFrame):
         marker=dict(size=8)
     ))
 
-    fig.update_layout(
+    fig.update_layout(**get_chart_layout(
+        theme=theme,
         title="時間趨勢 - 每日最佳 Sharpe Ratio",
         xaxis_title="日期",
         yaxis_title="Sharpe Ratio",
         height=400,
         hovermode='x unified'
-    )
+    ))
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -362,13 +373,14 @@ def render_strategy_type_analysis(stats: Dict):
         textposition='auto'
     ))
 
-    fig.update_layout(
+    fig.update_layout(**get_chart_layout(
+        theme=theme,
         title="策略類型平均表現",
         xaxis_title="策略類型",
         yaxis_title="平均 Sharpe Ratio",
         height=350,
         showlegend=False
-    )
+    ))
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -520,15 +532,18 @@ def render_summary_box(data: Dict):
 def main():
     """主要 Dashboard"""
 
+    # 套用主題
+    apply_theme()
+    theme = get_current_theme()
+
     # 共用樣式（包含隱藏英文導航）
-    st.markdown(get_common_css(), unsafe_allow_html=True)
+    st.markdown(get_common_css(theme), unsafe_allow_html=True)
 
     # 渲染中文 sidebar 導航
     render_sidebar_navigation()
 
-    # 標題
-    st.title("📊 AI 回測系統 Dashboard")
-    st.markdown("---")
+    # 標題（右上角含主題切換）
+    render_page_header("📊 AI 回測系統 Dashboard")
 
     # 載入資料
     experiments = load_experiments()

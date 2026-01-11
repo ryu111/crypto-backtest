@@ -18,8 +18,10 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from ui.styles import get_common_css, GRADE_COLORS
-from ui.utils import render_sidebar_navigation
+from ui.utils import render_sidebar_navigation, render_page_header
 from ui.utils.data_loader import load_equity_curve, load_daily_returns, calculate_monthly_returns
+from ui.theme_switcher import apply_theme, get_current_theme
+from ui.chart_config import get_chart_layout, get_chart_colors
 
 
 # ===== 設定頁面 =====
@@ -30,8 +32,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ===== 套用主題 =====
+apply_theme()
+theme = get_current_theme()
+
 # ===== 自訂樣式 =====
-st.markdown(get_common_css(), unsafe_allow_html=True)
+st.markdown(get_common_css(theme), unsafe_allow_html=True)
 
 
 # ===== 資料載入函數 =====
@@ -347,39 +353,17 @@ def plot_equity_curve(strategy_name: str, experiment_id: str) -> go.Figure:
     ))
 
     # 佈局配置
-    fig.update_layout(
-        title=dict(
-            text=f'{strategy_name} - 權益曲線',
-            font=dict(size=18, color='#111827')  # --color-text
-        ),
-        xaxis=dict(
-            title='日期',
-            titlefont=dict(size=14, color='#6b7280'),  # --color-text-secondary
-            tickfont=dict(size=12),
-            gridcolor='#f3f4f6',
-        ),
-        yaxis=dict(
-            title='權益 ($)',
-            titlefont=dict(size=14, color='#6b7280'),
-            tickfont=dict(size=12),
-            gridcolor='#f3f4f6',
-            tickformat='$,.0f'  # 貨幣格式
-        ),
+    fig.update_layout(**get_chart_layout(
+        theme=theme,
+        title=f'{strategy_name} - 權益曲線',
+        xaxis_title='日期',
+        yaxis_title='權益 ($)',
         height=400,
-        margin=dict(l=60, r=40, t=60, b=60),
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        hovermode='x unified',
-        hoverlabel=dict(
-            bgcolor='white',
-            font_size=13,
-            font_family="'Inter', sans-serif"
-        )
-    )
+        hovermode='x unified'
+    ))
 
-    # 統一配置（工具列、縮放等）
-    fig.update_xaxes(showspikes=True, spikecolor='#d1d5db', spikethickness=1)
-    fig.update_yaxes(showspikes=True, spikecolor='#d1d5db', spikethickness=1)
+    # 貨幣格式
+    fig.update_yaxes(tickformat='$,.0f')
 
     return fig
 
@@ -547,28 +531,16 @@ def plot_monthly_heatmap(
     ))
 
     # 佈局配置
-    fig.update_layout(
-        title=dict(
-            text=f'{strategy_name} - 月度報酬',
-            font=dict(size=16, color='#111827')  # --color-text
-        ),
-        xaxis=dict(
-            title='月份',
-            titlefont=dict(size=12, color='#6b7280'),  # --color-text-secondary
-            tickfont=dict(size=11),
-            side='bottom'
-        ),
-        yaxis=dict(
-            title='年份',
-            titlefont=dict(size=12, color='#6b7280'),
-            tickfont=dict(size=11),
-            autorange='reversed'  # 最新年份在上方
-        ),
-        height=200,
-        margin=dict(l=60, r=60, t=40, b=40),
-        plot_bgcolor='white',
-        paper_bgcolor='white'
-    )
+    fig.update_layout(**get_chart_layout(
+        theme=theme,
+        title=f'{strategy_name} - 月度報酬',
+        xaxis_title='月份',
+        yaxis_title='年份',
+        height=200
+    ))
+
+    # Y 軸反轉（最新年份在上方）
+    fig.update_yaxes(autorange='reversed')
 
     return fig
 
@@ -594,21 +566,24 @@ def render_filter_summary(df_all: pd.DataFrame, df_filtered: pd.DataFrame, filte
     # 判斷篩選結果品質
     if filter_rate < 10:
         status = "⚠️ 篩選條件過嚴"
-        status_color = "orange"
+        border_color = "var(--warning)"
     elif good_rate >= 50:
         status = "✅ 篩選結果優質"
-        status_color = "green"
+        border_color = "var(--success)"
     else:
         status = "📊 篩選結果一般"
-        status_color = "blue"
+        border_color = "var(--info)"
 
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                border-left: 4px solid {'#22c55e' if status_color == 'green' else '#eab308' if status_color == 'orange' else '#3b82f6'};
-                padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+    <div style="background: var(--surface-raised);
+                border-left: 4px solid {border_color};
+                border: 1px solid var(--border);
+                padding: 12px 16px;
+                border-radius: var(--radius-lg);
+                margin-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 600;">[B1] 篩選結果摘要 {status}</span>
-            <span style="color: #6b7280; font-size: 0.9em;">
+            <span style="font-weight: 600; color: var(--text-primary);">[B1] 篩選結果摘要 {status}</span>
+            <span style="color: var(--text-secondary); font-size: 0.9em;">
                 符合 {filtered}/{total} 筆 ({filter_rate:.0f}%) | 平均 Sharpe {avg_sharpe:.2f} | A+B 級 {good_rate:.0f}%
             </span>
         </div>
@@ -670,8 +645,8 @@ def main():
     # 渲染中文 sidebar 導航
     render_sidebar_navigation()
 
-    st.title("📊 策略列表")
-    st.markdown("篩選和查看所有策略實驗結果")
+    # 標題（右上角含主題切換）
+    render_page_header("📊 策略列表", "篩選和查看所有策略實驗結果")
 
     # 載入資料
     df_all = load_strategy_results()

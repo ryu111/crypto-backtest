@@ -4,6 +4,7 @@
 """
 
 from typing import Dict
+from .design_tokens import get_css_variables
 
 # 評級顏色配置
 GRADE_COLORS: Dict[str, Dict[str, str]] = {
@@ -51,95 +52,80 @@ def get_grade_badge_style(grade: str) -> str:
     return f"grade-{grade}"
 
 
-def get_common_css() -> str:
+def get_common_css(theme: str = "light") -> str:
     """
     返回共用 CSS 樣式
+
+    Args:
+        theme: 主題名稱 ("light" 或 "dark")
 
     Returns:
         CSS 字串
     """
-    return """
+    # 從 design_tokens 取得動態 CSS Variables
+    css_vars = get_css_variables(theme)
+
+    return f"""
 <style>
 /* 隱藏 Streamlit 自動產生的頁面導航（英文）*/
-[data-testid="stSidebarNav"] {
+[data-testid="stSidebarNav"] {{
     display: none !important;
-}
+}}
 
-/* Design Tokens */
-:root {
-    /* Colors */
-    --color-primary: #2563eb;
-    --color-primary-hover: #1d4ed8;
-    --color-surface: #ffffff;
-    --color-surface-raised: #f9fafb;
-    --color-text: #111827;
-    --color-text-secondary: #6b7280;
-    --color-border: #e5e7eb;
-    --color-success: #22c55e;
-    --color-warning: #eab308;
-    --color-error: #ef4444;
-
-    /* Spacing */
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-
-    /* Radius */
-    --radius-md: 0.375rem;
-    --radius-lg: 0.5rem;
-}
+/* Design Tokens（動態生成） */
+{css_vars}
 
 /* 評級徽章 */
-.grade-badge {
+.grade-badge {{
     display: inline-block;
     padding: 4px 12px;
-    border-radius: 9999px;
+    border-radius: var(--radius-full);
     font-weight: 600;
     font-size: 0.875rem;
-}
+}}
 
-.grade-A {
-    background: #d1fae5;
-    color: #065f46;
-}
+.grade-A {{
+    background: var(--grade-a-bg);
+    color: var(--grade-a-text);
+}}
 
-.grade-B {
-    background: #dbeafe;
-    color: #1e40af;
-}
+.grade-B {{
+    background: var(--grade-b-bg);
+    color: var(--grade-b-text);
+}}
 
-.grade-C {
-    background: #fef3c7;
-    color: #92400e;
-}
+.grade-C {{
+    background: var(--grade-c-bg);
+    color: var(--grade-c-text);
+}}
 
-.grade-D {
-    background: #fed7aa;
-    color: #9a3412;
-}
+.grade-D {{
+    background: var(--grade-d-bg);
+    color: var(--grade-d-text);
+}}
 
-.grade-F {
-    background: #fee2e2;
-    color: #991b1b;
-}
+.grade-F {{
+    background: var(--grade-f-bg);
+    color: var(--grade-f-text);
+}}
 
 /* 指標卡片 */
-.metric-card {
-    background: var(--color-surface-raised);
+.metric-card {{
+    background: var(--surface-raised);
     padding: var(--spacing-md);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-}
+    border: 1px solid var(--border);
+}}
 
 /* 表格樣式 */
-.dataframe {
+.dataframe {{
     border-radius: var(--radius-md) !important;
     overflow: hidden;
-}
+}}
 
 /* 滑桿樣式 */
-.stSlider > div > div > div {
-    background: var(--color-primary);
-}
+.stSlider > div > div > div {{
+    background: var(--primary);
+}}
 </style>
 """

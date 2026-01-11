@@ -28,8 +28,9 @@ from src.risk.position_sizing import kelly_criterion, PositionSizeResult, KellyP
 from src.risk.correlation import CorrelationAnalyzer, CorrelationMatrix, RollingCorrelation
 from src.optimizer.portfolio import PortfolioOptimizer, PortfolioWeights
 from src.validator.stress_test import StressTestResult
-from ui.utils import render_sidebar_navigation
+from ui.utils import render_sidebar_navigation, render_page_header
 from ui.styles import get_common_css
+from ui.theme_switcher import apply_theme, get_current_theme
 
 # 頁面配置
 st.set_page_config(
@@ -1091,15 +1092,18 @@ def render_var_distribution(returns: pd.Series, var_95: float, cvar_95: float):
 def main():
     """主要 Dashboard"""
 
+    # 套用主題
+    apply_theme()
+    theme = get_current_theme()
+
     # 共用樣式（包含隱藏英文導航）
-    st.markdown(get_common_css(), unsafe_allow_html=True)
+    st.markdown(get_common_css(theme), unsafe_allow_html=True)
 
     # 渲染中文 sidebar 導航
     render_sidebar_navigation()
 
-    # 標題
-    st.title("🛡️ 風險管理儀表板")
-    st.markdown("---")
+    # 標題（右上角含主題切換）
+    render_page_header("🛡️ 風險管理儀表板")
 
     # 載入資料
     experiments = load_experiments()

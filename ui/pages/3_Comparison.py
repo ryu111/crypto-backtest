@@ -24,33 +24,29 @@ sys.path.insert(0, str(project_root))
 
 # 注意：避免 import src.validator.stages，因為會觸發 vectorbt/numba 載入
 # 導致 NumPy 版本衝突（Numba 需要 NumPy <= 2.3，但系統有 NumPy 2.4）
-from ui.utils import render_sidebar_navigation
+from ui.utils import render_sidebar_navigation, render_page_header
 from ui.styles import get_common_css
+from ui.theme_switcher import apply_theme, get_current_theme
+from ui.chart_config import get_chart_layout, get_chart_colors
+from ui.utils.data_loader import get_all_experiments
+from ui.chart_config import get_theme_tokens
 
+# 定義 COLORS 字典（從 theme tokens 取得）
+def _get_colors() -> Dict[str, str]:
+    """取得當前主題的顏色配置"""
+    theme = get_current_theme() if 'get_current_theme' in dir() else 'light'
+    tokens = get_theme_tokens(theme)
+    return {
+        'primary': tokens.get('primary', '#2563eb'),
+        'success': tokens.get('success', '#22c55e'),
+        'warning': tokens.get('warning', '#f59e0b'),
+        'error': tokens.get('error', '#ef4444'),
+        'surface': tokens.get('surface', '#f8fafc'),
+        'text': tokens.get('text_primary', '#1e293b'),
+    }
 
-# ========== 設計 Token ==========
-# 根據 ~/.claude/skills/ui/references/tokens.md
-
-COLORS = {
-    'primary': '#2563eb',
-    'primary_light': '#dbeafe',
-    'success': '#22c55e',
-    'warning': '#eab308',
-    'error': '#ef4444',
-    'text': '#111827',
-    'text_secondary': '#6b7280',
-    'border': '#e5e7eb',
-    'surface': '#ffffff',
-    'surface_raised': '#f9fafb',
-}
-
-SPACING = {
-    'xs': '4px',
-    'sm': '8px',
-    'md': '16px',
-    'lg': '24px',
-    'xl': '32px',
-}
+# 初始化 COLORS（會在每次頁面載入時更新）
+COLORS = _get_colors()
 
 
 def hex_to_rgba(hex_color: str, alpha: float = 0.2) -> str:
@@ -77,44 +73,50 @@ def load_strategy_results() -> Dict[str, Dict[str, Any]]:
         - trades: 交易記錄
         - validation: 驗證結果
     """
-    # TODO: 從實際儲存位置載入資料
-    # 這裡提供模擬資料結構
+    from ui.utils.data_loader import load_equity_curve, load_daily_returns, calculate_monthly_returns
+
+    experiments = get_all_experiments()
+
+    if not experiments:
+        st.warning("無實驗資料，請先執行回測")
+        return {}
 
     strategies = {}
 
-    # 模擬資料
-    for i in range(5):
-        strategy_name = f"策略 {chr(65 + i)}"  # A, B, C, D, E
+    for exp in experiments:
+        strategy_name = exp.strategy.get('name', 'Unknown')
 
-        # 模擬權益曲線
-        np.random.seed(i * 100)
-        days = 365
-        returns = np.random.normal(0.001, 0.02, days)
-        equity = 10000 * (1 + returns).cumprod()
+        # 載入權益曲線和報酬率
+        equity_curve = load_equity_curve(exp.id)
+        daily_returns = load_daily_returns(exp.id)
+
+        # 計算月度報酬
+        monthly_returns = None
+        if daily_returns is not None:
+            monthly_df = calculate_monthly_returns(daily_returns)
+            if not monthly_df.empty:
+                monthly_returns = pd.Series(
+                    monthly_df['return'].values,
+                    index=pd.to_datetime(monthly_df[['year', 'month']].assign(day=1))
+                )
+
+        # 提取績效指標
+        results = exp.results
 
         strategies[strategy_name] = {
             'metrics': {
-                'total_return': (equity[-1] / equity[0] - 1) * 100,
-                'sharpe_ratio': np.random.uniform(1.5, 2.5),
-                'max_drawdown': -np.random.uniform(5, 20),
-                'win_rate': np.random.uniform(45, 65),
-                'total_trades': np.random.randint(80, 200),
-                'profit_factor': np.random.uniform(1.2, 2.5),
-                'calmar_ratio': np.random.uniform(1.0, 3.0),
-                'validation_grade': np.random.choice(['A', 'B', 'C']),
+                'total_return': results.get('total_return', 0) * 100,
+                'sharpe_ratio': results.get('sharpe_ratio', 0),
+                'max_drawdown': results.get('max_drawdown', 0) * 100,
+                'win_rate': results.get('win_rate', 0) * 100,
+                'total_trades': results.get('total_trades', 0),
+                'profit_factor': results.get('profit_factor', 0),
+                'calmar_ratio': results.get('calmar_ratio', 0),
+                'validation_grade': 'C',  # TODO: 從驗證結果獲取
             },
-            'equity_curve': pd.DataFrame({
-                'date': pd.date_range('2024-01-01', periods=days),
-                'equity': equity,
-            }).set_index('date'),
-            'monthly_returns': pd.Series(
-                np.random.normal(0.03, 0.05, 12),
-                index=pd.date_range('2024-01', periods=12, freq='MS')
-            ),
-            'params': {
-                'period': np.random.randint(10, 20),
-                'threshold': np.random.uniform(0.01, 0.05),
-            }
+            'equity_curve': equity_curve.to_frame('equity') if equity_curve is not None else pd.DataFrame(),
+            'monthly_returns': monthly_returns if monthly_returns is not None else pd.Series(),
+            'params': exp.parameters if hasattr(exp, 'parameters') else {}
         }
 
     return strategies
@@ -681,14 +683,18 @@ def main():
         layout="wide"
     )
 
+    # 套用主題
+    apply_theme()
+    theme = get_current_theme()
+
     # 共用樣式（包含隱藏英文導航）
-    st.markdown(get_common_css(), unsafe_allow_html=True)
+    st.markdown(get_common_css(theme), unsafe_allow_html=True)
 
     # 渲染中文 sidebar 導航
     render_sidebar_navigation()
 
-    st.title("⚖️ 策略比較")
-    st.markdown("比較多個策略的績效指標，選擇最佳策略")
+    # 標題（右上角含主題切換）
+    render_page_header("⚖️ 策略比較", "比較多個策略的績效指標，選擇最佳策略")
 
     # 載入資料
     with st.spinner("載入策略資料..."):

@@ -3,6 +3,9 @@ AI 回測系統主頁面
 """
 
 import streamlit as st
+from ui.styles import get_common_css
+from ui.theme_switcher import get_current_theme, apply_theme
+from ui.utils import render_sidebar_navigation, render_page_header
 
 # 設定頁面配置
 st.set_page_config(
@@ -12,101 +15,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 自訂 CSS
-st.markdown("""
-<style>
-    /* 主要色彩 */
-    :root {
-        --primary-color: #3b82f6;
-        --success-color: #22c55e;
-        --warning-color: #eab308;
-        --error-color: #ef4444;
-        --text-color: #111827;
-        --text-secondary: #6b7280;
-        --border-color: #e5e7eb;
-        --surface: #ffffff;
-        --surface-raised: #f9fafb;
-    }
+# 應用主題
+apply_theme()
 
-    /* 全域字體 */
-    html, body, [class*="css"] {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    /* 標題 */
-    h1 {
-        font-weight: 700;
-        color: var(--text-color);
-    }
-
-    h2, h3 {
-        font-weight: 600;
-        color: var(--text-color);
-    }
-
-    /* 指標卡片 */
-    [data-testid="stMetric"] {
-        background: var(--surface-raised);
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--border-color);
-    }
-
-    [data-testid="stMetricLabel"] {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        font-weight: 500;
-    }
-
-    [data-testid="stMetricValue"] {
-        font-size: 1.875rem;
-        font-weight: 700;
-        color: var(--text-color);
-    }
-
-    /* 按鈕 */
-    .stButton > button {
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 500;
-        transition: all 150ms ease;
-    }
-
-    .stButton > button:hover {
-        filter: brightness(0.95);
-        transform: scale(0.98);
-    }
-
-    /* 表格 */
-    [data-testid="stDataFrame"] {
-        border-radius: 0.5rem;
-        overflow: hidden;
-    }
-
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background: var(--surface-raised);
-    }
-
-    /* 資訊框 */
-    .stAlert {
-        border-radius: 0.5rem;
-        border-left: 4px solid var(--primary-color);
-    }
-</style>
-""", unsafe_allow_html=True)
+# 應用共用 CSS
+theme = get_current_theme()
+st.markdown(get_common_css(theme), unsafe_allow_html=True)
 
 
 def main():
     """主頁面"""
 
-    # Logo & 標題
-    st.title("🤖 AI 回測系統")
-    st.markdown("專業級量化交易策略回測與驗證平台")
-    st.markdown("---")
+    # 渲染 sidebar 導航
+    render_sidebar_navigation()
+
+    # 標題（右上角含主題切換）
+    render_page_header("🤖 AI 回測系統", "專業級量化交易策略回測與驗證平台")
 
     # 簡介
     col1, col2 = st.columns([2, 1])
