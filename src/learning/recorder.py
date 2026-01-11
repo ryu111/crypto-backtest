@@ -12,6 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union, TYPE_CHECKING
 from collections import defaultdict
+import pandas as pd
 
 # 使用 TYPE_CHECKING 避免執行時 import（避免 vectorbt 依賴問題）
 if TYPE_CHECKING:
@@ -285,6 +286,9 @@ class ExperimentRecorder:
 
         # 儲存實驗
         self._append_experiment(experiment)
+
+        # 儲存時間序列資料（equity_curve, daily_returns, trades）
+        self._save_timeseries_data(exp_id, result)
 
         # 更新洞察文件
         if insights:
@@ -834,3 +838,114 @@ class ExperimentRecorder:
             return "穩健性不足（參數敏感或時間/標的不一致）"
         else:
             return "Walk-Forward 失敗，可能過擬合"
+
+    def _save_timeseries_data(self, exp_id: str, result: Any):
+        """
+        儲存時間序列資料到獨立 CSV 檔案
+
+        Args:
+            exp_id: 實驗 ID
+            result: BacktestResult 物件
+
+        儲存結構:
+            results/{exp_id}/
+                ├── equity_curve.csv    (index=date, columns=['equity'])
+                ├── daily_returns.csv   (index=date, columns=['return'])
+                └── trades.csv          (交易記錄)
+        """
+        # 建立實驗專屬目錄
+        exp_dir = self.project_root / 'results' / exp_id
+        exp_dir.mkdir(parents=True, exist_ok=True)
+
+        # 1. 儲存 equity_curve
+        if hasattr(result, 'equity_curve') and result.equity_curve is not None:
+            equity_df = pd.DataFrame({
+                'equity': result.equity_curve
+            })
+            # 確保索引名稱為 'date'
+            equity_df.index.name = 'date'
+            equity_df.to_csv(exp_dir / 'equity_curve.csv')
+
+        # 2. 儲存 daily_returns
+        if hasattr(result, 'daily_returns') and result.daily_returns is not None:
+            returns_df = pd.DataFrame({
+                'return': result.daily_returns
+            })
+            # 確保索引名稱為 'date'
+            returns_df.index.name = 'date'
+            returns_df.to_csv(exp_dir / 'daily_returns.csv')
+
+        # 3. 儲存 trades（如果存在）
+        if hasattr(result, 'trades') and result.trades is not None and len(result.trades) > 0:
+            result.trades.to_csv(exp_dir / 'trades.csv', index=False)
+
+    def load_equity_curve(self, exp_id: str) -> Optional[pd.Series]:
+        """
+        載入實驗的權益曲線
+
+        Args:
+            exp_id: 實驗 ID
+
+        Returns:
+            pd.Series: 權益曲線（index 為日期），如果不存在則返回 None
+        """
+        equity_file = self.project_root / 'results' / exp_id / 'equity_curve.csv'
+
+        if not equity_file.exists():
+            return None
+
+        try:
+            df = pd.read_csv(equity_file, index_col='date', parse_dates=True)
+            return df['equity']
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"載入 equity_curve 失敗 ({exp_id}): {e}")
+            return None
+
+    def load_daily_returns(self, exp_id: str) -> Optional[pd.Series]:
+        """
+        載入實驗的每日收益率
+
+        Args:
+            exp_id: 實驗 ID
+
+        Returns:
+            pd.Series: 每日收益率（index 為日期），如果不存在則返回 None
+        """
+        returns_file = self.project_root / 'results' / exp_id / 'daily_returns.csv'
+
+        if not returns_file.exists():
+            return None
+
+        try:
+            df = pd.read_csv(returns_file, index_col='date', parse_dates=True)
+            return df['return']
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"載入 daily_returns 失敗 ({exp_id}): {e}")
+            return None
+
+    def load_trades(self, exp_id: str) -> Optional[pd.DataFrame]:
+        """
+        載入實驗的交易記錄
+
+        Args:
+            exp_id: 實驗 ID
+
+        Returns:
+            pd.DataFrame: 交易記錄，如果不存在則返回 None
+        """
+        trades_file = self.project_root / 'results' / exp_id / 'trades.csv'
+
+        if not trades_file.exists():
+            return None
+
+        try:
+            return pd.read_csv(trades_file)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"載入 trades 失敗 ({exp_id}): {e}")
+            return None

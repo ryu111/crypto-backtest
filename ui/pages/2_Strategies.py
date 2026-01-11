@@ -19,6 +19,7 @@ sys.path.insert(0, str(project_root))
 
 from ui.styles import get_common_css, GRADE_COLORS
 from ui.utils import render_sidebar_navigation
+from ui.utils.data_loader import load_equity_curve, load_daily_returns, calculate_monthly_returns
 
 
 # ===== 設定頁面 =====
@@ -35,81 +36,138 @@ st.markdown(get_common_css(), unsafe_allow_html=True)
 
 # ===== 資料載入函數 =====
 
+# DataFrame 欄位定義（避免重複）
+STRATEGY_COLUMNS = [
+    'experiment_id', 'strategy_name', 'strategy_type', 'symbol', 'timeframe',
+    'total_return', 'annual_return', 'sharpe_ratio', 'max_drawdown',
+    'total_trades', 'win_rate', 'grade', 'wfa_efficiency', 'params', 'created_at'
+]
+
+
+def calculate_grade(sharpe: float, max_dd: float, win_rate: float) -> str:
+    """根據績效指標計算驗證等級"""
+    if sharpe >= 2.0 and max_dd <= 15 and win_rate >= 60:
+        return 'A'
+    elif sharpe >= 1.5 and max_dd <= 20 and win_rate >= 55:
+        return 'B'
+    elif sharpe >= 1.0 and max_dd <= 25 and win_rate >= 50:
+        return 'C'
+    elif sharpe >= 0.5 and max_dd <= 30:
+        return 'D'
+    else:
+        return 'F'
+
+
 @st.cache_data
 def load_strategy_results() -> pd.DataFrame:
-    """載入所有策略驗證結果"""
-    # TODO: 實際從檔案系統載入結果
-    # 目前返回範例資料
+    """
+    載入所有策略驗證結果
 
-    sample_data = [
-        {
-            'strategy_name': 'MA Cross (10/30)',
-            'strategy_type': '趨勢',
-            'symbol': 'BTCUSDT',
-            'timeframe': '4h',
-            'total_return': 45.8,
-            'annual_return': 28.2,
-            'sharpe_ratio': 1.85,
-            'max_drawdown': 12.5,
-            'total_trades': 158,
-            'win_rate': 62.5,
-            'grade': 'A',
-            'wfa_efficiency': 0.85,
-            'params': {'fast_period': 10, 'slow_period': 30},
-            'created_at': '2024-01-10 14:30:00'
-        },
-        {
-            'strategy_name': 'RSI Mean Reversion',
-            'strategy_type': '均值回歸',
-            'symbol': 'ETHUSDT',
-            'timeframe': '1h',
-            'total_return': 32.1,
-            'annual_return': 22.4,
-            'sharpe_ratio': 1.62,
-            'max_drawdown': 15.8,
-            'total_trades': 245,
-            'win_rate': 58.3,
-            'grade': 'B',
-            'wfa_efficiency': 0.72,
-            'params': {'rsi_period': 14, 'oversold': 30, 'overbought': 70},
-            'created_at': '2024-01-10 12:15:00'
-        },
-        {
-            'strategy_name': 'Supertrend Momentum',
-            'strategy_type': '動量',
-            'symbol': 'BTCUSDT',
-            'timeframe': '1d',
-            'total_return': 68.5,
-            'annual_return': 41.2,
-            'sharpe_ratio': 2.15,
-            'max_drawdown': 18.3,
-            'total_trades': 89,
-            'win_rate': 71.2,
-            'grade': 'A',
-            'wfa_efficiency': 0.91,
-            'params': {'atr_period': 10, 'multiplier': 3.0},
-            'created_at': '2024-01-09 16:45:00'
-        },
-        {
-            'strategy_name': 'MACD Cross',
-            'strategy_type': '動量',
-            'symbol': 'ETHUSDT',
-            'timeframe': '4h',
-            'total_return': 18.9,
-            'annual_return': 12.8,
-            'sharpe_ratio': 1.12,
-            'max_drawdown': 22.4,
-            'total_trades': 167,
-            'win_rate': 54.1,
-            'grade': 'C',
-            'wfa_efficiency': 0.58,
-            'params': {'fast': 12, 'slow': 26, 'signal': 9},
-            'created_at': '2024-01-09 10:20:00'
-        },
-    ]
+    Returns:
+        pd.DataFrame: 策略實驗結果，包含以下欄位：
+            - experiment_id: 實驗 ID
+            - strategy_name: 策略名稱
+            - strategy_type: 策略類型
+            - symbol: 交易標的
+            - timeframe: 時間框架
+            - total_return: 總報酬率 (%)
+            - annual_return: 年化報酬率 (%)
+            - sharpe_ratio: Sharpe Ratio
+            - max_drawdown: 最大回撤 (%)
+            - total_trades: 總交易筆數
+            - win_rate: 勝率 (%)
+            - grade: 驗證等級
+            - wfa_efficiency: WFA 效率（從 validation 中提取，若無則為 0）
+            - params: 策略參數 (dict)
+            - created_at: 建立時間
+    """
+    from ui.utils.data_loader import get_all_experiments
 
-    df = pd.DataFrame(sample_data)
-    return df
+    try:
+        # 載入所有實驗
+        experiments = get_all_experiments()
+
+        # 處理空數據情況
+        if not experiments:
+            return pd.DataFrame(columns=STRATEGY_COLUMNS)
+
+        # 轉換為 DataFrame 格式
+        data = []
+        for exp in experiments:
+            try:
+                # 提取策略資訊
+                strategy = exp.strategy
+                results = exp.results
+                config = exp.config
+                
+                # 驗證必要欄位
+                if not config.get('symbol') or not config.get('timeframe'):
+                    st.warning(f"⚠️ 實驗 {exp.id} 缺少必要欄位（symbol 或 timeframe），已跳過")
+                    continue
+
+                # 提取數值（百分比轉換）
+                total_return = results.get('total_return', 0.0) * 100
+                annual_return = results.get('annual_return', 0.0) * 100
+                sharpe_ratio = results.get('sharpe_ratio', 0.0)
+                max_drawdown = abs(results.get('max_drawdown', 0.0)) * 100
+                win_rate = results.get('win_rate', 0.0) * 100
+                
+                # 計算等級
+                grade = calculate_grade(sharpe_ratio, max_drawdown, win_rate)
+                
+                # 提取 WFA 效率（如果有驗證結果）
+                wfa_efficiency = 0.0
+                if hasattr(exp, 'validation') and exp.validation:
+                    wfa_efficiency = exp.validation.get('wfa_efficiency', 0.0)
+
+                # 構建資料行
+                row = {
+                    'experiment_id': exp.id,
+                    'strategy_name': strategy.get('name', 'Unknown'),
+                    'strategy_type': strategy.get('type', '未分類'),
+                    'symbol': config.get('symbol'),
+                    'timeframe': config.get('timeframe'),
+                    'total_return': total_return,
+                    'annual_return': annual_return,
+                    'sharpe_ratio': sharpe_ratio,
+                    'max_drawdown': max_drawdown,
+                    'total_trades': results.get('total_trades', 0),
+                    'win_rate': win_rate,
+                    'grade': grade,
+                    'wfa_efficiency': wfa_efficiency,
+                    'params': exp.parameters if hasattr(exp, 'parameters') else {},
+                    'created_at': exp.timestamp
+                }
+                data.append(row)
+
+            except (AttributeError, KeyError) as e:
+                # 數據格式錯誤
+                exp_id = exp.id if hasattr(exp, 'id') else 'Unknown'
+                st.warning(f"⚠️ 實驗 {exp_id} 數據格式錯誤：{str(e)}")
+                continue
+            except Exception as e:
+                # 其他未預期錯誤
+                exp_id = exp.id if hasattr(exp, 'id') else 'Unknown'
+                st.warning(f"⚠️ 載入實驗 {exp_id} 時發生錯誤：{str(e)}")
+                continue
+
+        # 建立 DataFrame
+        df = pd.DataFrame(data)
+
+        # 如果所有實驗都轉換失敗，返回空 DataFrame
+        if df.empty:
+            return pd.DataFrame(columns=STRATEGY_COLUMNS)
+
+        return df
+
+    except Exception as e:
+        # 處理載入失敗情況
+        st.error(f"❌ 載入策略結果失敗：{str(e)}")
+        st.info("請確認 experiments.json 檔案存在且格式正確。")
+
+        # 返回空 DataFrame
+        return pd.DataFrame(columns=STRATEGY_COLUMNS)
+
 
 
 def apply_filters(df: pd.DataFrame, filters: Dict[str, Any]) -> pd.DataFrame:
@@ -171,57 +229,345 @@ def render_metric_card(title: str, value: str, delta: str = None):
     st.metric(label=title, value=value, delta=delta)
 
 
-def plot_equity_curve(strategy_name: str) -> go.Figure:
-    """繪製權益曲線（範例）"""
-    # TODO: 實際從結果載入
-    import numpy as np
+def plot_equity_curve(strategy_name: str, experiment_id: str) -> go.Figure:
+    """
+    繪製權益曲線
 
-    days = 100
-    equity = 10000 * (1 + np.cumsum(np.random.randn(days) * 0.02))
+    Args:
+        strategy_name: 策略名稱（用於標題）
+        experiment_id: 實驗 ID（用於載入數據）
 
+    Returns:
+        Plotly Figure 物件，如果數據不存在則返回空白圖表並顯示提示
+    """
+    # 載入權益曲線數據
+    equity_curve = load_equity_curve(experiment_id)
+
+    # 處理數據缺失
+    if equity_curve is None or len(equity_curve) == 0:
+        st.info("""
+📊 **權益曲線數據缺失**
+
+此策略實驗未儲存詳細權益曲線資料。
+
+**可能原因**：
+- 實驗記錄於舊版本系統
+- 回測未正常完成
+
+**建議**：
+- 重新執行回測
+- 檢查實驗記錄完整性
+        """)
+        # 返回空白圖表
+        fig = go.Figure()
+        fig.update_layout(
+            title=f'{strategy_name} - 權益曲線',
+            xaxis_title='日期',
+            yaxis_title='權益 ($)',
+            height=400,
+            margin=dict(l=60, r=40, t=60, b=60),
+        )
+        return fig
+
+    # 數據驗證
+    if not isinstance(equity_curve.index, pd.DatetimeIndex):
+        st.error("❌ 權益曲線索引必須為日期格式")
+        fig = go.Figure()
+        return fig
+
+    # 處理缺失值
+    if equity_curve.isnull().any():
+        st.warning("⚠️ 權益曲線包含缺失值，已自動填充")
+        equity_curve = equity_curve.ffill()
+
+    # 套用時間範圍篩選
+    if 'chart_xrange' in st.session_state and st.session_state.chart_xrange:
+        start_date, end_date = st.session_state.chart_xrange
+
+        # 驗證時間範圍合理性
+        if start_date > end_date:
+            st.error("❌ 時間範圍錯誤：起始日期晚於結束日期")
+            # 返回空白圖表
+            fig = go.Figure()
+            fig.update_layout(
+                title=f'{strategy_name} - 權益曲線',
+                xaxis_title='日期',
+                yaxis_title='權益 ($)',
+                height=400,
+                margin=dict(l=60, r=40, t=60, b=60),
+            )
+            return fig
+
+        equity_curve = equity_curve.loc[
+            (equity_curve.index.date >= start_date) &
+            (equity_curve.index.date <= end_date)
+        ]
+
+        # 檢查篩選後是否還有數據
+        if len(equity_curve) == 0:
+            st.warning("⚠️ 選擇的時間範圍內無數據，請調整時間範圍")
+            # 返回空白圖表
+            fig = go.Figure()
+            fig.update_layout(
+                title=f'{strategy_name} - 權益曲線',
+                xaxis_title='日期',
+                yaxis_title='權益 ($)',
+                height=400,
+                margin=dict(l=60, r=40, t=60, b=60),
+            )
+            return fig
+
+    # 建立圖表
     fig = go.Figure()
+
+    # 主線
     fig.add_trace(go.Scatter(
-        y=equity,
+        x=equity_curve.index,
+        y=equity_curve.values,
         mode='lines',
         name='權益',
-        line=dict(color='var(--color-primary)', width=2)
+        line=dict(
+            color='#2563eb',  # --color-primary from styles.py
+            width=2
+        ),
+        hovertemplate='<b>日期</b>: %{x|%Y-%m-%d}<br>' +
+                      '<b>權益</b>: $%{y:,.2f}<br>' +
+                      '<extra></extra>'
     ))
 
+    # 可選：填充區域
+    fig.add_trace(go.Scatter(
+        x=equity_curve.index,
+        y=equity_curve.values,
+        fill='tozeroy',
+        fillcolor='rgba(37, 99, 235, 0.1)',  # --color-primary 10% opacity
+        line=dict(width=0),
+        showlegend=False,
+        hoverinfo='skip'
+    ))
+
+    # 佈局配置
     fig.update_layout(
-        title=f'{strategy_name} - 權益曲線',
-        xaxis_title='交易日',
-        yaxis_title='權益 ($)',
-        height=300,
-        margin=dict(l=0, r=0, t=40, b=0),
-        hovermode='x unified'
+        title=dict(
+            text=f'{strategy_name} - 權益曲線',
+            font=dict(size=18, color='#111827')  # --color-text
+        ),
+        xaxis=dict(
+            title='日期',
+            titlefont=dict(size=14, color='#6b7280'),  # --color-text-secondary
+            tickfont=dict(size=12),
+            gridcolor='#f3f4f6',
+        ),
+        yaxis=dict(
+            title='權益 ($)',
+            titlefont=dict(size=14, color='#6b7280'),
+            tickfont=dict(size=12),
+            gridcolor='#f3f4f6',
+            tickformat='$,.0f'  # 貨幣格式
+        ),
+        height=400,
+        margin=dict(l=60, r=40, t=60, b=60),
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        hovermode='x unified',
+        hoverlabel=dict(
+            bgcolor='white',
+            font_size=13,
+            font_family="'Inter', sans-serif"
+        )
     )
+
+    # 統一配置（工具列、縮放等）
+    fig.update_xaxes(showspikes=True, spikecolor='#d1d5db', spikethickness=1)
+    fig.update_yaxes(showspikes=True, spikecolor='#d1d5db', spikethickness=1)
 
     return fig
 
 
-def plot_monthly_heatmap(strategy_name: str) -> go.Figure:
-    """繪製月度報酬熱力圖（範例）"""
-    # TODO: 實際從結果載入
-    import numpy as np
+def plot_monthly_heatmap(
+    strategy_name: str,
+    experiment_id: str,
+    start_date: pd.Timestamp = None,
+    end_date: pd.Timestamp = None
+) -> go.Figure:
+    """
+    繪製月度報酬熱力圖
 
-    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    returns = np.random.randn(12) * 5 + 2
+    Args:
+        strategy_name: 策略名稱（用於標題）
+        experiment_id: 實驗 ID（用於載入數據）
+        start_date: 起始日期（可選，用於篩選）
+        end_date: 結束日期（可選，用於篩選）
 
+    Returns:
+        Plotly Figure 物件，如果數據不存在則返回空白圖表並顯示提示
+    """
+    # 載入日報酬數據
+    daily_returns = load_daily_returns(experiment_id)
+
+    # 處理數據缺失
+    if daily_returns is None or len(daily_returns) == 0:
+        st.info("""
+📊 **月度報酬數據缺失**
+
+此策略實驗未儲存詳細報酬資料。
+
+**可能原因**：
+- 實驗記錄於舊版本系統
+- 回測未正常完成
+
+**建議**：
+- 重新執行回測
+- 檢查實驗記錄完整性
+        """)
+        # 返回空白圖表
+        fig = go.Figure()
+        fig.update_layout(
+            title=f'{strategy_name} - 月度報酬',
+            height=200,
+            margin=dict(l=0, r=0, t=40, b=0)
+        )
+        return fig
+
+    # 套用時間範圍篩選
+    if start_date and end_date:
+        # 驗證時間範圍合理性
+        if start_date > end_date:
+            st.error("❌ 時間範圍錯誤：起始日期晚於結束日期")
+            fig = go.Figure()
+            fig.update_layout(
+                title=f'{strategy_name} - 月度報酬',
+                height=200,
+                margin=dict(l=0, r=0, t=40, b=0)
+            )
+            return fig
+
+        daily_returns = daily_returns.loc[
+            (daily_returns.index.date >= start_date) &
+            (daily_returns.index.date <= end_date)
+        ]
+
+    # 檢查篩選後是否還有數據
+    if len(daily_returns) == 0:
+        st.warning("⚠️ 時間範圍內無數據")
+        fig = go.Figure()
+        fig.update_layout(
+            title=f'{strategy_name} - 月度報酬',
+            height=200,
+            margin=dict(l=0, r=0, t=40, b=0)
+        )
+        return fig
+
+    # 計算月度報酬
+    monthly_data = calculate_monthly_returns(daily_returns)
+
+    # 檢查月度數據是否有效
+    if len(monthly_data) == 0:
+        st.warning("⚠️ 無法計算月度報酬")
+        fig = go.Figure()
+        fig.update_layout(
+            title=f'{strategy_name} - 月度報酬',
+            height=200,
+            margin=dict(l=0, r=0, t=40, b=0)
+        )
+        return fig
+
+    # 檢查是否全為 NaN
+    if 'return' in monthly_data.columns and monthly_data['return'].isna().all():
+        st.warning("⚠️ 無法計算月度報酬（數據異常）")
+        fig = go.Figure()
+        fig.update_layout(
+            title=f'{strategy_name} - 月度報酬',
+            height=200,
+            margin=dict(l=0, r=0, t=40, b=0)
+        )
+        return fig
+
+    # 準備熱力圖數據
+    # 取得所有年份（由舊到新排列）
+    years = sorted(monthly_data['year'].unique())
+    months_abbr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    # 建立矩陣：rows = years, cols = months (1-12)
+    z_matrix = []
+    text_matrix = []
+
+    for year in years:
+        year_data = monthly_data[monthly_data['year'] == year]
+        row_values = []
+        row_text = []
+
+        for month in range(1, 13):
+            month_return = year_data[year_data['month'] == month]['return'].values
+            if len(month_return) > 0:
+                ret = month_return[0]
+                row_values.append(ret)
+                row_text.append(f'{ret:.1f}%')
+            else:
+                # 空缺月份（未來月份或資料不足）
+                row_values.append(None)
+                row_text.append('')
+
+        z_matrix.append(row_values)
+        text_matrix.append(row_text)
+
+    # 自定義色盲友好配色（藍-橙漸層）
+    # 根據設計規格：負報酬藍色系，正報酬綠色系
+    colorscale = [
+        [0.0, '#1d4ed8'],   # 深藍（-10% 以下）
+        [0.35, '#60a5fa'],  # 中藍（-5%）
+        [0.45, '#dbeafe'],  # 淺藍（-1%）
+        [0.5, '#f3f4f6'],   # 中性灰（0%）
+        [0.55, '#d1fae5'],  # 淺綠（+1%）
+        [0.65, '#22c55e'],  # 中綠（+5%）
+        [1.0, '#15803d']    # 深綠（+10% 以上）
+    ]
+
+    # 建立熱力圖
     fig = go.Figure(data=go.Heatmap(
-        z=[returns],
-        x=months,
-        y=['2024'],
-        colorscale='RdYlGn',
-        text=[[f'{r:.1f}%' for r in returns]],
+        z=z_matrix,
+        x=months_abbr,
+        y=[str(y) for y in years],
+        colorscale=colorscale,
+        text=text_matrix,
         texttemplate='%{text}',
-        textfont={"size": 10},
-        colorbar=dict(title='報酬率 %')
+        textfont=dict(size=10),
+        colorbar=dict(
+            title='報酬率 (%)',
+            titleside='right',
+            ticksuffix='%',
+            thickness=15,
+            len=0.7
+        ),
+        hovertemplate='<b>%{y}年 %{x}</b><br>月報酬: %{z:.2f}%<extra></extra>',
+        zmid=0,  # 中點設為 0（中性色）
+        zmin=-10,  # 最小值 -10%
+        zmax=10    # 最大值 +10%
     ))
 
+    # 佈局配置
     fig.update_layout(
-        title=f'{strategy_name} - 月度報酬',
+        title=dict(
+            text=f'{strategy_name} - 月度報酬',
+            font=dict(size=16, color='#111827')  # --color-text
+        ),
+        xaxis=dict(
+            title='月份',
+            titlefont=dict(size=12, color='#6b7280'),  # --color-text-secondary
+            tickfont=dict(size=11),
+            side='bottom'
+        ),
+        yaxis=dict(
+            title='年份',
+            titlefont=dict(size=12, color='#6b7280'),
+            tickfont=dict(size=11),
+            autorange='reversed'  # 最新年份在上方
+        ),
         height=200,
-        margin=dict(l=0, r=0, t=40, b=0)
+        margin=dict(l=60, r=60, t=40, b=40),
+        plot_bgcolor='white',
+        paper_bgcolor='white'
     )
 
     return fig
@@ -561,13 +907,24 @@ def main():
 
             # 權益曲線
             st.plotly_chart(
-                plot_equity_curve(selected_strategy),
+                plot_equity_curve(selected_strategy, strategy_data['experiment_id']),
                 use_container_width=True
             )
 
             # 月度報酬熱力圖
+            # 獲取時間範圍（與權益曲線同步）
+            start_date = None
+            end_date = None
+            if 'chart_xrange' in st.session_state and st.session_state.chart_xrange:
+                start_date, end_date = st.session_state.chart_xrange
+
             st.plotly_chart(
-                plot_monthly_heatmap(selected_strategy),
+                plot_monthly_heatmap(
+                    selected_strategy,
+                    strategy_data['experiment_id'],
+                    start_date,
+                    end_date
+                ),
                 use_container_width=True
             )
 
