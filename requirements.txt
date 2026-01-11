@@ -1,0 +1,26 @@
+# 核心依賴
+ccxt>=4.0.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# 資料處理（可選）
+polars>=0.20.0
+
+# 優化與科學計算
+scipy>=1.10.0
+scikit-learn>=1.3.0  # Ledoit-Wolf 協方差估計
+optuna>=3.0.0  # 貝葉斯和多目標優化
+
+# 視覺化（可選）
+matplotlib>=3.7.0
+
+# 測試
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+
+# 開發工具
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0

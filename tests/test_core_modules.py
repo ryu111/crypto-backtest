@@ -1,0 +1,368 @@
+"""
+核心模組測試
+
+測試 BaseStrategy, ExperimentRecorder, StrategySelector 的核心功能。
+"""
+
+import pytest
+import json
+import pandas as pd
+from pathlib import Path
+from datetime import datetime
+from unittest.mock import Mock
+
+# BaseStrategy 測試
+from src.strategies.base import BaseStrategy
+
+
+class SimpleStrategy(BaseStrategy):
+    """測試用策略（重新命名避免 pytest 收集警告）"""
+    name = "test_strategy"
+    strategy_type = "test"
+
+    def __init__(self, **kwargs):
+        # 先呼叫父類別（會初始化 params 和 param_space 為空字典）
+        super().__init__()
+
+        # 然後設定參數
+        self.params = {'period': kwargs.get('period', 20)}
+        self.param_space = {'period': (10, 50, 5)}
+
+    def calculate_indicators(self, data):
+        return {'sma': data['close'].rolling(self.params['period']).mean()}
+
+    def generate_signals(self, data):
+        sma = self.calculate_indicators(data)['sma']
+        long_entry = data['close'] > sma
+        long_exit = data['close'] < sma
+        short_entry = data['close'] < sma
+        short_exit = data['close'] > sma
+        return long_entry, long_exit, short_entry, short_exit
+
+
+class TestBaseStrategyCore:
+    """測試 BaseStrategy 核心功能"""
+
+    def test_params_not_shared_between_instances(self):
+        """驗證 params 不在實例間共享"""
+        s1 = SimpleStrategy(period=10)
+        s2 = SimpleStrategy(period=20)
+
+        assert s1.params['period'] == 10
+        assert s2.params['period'] == 20
+
+        s1.params['period'] = 30
+        assert s2.params['period'] == 20  # 未改變
+
+    def test_param_space_independence(self):
+        """驗證 param_space 獨立性"""
+        s1 = SimpleStrategy()
+        s2 = SimpleStrategy()
+
+        # 因為 BaseStrategy.__init__ 會重置 param_space 為空字典
+        # 子類別需要在 __init__ 中設定，所以每個實例都獨立
+        assert 'period' in s1.param_space
+        assert 'period' in s2.param_space
+
+        # 修改 s1 不影響 s2
+        s1.param_space['period'] = (5, 30, 5)
+        assert s2.param_space['period'] == (10, 50, 5)
+
+    def test_position_size_calculation(self):
+        """測試部位大小計算"""
+        strategy = SimpleStrategy()
+
+        size = strategy.position_size(
+            capital=10000,
+            entry_price=100,
+            stop_loss_price=95,
+            risk_per_trade=0.02
+        )
+
+        # 風險 = 10000 * 0.02 = 200
+        # 止損距離 = 5
+        # 部位 = 200 / 5 = 40
+        assert size == 40
+
+    def test_position_size_zero_stop_distance(self):
+        """測試零止損距離"""
+        strategy = SimpleStrategy()
+        size = strategy.position_size(
+            capital=10000,
+            entry_price=100,
+            stop_loss_price=100
+        )
+        assert size == 0
+
+    def test_signal_generation(self):
+        """測試訊號生成"""
+        strategy = SimpleStrategy(period=3)
+        data = pd.DataFrame({
+            'open': [100, 101, 102, 103, 104],
+            'high': [101, 102, 103, 104, 105],
+            'low': [99, 100, 101, 102, 103],
+            'close': [100, 101, 102, 103, 104],
+            'volume': [1000] * 5
+        })
+
+        long_entry, long_exit, short_entry, short_exit = strategy.generate_signals(data)
+
+        assert isinstance(long_entry, pd.Series)
+        assert len(long_entry) == len(data)
+        assert long_entry.dtype == bool
+
+
+# ExperimentRecorder 測試
+from src.learning.recorder import ExperimentRecorder, Experiment
+
+
+class MockBacktestResult:
+    def __init__(self, sharpe=1.5):
+        self.total_return = 0.456
+        self.annual_return = 0.23
+        self.sharpe_ratio = sharpe
+        self.sortino_ratio = 2.1
+        self.max_drawdown = -0.10
+        self.win_rate = 0.55
+        self.profit_factor = 1.72
+        self.total_trades = 124
+        self.avg_trade_duration = 12.5
+        self.expectancy = 0.0037
+        self.parameters = {'period': 20}
+
+
+class TestExperimentRecorderCore:
+    """測試 ExperimentRecorder 核心功能"""
+
+    def test_log_and_retrieve_experiment(self):
+        """測試記錄和取得實驗"""
+        # 使用專案內的臨時目錄
+        project_root = Path(__file__).parent.parent
+        test_dir = project_root / 'tests' / '.test_data'
+        test_dir.mkdir(exist_ok=True)
+
+        exp_file = test_dir / 'test_experiments.json'
+        insights_file = test_dir / 'test_insights.md'
+
+        try:
+            recorder = ExperimentRecorder(exp_file, insights_file)
+
+            result = MockBacktestResult()
+            strategy_info = {'name': 'test', 'type': 'trend'}
+            config = {'symbol': 'BTCUSDT', 'timeframe': '1h'}
+
+            exp_id = recorder.log_experiment(result, strategy_info, config)
+
+            # 驗證記錄
+            assert exp_id.startswith('exp_')
+
+            # 取得實驗
+            exp = recorder.get_experiment(exp_id)
+            assert exp is not None
+            assert exp.strategy['name'] == 'test'
+            assert exp.results['sharpe_ratio'] == 1.5
+
+        finally:
+            # 清理
+            if exp_file.exists():
+                exp_file.unlink()
+            if insights_file.exists():
+                insights_file.unlink()
+            if test_dir.exists():
+                test_dir.rmdir()
+
+    def test_json_error_handling(self):
+        """測試 JSON 錯誤處理"""
+        project_root = Path(__file__).parent.parent
+        test_dir = project_root / 'tests' / '.test_data'
+        test_dir.mkdir(exist_ok=True)
+
+        exp_file = test_dir / 'corrupt.json'
+
+        try:
+            # 寫入損壞的 JSON
+            exp_file.write_text('{ invalid json', encoding='utf-8')
+
+            # 建立 recorder 實例
+            recorder = ExperimentRecorder.__new__(ExperimentRecorder)
+            recorder.project_root = project_root
+            recorder.experiments_file = exp_file
+            recorder.insights_file = test_dir / 'insights.md'
+
+            # 載入時應返回空結構而不崩潰
+            data = recorder._load_experiments()
+            assert data['version'] == '1.0'
+            assert data['metadata']['total_experiments'] == 0
+
+        finally:
+            if exp_file.exists():
+                exp_file.unlink()
+            if test_dir.exists():
+                test_dir.rmdir()
+
+    def test_query_experiments(self):
+        """測試實驗查詢"""
+        project_root = Path(__file__).parent.parent
+        test_dir = project_root / 'tests' / '.test_data'
+        test_dir.mkdir(exist_ok=True)
+
+        exp_file = test_dir / 'test_exp.json'
+        insights_file = test_dir / 'test_insights.md'
+
+        try:
+            recorder = ExperimentRecorder(exp_file, insights_file)
+
+            # 記錄兩個實驗
+            result1 = MockBacktestResult(sharpe=1.5)
+            recorder.log_experiment(
+                result1,
+                {'name': 's1', 'type': 'trend'},
+                {'symbol': 'BTCUSDT', 'timeframe': '1h'}
+            )
+
+            result2 = MockBacktestResult(sharpe=0.5)
+            recorder.log_experiment(
+                result2,
+                {'name': 's2', 'type': 'momentum'},
+                {'symbol': 'ETHUSDT', 'timeframe': '4h'}
+            )
+
+            # 查詢趨勢策略
+            trend_exps = recorder.query_experiments({'strategy_type': 'trend'})
+            assert len(trend_exps) == 1
+            assert trend_exps[0].strategy['name'] == 's1'
+
+            # 查詢高 Sharpe
+            high_sharpe = recorder.query_experiments({'min_sharpe': 1.0})
+            assert len(high_sharpe) == 1
+
+        finally:
+            if exp_file.exists():
+                exp_file.unlink()
+            if insights_file.exists():
+                insights_file.unlink()
+            if test_dir.exists():
+                test_dir.rmdir()
+
+
+# StrategySelector 測試
+from src.automation.selector import StrategySelector, StrategyStats
+
+
+class MockRegistry:
+    def __init__(self):
+        self.strategies = ['s_a', 's_b', 's_c']
+
+    def list_strategies(self):
+        return self.strategies.copy()
+
+
+class MockRecorder:
+    def __init__(self):
+        self.stats_db = {}
+
+    def record_strategy_stats(self, name, stats):
+        self.stats_db[name] = stats
+
+    def get_strategy_stats(self, name):
+        return self.stats_db.get(name)
+
+
+class TestStrategySelectorCore:
+    """測試 StrategySelector 核心功能"""
+
+    def test_epsilon_greedy_exploitation(self, monkeypatch):
+        """測試 epsilon-greedy 利用模式"""
+        registry = MockRegistry()
+        recorder = MockRecorder()
+        selector = StrategySelector(registry, recorder)
+
+        # Mock random 返回高值（利用模式）
+        monkeypatch.setattr('random.random', lambda: 0.9)
+
+        selector._stats_cache = {
+            's_a': StrategyStats('s_a', attempts=10, avg_sharpe=1.5),
+            's_b': StrategyStats('s_b', attempts=10, avg_sharpe=2.5),  # 最佳
+            's_c': StrategyStats('s_c', attempts=10, avg_sharpe=0.8),
+        }
+        selector._cache_updated = True
+
+        selected = selector._epsilon_greedy()
+        assert selected == 's_b'
+
+    def test_ucb_untried_strategy(self):
+        """測試 UCB 對未嘗試策略的優先權"""
+        registry = MockRegistry()
+        recorder = MockRecorder()
+        selector = StrategySelector(registry, recorder)
+
+        selector._stats_cache = {
+            's_a': StrategyStats('s_a', attempts=10, avg_sharpe=2.0),
+            's_b': StrategyStats('s_b', attempts=0, avg_sharpe=0.0),  # 未嘗試
+            's_c': StrategyStats('s_c', attempts=5, avg_sharpe=1.5),
+        }
+        selector._cache_updated = True
+
+        selected = selector._ucb()
+        assert selected == 's_b'
+
+    def test_update_stats(self):
+        """測試統計更新"""
+        registry = MockRegistry()
+        recorder = MockRecorder()
+        selector = StrategySelector(registry, recorder)
+
+        result = {
+            'passed': True,
+            'sharpe_ratio': 1.8,
+            'params': {'period': 20}
+        }
+
+        selector.update_stats('test_strategy', result)
+
+        stat = selector._stats_cache['test_strategy']
+        assert stat.attempts == 1
+        assert stat.successes == 1
+        assert stat.avg_sharpe == 1.8
+        assert stat.best_sharpe == 1.8
+
+    def test_update_stats_incremental(self):
+        """測試增量統計更新"""
+        registry = MockRegistry()
+        recorder = MockRecorder()
+        selector = StrategySelector(registry, recorder)
+
+        # 第一次
+        selector.update_stats('test', {'passed': True, 'sharpe_ratio': 2.0, 'params': {}})
+
+        # 第二次
+        selector.update_stats('test', {'passed': False, 'sharpe_ratio': 1.0, 'params': {}})
+
+        stat = selector._stats_cache['test']
+        assert stat.attempts == 2
+        assert stat.successes == 1
+        assert stat.avg_sharpe == 1.5  # (2.0 + 1.0) / 2
+
+    def test_exploration_stats(self):
+        """測試探索統計"""
+        registry = MockRegistry()
+        recorder = MockRecorder()
+        selector = StrategySelector(registry, recorder)
+
+        selector._stats_cache = {
+            's_a': StrategyStats('s_a', attempts=10, best_sharpe=1.8),
+            's_b': StrategyStats('s_b', attempts=5, best_sharpe=2.2),
+            's_c': StrategyStats('s_c', attempts=0, best_sharpe=0.0),
+        }
+        selector._cache_updated = True
+
+        stats = selector.get_exploration_stats()
+
+        assert stats['total_attempts'] == 15
+        assert stats['strategies_tried'] == 2
+        assert stats['best_strategy'] == 's_b'
+        assert stats['best_sharpe'] == 2.2
+
+
+if __name__ == '__main__':
+    pytest.main([__file__, '-v'])

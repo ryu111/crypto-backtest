@@ -7,6 +7,79 @@ description: AI 學習記錄系統。記錄實驗、萃取洞察、持續優化�
 
 記錄實驗、萃取洞察、持續優化的知識管理系統。
 
+---
+
+## ⚡ 自動洞察記錄（每次回測後必做）
+
+**回測完成後，AI 必須自動判斷是否有新洞察並更新 `learning/insights.md`**
+
+### 判斷邏輯
+
+```python
+def should_record_insight(result) -> tuple[bool, str]:
+    """判斷是否值得記錄到 insights.md"""
+
+    # 1. 異常好的表現 → 記錄成功經驗
+    if result.sharpe > 2.0:
+        return True, "exceptional_performance"
+
+    # 2. 異常差的表現 → 記錄失敗教訓
+    if result.sharpe < 0.5 and result.expected_sharpe > 1.0:
+        return True, "unexpected_failure"
+
+    # 3. 過擬合警訊 → 記錄避免方法
+    if result.overfit_probability > 0.3:
+        return True, "overfit_warning"
+
+    # 4. 風險事件 → 記錄風險管理教訓
+    if result.max_drawdown > 0.25:
+        return True, "risk_event"
+
+    # 5. 參數敏感度發現 → 記錄參數建議
+    if result.robustness_variance > 0.5:
+        return True, "parameter_sensitivity"
+
+    # 6. 新策略類型首次測試 → 建立基準
+    if is_first_test_of_type(result.strategy_type):
+        return True, "new_strategy_baseline"
+
+    # 7. 市場狀態變化影響 → 記錄市場特性
+    if significant_market_regime_impact(result):
+        return True, "market_regime_insight"
+
+    return False, None
+```
+
+### 記錄觸發條件表
+
+| 條件 | 閾值 | 記錄位置 | 記錄類型 |
+|------|------|----------|----------|
+| Sharpe > 2.0 | 異常好 | `## 策略類型洞察` | 成功經驗 |
+| Sharpe < 0.5 | 異常差 | `## 過擬合教訓` | 失敗教訓 |
+| MaxDD > 25% | 風險高 | `## 風險管理洞察` | 風險教訓 |
+| 過擬合率 > 30% | 不可靠 | `## 過擬合教訓` | 過擬合警訊 |
+| 參數變異 > 50% | 不穩健 | `## 策略類型洞察` | 參數敏感度 |
+| 首次測試 | 新策略 | `## 策略類型洞察` | 基準記錄 |
+
+### 記錄格式
+
+```markdown
+#### [策略名稱]_[版本] (YYYY-MM-DD)
+- **參數**：param1=X, param2=Y
+- **績效**：Sharpe X.XX | Return XX.X% | MaxDD XX.X%
+- **驗證**：Grade X | 過擬合率 XX%
+- **洞察**：[具體發現，為什麼好/不好]
+- **建議**：[下次優化方向]
+```
+
+### 不記錄的情況
+
+- 表現普通（Sharpe 0.8-1.5，無特殊發現）
+- 與之前記錄重複（相同策略、相似參數、相似結果）
+- 測試性質回測（明確標記為測試用）
+
+---
+
 ## 雙軌記錄架構
 
 | 存儲位置 | 用途 | 格式 | 查詢方式 |
