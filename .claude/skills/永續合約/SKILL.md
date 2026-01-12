@@ -280,5 +280,35 @@ def liquidation_cascade_risk(oi_change, price_change, volume):
 | 資金效率 | 1x | Nx |
 | 持有成本 | 無 | 資金費率 |
 
+## 與其他 Skills 關係
+
+### 被調用（上游）
+
+| Skill | 場景 |
+|-------|------|
+| **策略開發** | 資金費率策略設計 |
+| **回測核心** | 資金費率扣除、強平模擬 |
+| **風險管理** | 強平價格計算 |
+
+### 本 Skill 提供的專業知識
+
+- 資金費率機制和計算
+- 強平價格計算公式
+- 基差交易策略
+- 交易所特性差異
+
+### 永續合約整合點
+
+```
+策略開發（資金費率策略）
+    ↓
+永續合約知識
+    ├─→ 費率計算
+    ├─→ 強平機制
+    └─→ 基差分析
+    ↓
+回測核心（整合到回測）
+```
+
 For 資金費率策略詳解 → read `references/funding-rate-strategies.md`
 For 基差交易詳解 → read `references/basis-trading.md`

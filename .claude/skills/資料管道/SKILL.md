@@ -269,4 +269,31 @@ def update_data(symbol, timeframe, data_path):
 - [ ] 時區一致（建議 UTC）
 - [ ] 資金費率與 K 線時間對齊
 
+## 與其他 Skills 關係
+
+### 被調用（上游）
+
+| Skill | 場景 |
+|-------|------|
+| **回測核心** | 提供 OHLCV 和資金費率資料 |
+
+### 本 Skill 提供
+
+- OHLCV 歷史資料
+- 資金費率歷史
+- 資料品質驗證
+- 資料清洗和補缺
+
+### 資料流整合
+
+```
+資料管道
+    ├─→ 抓取 OHLCV（CCXT/Binance API）
+    ├─→ 抓取資金費率
+    ├─→ 品質驗證和清洗
+    └─→ 儲存（Parquet）
+    ↓
+回測核心（載入資料）
+```
+
 For 資料來源詳細比較 → read `references/data-sources.md`

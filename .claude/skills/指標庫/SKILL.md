@@ -200,5 +200,33 @@ def calculate_supertrend(high, low, close, period=10, multiplier=3.0):
 3. **週期性**：資金費率結算時常有波動
 4. **流動性**：小時框低流動性時段指標可能失真
 
+## 與其他 Skills 關係
+
+### 被調用（上游）
+
+| Skill | 場景 |
+|-------|------|
+| **策略開發** | 選擇和計算策略所需指標 |
+
+### 本 Skill 提供
+
+- 趨勢指標（MA, EMA, MACD, ADX, Supertrend）
+- 動量指標（RSI, Stochastic, CCI, MFI）
+- 波動率指標（ATR, Bollinger Bands, Keltner）
+- 成交量指標（OBV, VWAP, CMF）
+
+### 指標整合
+
+```
+策略開發（設計策略）
+    ↓
+指標庫
+    ├─→ 選擇合適指標
+    ├─→ VectorBT 計算
+    └─→ 組合應用
+    ↓
+策略訊號產生
+```
+
 For 趨勢指標詳解 → read `references/trend-indicators.md`
 For 動量指標詳解 → read `references/momentum-indicators.md`

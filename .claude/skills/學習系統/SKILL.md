@@ -484,5 +484,35 @@ best_params = optimize(strategy, data, param_range)
 | 驗證狀態 | validated, testing, failed |
 | 市場狀態 | bull, bear, sideways |
 
+## 與其他 Skills 關係
+
+### 被調用（上游）
+
+| Skill | 場景 |
+|-------|------|
+| **AI自動化** | 自動記錄實驗結果 |
+| **回測核心** | 回測完成後記錄 |
+| **策略驗證** | 驗證結果記錄 |
+
+### 本 Skill 輸出
+
+- `learning/experiments.json`：結構化實驗記錄
+- `learning/insights.md`：人類可讀洞察
+- Memory MCP：跨專案語義搜尋
+
+### 學習循環整合
+
+```
+回測/驗證完成
+    ↓
+學習系統
+    ├─→ 判斷是否有新洞察
+    ├─→ 記錄到 experiments.json
+    ├─→ 更新 insights.md
+    └─→ 存入 Memory MCP
+    ↓
+下次優化時查詢歷史
+```
+
 For Memory 整合詳解 → read `references/memory-integration.md`
 For 實驗追蹤詳解 → read `references/experiment-tracking.md`

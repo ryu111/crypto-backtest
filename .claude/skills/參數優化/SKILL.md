@@ -311,5 +311,33 @@ def generate_optimization_report(study, wfa_results, sensitivity):
     return report
 ```
 
+## 與其他 Skills 關係
+
+### 本 Skill 調用（下游）
+
+| Skill | 調用場景 |
+|-------|----------|
+| **回測核心** | 每次試驗執行回測 |
+| **策略驗證** | 驗證優化結果 |
+
+### 被調用（上游）
+
+| Skill | 場景 |
+|-------|------|
+| **AI自動化** | 自動化參數優化 |
+| **策略開發** | 策略完成後優化參數 |
+
+### 典型工作流
+
+```
+策略開發完成
+    ↓
+參數優化
+    ├─→ 回測核心（多次執行）
+    └─→ 策略驗證（驗證最佳參數）
+    ↓
+學習系統（記錄最佳參數）
+```
+
 For Walk-Forward 詳解 → read `references/walk-forward.md`
 For 過擬合偵測 → read `references/overfitting-detection.md`
