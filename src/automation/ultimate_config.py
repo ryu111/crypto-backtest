@@ -154,6 +154,11 @@ class UltimateLoopConfig:
     auto_insights: bool = True  # 自動更新 insights.md
     experiment_dir: str = "learning"
 
+    # Memory MCP 進階設定（Phase 12.8）
+    # 注意：啟用開關使用上方的 memory_mcp_enabled
+    memory_min_sharpe: float = 1.0       # 最低 Sharpe 才存入 Memory
+    memory_store_failures: bool = True    # 是否存儲失敗教訓
+
     # ===== 交易設定 =====
     leverage: int = 5
     initial_capital: float = 10000.0
@@ -252,6 +257,10 @@ class UltimateLoopConfig:
         if not (0 <= self.max_overfit <= 1):
             errors.append("max_overfit 必須在 0-1 之間")
 
+        # 8. Memory MCP 設定驗證（Phase 12.8）
+        if self.memory_min_sharpe < 0:
+            errors.append("memory_min_sharpe 必須 >= 0")
+
         # 6. 交易設定驗證
         if self.leverage < 1:
             errors.append("leverage 必須 >= 1")
@@ -265,7 +274,7 @@ class UltimateLoopConfig:
         if not (0 <= self.taker_fee <= 0.01):
             errors.append("taker_fee 必須在 0-0.01 之間")
 
-        # 7. 執行設定驗證
+        # 9. 執行設定驗證
         if self.timeout_per_iteration < 1:
             errors.append("timeout_per_iteration 必須 >= 1")
 
@@ -275,7 +284,7 @@ class UltimateLoopConfig:
         if self.checkpoint_interval < 1:
             errors.append("checkpoint_interval 必須 >= 1")
 
-        # 8. 路徑安全驗證
+        # 10. 路徑安全驗證
         for path_name, path_value in [
             ('data_dir', self.data_dir),
             ('experiment_dir', self.experiment_dir),
@@ -346,6 +355,10 @@ class UltimateLoopConfig:
             memory_mcp_enabled=True,
             auto_insights=True,
 
+            # Memory MCP 進階設定（Phase 12.8）
+            memory_min_sharpe=1.5,  # 生產環境更高標準
+            memory_store_failures=True,
+
             # 生產級交易設定
             leverage=5,
             initial_capital=10000.0,
@@ -406,6 +419,10 @@ class UltimateLoopConfig:
             memory_mcp_enabled=True,
             auto_insights=True,
 
+            # Memory MCP 進階設定（Phase 12.8）
+            memory_min_sharpe=1.0,  # 開發環境標準
+            memory_store_failures=True,
+
             # 開發級交易設定
             leverage=5,
             initial_capital=10000.0,
@@ -465,6 +482,10 @@ class UltimateLoopConfig:
             memory_mcp_enabled=False,
             auto_insights=False,
 
+            # Memory MCP 進階設定（Phase 12.8）
+            memory_min_sharpe=0.5,
+            memory_store_failures=False,
+
             # 測試級交易設定
             leverage=5,
             initial_capital=10000.0,
@@ -522,6 +543,10 @@ class UltimateLoopConfig:
             'memory_mcp_enabled': self.memory_mcp_enabled,
             'auto_insights': self.auto_insights,
             'experiment_dir': self.experiment_dir,
+
+            # Memory MCP 進階設定（Phase 12.8）
+            'memory_min_sharpe': self.memory_min_sharpe,
+            'memory_store_failures': self.memory_store_failures,
 
             # 交易設定
             'leverage': self.leverage,

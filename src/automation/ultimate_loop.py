@@ -30,6 +30,7 @@ from typing import Dict, List, Optional, Any, Callable, Tuple
 from datetime import datetime
 
 import numpy as np
+import pandas as pd
 
 from .ultimate_config import UltimateLoopConfig
 
@@ -130,6 +131,14 @@ except ImportError:
     BACKTEST_ENGINE_AVAILABLE = False
     BacktestEngine = None  # type: ignore[misc,assignment]
 
+# BacktestConfig - 用於策略評估
+try:
+    from ..backtester.engine import BacktestConfig
+    BACKTEST_CONFIG_AVAILABLE = True
+except ImportError:
+    BACKTEST_CONFIG_AVAILABLE = False
+    BacktestConfig = None  # type: ignore[misc,assignment]
+
 # GPUBatchOptimizer - Phase 12.3.3 GPU 批量優化
 try:
     from ..optimizer.gpu_batch import GPUBatchOptimizer, GPUOptimizationResult
@@ -138,6 +147,15 @@ except ImportError:
     GPU_BATCH_AVAILABLE = False
     GPUBatchOptimizer = None  # type: ignore[misc,assignment]
     GPUOptimizationResult = None  # type: ignore[misc,assignment]
+
+# MemoryIntegration - Phase 12.8 使用
+try:
+    from ..learning.memory import MemoryIntegration, StrategyInsight
+    MEMORY_AVAILABLE = True
+except ImportError:
+    MEMORY_AVAILABLE = False
+    MemoryIntegration = None
+    StrategyInsight = None
 
 logger = logging.getLogger(__name__)
 
@@ -279,9 +297,14 @@ class UltimateLoopController:
         self._init_validator()
         self._init_learning()
         self._init_hyperloop()  # 新增：初始化 HyperLoop
+        self._init_data_cache()  # Phase 12.7: 預載 OHLCV 資料
 
         # 執行統計
         self.summary = UltimateLoopSummary()
+
+        # Memory MCP 整合（Phase 12.8）
+        self.memory: Optional['MemoryIntegration'] = None
+        self._memory_suggestions: List[Dict] = []
 
         # 檢查點
         self._checkpoint_data: Dict = {}
@@ -302,7 +325,8 @@ class UltimateLoopController:
             'GPU Batch Optimizer': GPU_BATCH_AVAILABLE,
             'Experiment Recorder': RECORDER_AVAILABLE,
             'Validator': VALIDATOR_AVAILABLE,
-            'ValidationRunner': VALIDATION_RUNNER_AVAILABLE
+            'ValidationRunner': VALIDATION_RUNNER_AVAILABLE,
+            'Memory Integration': MEMORY_AVAILABLE
         }
 
         logger.info("Module availability:")
@@ -417,6 +441,16 @@ class UltimateLoopController:
             if self.config.learning_enabled:
                 logger.warning("Learning enabled but module not available")
 
+        # Memory MCP 整合（Phase 12.8）
+        if self.config.memory_mcp_enabled and MEMORY_AVAILABLE and MemoryIntegration is not None:
+            self.memory = MemoryIntegration()
+            if self.verbose:
+                logger.info("Memory MCP integration initialized")
+        else:
+            self.memory = None
+            if self.config.memory_mcp_enabled and not MEMORY_AVAILABLE:
+                logger.warning("Memory MCP enabled but module not available")
+
     def _init_hyperloop(self):
         """初始化 HyperLoop 控制器"""
         self.hyperloop: Optional[Any] = None
@@ -460,6 +494,67 @@ class UltimateLoopController:
         except Exception as e:
             logger.error(f"Failed to initialize HyperLoop: {e}")
             self.hyperloop = None
+
+    def _init_data_cache(self):
+        """預載所有 OHLCV 資料到記憶體緩存
+
+        Phase 12.7: 從 data/ohlcv/*.parquet 預載資料供策略評估使用。
+        """
+        import pandas as pd
+
+        self._data_cache: Dict[str, pd.DataFrame] = {}
+
+        data_dir = Path(self.config.data_dir)
+        ohlcv_dir = data_dir / "ohlcv"
+
+        if not ohlcv_dir.exists():
+            logger.warning(f"OHLCV directory not found: {ohlcv_dir}")
+            return
+
+        # 獲取所有時間框架（使用統一的 timeframes 列表）
+        all_timeframes = self.config.timeframes if self.config.timeframes else ['1h', '4h', '1d']
+
+        for symbol in self.config.symbols:
+            for timeframe in all_timeframes:
+                key = f"{symbol}_{timeframe}"
+                file_path = ohlcv_dir / f"{key}.parquet"
+
+                if file_path.exists():
+                    try:
+                        df = pd.read_parquet(file_path)
+                        self._data_cache[key] = df
+                        if self.verbose:
+                            logger.debug(f"Loaded {key}: {len(df)} rows")
+                    except Exception as e:
+                        logger.warning(f"Failed to load {key}: {e}")
+
+        if self.verbose:
+            logger.info(f"Data cache initialized: {len(self._data_cache)} datasets loaded")
+
+    def _get_data(self, symbol: Optional[str] = None, timeframe: Optional[str] = None) -> Optional[pd.DataFrame]:
+        """取得 OHLCV 資料
+
+        Args:
+            symbol: 標的（None 則使用第一個）
+            timeframe: 時間框架（None 則使用第一個）
+
+        Returns:
+            pd.DataFrame 或 None（如果找不到）
+        """
+        if not hasattr(self, '_data_cache') or not self._data_cache:
+            logger.warning("Data cache not initialized or empty")
+            return None
+
+        # 使用預設值
+        if symbol is None:
+            symbol = self.config.symbols[0] if self.config.symbols else 'BTCUSDT'
+
+        if timeframe is None:
+            # 使用第一個可用的 timeframe
+            timeframe = self.config.timeframes[0] if self.config.timeframes else '1h'
+
+        key = f"{symbol}_{timeframe}"
+        return self._data_cache.get(key)
 
     async def run_loop(
         self,
@@ -583,7 +678,7 @@ class UltimateLoopController:
         validated_solutions = await self._validate_pareto_solutions(pareto_result)
 
         # Phase 5: Learning
-        await self._record_and_learn(validated_solutions, market_state)
+        await self._record_and_learn(validated_solutions, market_state, selected_strategies)
 
         if self.verbose:
             logger.info(f"[{iteration+1}/{total}] 迭代完成")
@@ -1000,7 +1095,8 @@ class UltimateLoopController:
     async def _record_and_learn(
         self,
         solutions: List[Any],
-        market_state: Optional[Any]
+        market_state: Optional[Any],
+        strategy_names: Optional[List[str]] = None
     ):
         """記錄學習
 
@@ -1012,6 +1108,7 @@ class UltimateLoopController:
         Args:
             solutions: 驗證通過的解（ParetoSolution 列表）
             market_state: 市場狀態（MarketState 物件，可選）
+            strategy_names: 策略名稱列表（用於記錄）
         """
         if not self.recorder:
             if self.verbose:
@@ -1026,8 +1123,14 @@ class UltimateLoopController:
         # 統計
         recorded_count = 0
 
+        # 組合策略名稱（多策略用 + 連接，空則用預設）
+        combined_strategy_name = (
+            '+'.join(strategy_names) if strategy_names and len(strategy_names) > 0
+            else 'multi_objective_pareto'
+        )
+
         if self.verbose:
-            logger.info(f"Recording {len(solutions)} validated solutions")
+            logger.info(f"Recording {len(solutions)} validated solutions for: {combined_strategy_name}")
 
         for solution in solutions:
             try:
@@ -1055,7 +1158,7 @@ class UltimateLoopController:
                 exp_id = self.recorder.log_experiment(
                     result=mock_result,
                     strategy_info={
-                        'name': 'pareto_solution',
+                        'name': combined_strategy_name,
                         'type': 'multi_objective',
                         'version': '1.0'
                     },
@@ -1068,6 +1171,60 @@ class UltimateLoopController:
                 )
 
                 recorded_count += 1
+
+                # Phase 12.8: Memory MCP 整合
+                if self.memory and self.config.memory_mcp_enabled:
+                    try:
+                        # 提取 objectives 為 dict
+                        obj_dict = {}
+                        for obj in objectives:
+                            name = getattr(obj, 'name', '')
+                            value = getattr(obj, 'value', 0.0)
+                            obj_dict[name] = value
+
+                        sharpe = obj_dict.get('sharpe_ratio', 0.0)
+
+                        # 只存儲達到 min_sharpe 的成功結果，或存儲失敗
+                        should_store = (
+                            sharpe >= self.config.memory_min_sharpe or
+                            (self.config.memory_store_failures and grade in ['D', 'F', 'ERROR'])
+                        )
+
+                        if should_store and StrategyInsight is not None:
+                            # 建立 StrategyInsight
+                            insight = StrategyInsight(
+                                strategy_name=combined_strategy_name,
+                                symbol=market_state.symbol if market_state and hasattr(market_state, 'symbol') else 'UNKNOWN',
+                                timeframe=market_state.timeframe if market_state and hasattr(market_state, 'timeframe') else '1h',
+                                best_params=params,
+                                sharpe_ratio=sharpe,
+                                total_return=obj_dict.get('total_return', 0.0),
+                                max_drawdown=obj_dict.get('max_drawdown', 0.0),
+                                win_rate=obj_dict.get('win_rate', 0.0),
+                                wfa_grade=grade,
+                                market_conditions=str(market_state.regime) if market_state and hasattr(market_state, 'regime') else None,
+                                notes=f"UltimateLoop iteration, Grade: {grade}"
+                            )
+
+                            # 格式化為 Memory 格式
+                            content, metadata = self.memory.format_strategy_insight(insight)
+
+                            # 記錄存儲建議
+                            self._memory_suggestions.append({
+                                'content': content,
+                                'metadata': metadata,
+                                'timestamp': datetime.now().isoformat(),
+                                'grade': grade,
+                                'sharpe': sharpe
+                            })
+
+                            self.summary.memory_entries += 1
+
+                            if self.verbose:
+                                logger.debug(f"Memory suggestion added: grade={grade}, sharpe={sharpe:.2f}")
+
+                    except Exception as e:
+                        logger.warning(f"Failed to create Memory suggestion: {e}")
 
                 if self.verbose:
                     logger.debug(f"Recorded experiment: {exp_id} (grade: {grade})")
@@ -1345,6 +1502,18 @@ class UltimateLoopController:
             logger.error(f"儲存檢查點失敗 (迭代 {iteration}): {e}")
             # 不中斷執行，只記錄錯誤
 
+    def get_memory_suggestions(self) -> List[Dict]:
+        """取得待存儲的 Memory 建議
+
+        Returns:
+            List of {content, metadata, timestamp, grade, sharpe}
+        """
+        return self._memory_suggestions.copy()
+
+    def clear_memory_suggestions(self):
+        """清除已處理的 Memory 建議"""
+        self._memory_suggestions.clear()
+
     def _cleanup(self):
         """清理資源"""
         if self.verbose:
@@ -1406,6 +1575,24 @@ class UltimateLoopController:
                     logger.debug("Recorder cleaned up")
             except Exception as e:
                 logger.warning(f"Recorder cleanup failed: {e}")
+
+        # 清理資料緩存（Phase 12.7）
+        if hasattr(self, '_data_cache'):
+            cache_size = len(self._data_cache)
+            self._data_cache.clear()
+            self._data_cache = {}
+            if self.verbose:
+                logger.debug(f"Data cache cleared ({cache_size} datasets)")
+
+        # 清理 Memory 建議（Phase 12.8）
+        if hasattr(self, '_memory_suggestions'):
+            suggestions_count = len(self._memory_suggestions)
+            self._memory_suggestions.clear()
+            if self.verbose:
+                logger.debug(f"Memory suggestions cleared ({suggestions_count} entries)")
+
+        # 清理 Memory 整合
+        self.memory = None
 
         # 重置引用
         self.hyperloop = None
@@ -1818,38 +2005,130 @@ class UltimateLoopController:
     def _create_evaluate_fn(self, strategy_name: str) -> Callable[[Dict[str, Any]], Dict[str, float]]:
         """建立評估函數
 
-        Phase 12.7 TODO: 整合 DataPool + BacktestEngine
-        目前拋出 NotImplementedError，確保不會使用假數據。
+        Phase 12.7: 使用 DataCache + BacktestEngine 進行真實策略評估。
 
         Args:
             strategy_name: 策略名稱
 
         Returns:
-            Callable: 評估函數
+            Callable: 評估函數 (params) -> {sharpe_ratio, max_drawdown, win_rate}
 
         Raises:
-            NotImplementedError: 尚未完成 DataPool 整合
+            ValueError: 如果找不到資料
         """
-        # 檢查 BacktestEngine 可用性（僅作為提示，實際需要 DataPool）
-        if not BACKTEST_ENGINE_AVAILABLE or BacktestEngine is None:
-            raise NotImplementedError(
-                "Strategy evaluation requires BacktestEngine. "
-                "Phase 12.7 will integrate DataPool for real backtesting. "
-                "Current UltimateLoop optimization is not yet production-ready."
+        # 取得預設資料
+        data = self._get_data()
+
+        if data is None or len(data) == 0:
+            raise ValueError(
+                f"No data available for strategy evaluation. "
+                f"Please ensure OHLCV data exists in {self.config.data_dir}/ohlcv/"
             )
 
-        # 即使 BacktestEngine 可用，也需要 DataPool 提供市場數據
-        # Phase 12.7 將實現完整的數據管道
-        raise NotImplementedError(
-            f"Cannot evaluate strategy '{strategy_name}' without market data. "
-            "Phase 12.7 will integrate DataPool to provide OHLCV data for backtesting. "
-            "\n\nRequired integrations:\n"
-            "1. DataPool.get_data(symbol, timeframe) -> OHLCV DataFrame\n"
-            "2. BacktestEngine.run(strategy, params, data) -> BacktestResult\n"
-            "3. Extract metrics: sharpe_ratio, max_drawdown, win_rate\n"
-            "\nFor now, use run_loop() with pre-defined strategy configurations "
-            "that don't require optimization, or wait for Phase 12.7."
-        )
+        # 驗證必要欄位（OHLCV）
+        required_columns = ['open', 'high', 'low', 'close', 'volume']
+        missing_columns = [col for col in required_columns if col.lower() not in [c.lower() for c in data.columns]]
+        if missing_columns:
+            raise ValueError(f"Missing required OHLCV columns: {missing_columns}")
+
+        # 驗證資料長度足夠
+        MIN_DATA_ROWS = 100
+        if len(data) < MIN_DATA_ROWS:
+            logger.warning(f"Limited data for backtest: {len(data)} rows (recommended: {MIN_DATA_ROWS}+)")
+
+        # 計算時間範圍
+        start_date = None
+        end_date = None
+        try:
+            # 嘗試從 index 獲取時間範圍
+            idx_min = data.index.min()
+            idx_max = data.index.max()
+            # 轉換為 datetime（pandas Timestamp -> datetime）
+            start_date = getattr(idx_min, 'to_pydatetime', lambda: idx_min)()
+            end_date = getattr(idx_max, 'to_pydatetime', lambda: idx_max)()
+        except (AttributeError, TypeError):
+            # Fallback: 從 timestamp 欄位取得
+            if 'timestamp' in data.columns:
+                start_date = data['timestamp'].min()
+                end_date = data['timestamp'].max()
+
+        # 取得 symbol 和 timeframe
+        symbol = self.config.symbols[0] if self.config.symbols else 'BTCUSDT'
+
+        # 使用第一個可用的 timeframe
+        timeframe = self.config.timeframes[0] if self.config.timeframes else '1h'
+
+        # 捕獲變數供閉包使用
+        _data = data
+        _symbol = symbol
+        _timeframe = timeframe
+        _start_date = start_date
+        _end_date = end_date
+        _initial_capital = self.config.initial_capital
+        _leverage = self.config.leverage
+        _strategy_name = strategy_name
+
+        def evaluate(params: Dict[str, Any]) -> Dict[str, float]:
+            """評估策略參數組合
+
+            Args:
+                params: 策略參數
+
+            Returns:
+                Dict: {sharpe_ratio, max_drawdown, win_rate}
+            """
+            try:
+                # 1. 建立策略實例
+                if not REGISTRY_AVAILABLE or StrategyRegistry is None:
+                    logger.warning("StrategyRegistry not available")
+                    return {'sharpe_ratio': -10.0, 'max_drawdown': 1.0, 'win_rate': 0.0}
+
+                strategy = StrategyRegistry.create(_strategy_name, **params)
+
+                # 2. 建立回測引擎和配置
+                if not BACKTEST_ENGINE_AVAILABLE or BacktestEngine is None:
+                    logger.warning("BacktestEngine not available")
+                    return {'sharpe_ratio': -10.0, 'max_drawdown': 1.0, 'win_rate': 0.0}
+
+                if not BACKTEST_CONFIG_AVAILABLE or BacktestConfig is None:
+                    logger.warning("BacktestConfig not available")
+                    return {'sharpe_ratio': -10.0, 'max_drawdown': 1.0, 'win_rate': 0.0}
+
+                config = BacktestConfig(
+                    symbol=_symbol,
+                    timeframe=_timeframe,
+                    start_date=_start_date,
+                    end_date=_end_date,
+                    initial_capital=_initial_capital,
+                    leverage=_leverage
+                )
+
+                engine = BacktestEngine(config)
+
+                # 3. 執行回測
+                result = engine.run(strategy, data=_data)
+
+                # 4. 提取績效指標（明確 None 檢查）
+                sharpe = getattr(result, 'sharpe_ratio', None)
+                sharpe = 0.0 if sharpe is None else float(sharpe)
+
+                max_dd = getattr(result, 'max_drawdown', None)
+                max_dd = 0.0 if max_dd is None else abs(float(max_dd))
+
+                win_rate = getattr(result, 'win_rate', None)
+                win_rate = 0.0 if win_rate is None else float(win_rate)
+
+                return {
+                    'sharpe_ratio': sharpe,
+                    'max_drawdown': max_dd,
+                    'win_rate': win_rate
+                }
+
+            except Exception as e:
+                logger.warning(f"Evaluation failed for {_strategy_name}: {e}")
+                return {'sharpe_ratio': -10.0, 'max_drawdown': 1.0, 'win_rate': 0.0}
+
+        return evaluate
 
     def _combine_optimization_results(
         self,
