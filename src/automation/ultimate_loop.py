@@ -139,6 +139,14 @@ except ImportError:
     BACKTEST_CONFIG_AVAILABLE = False
     BacktestConfig = None  # type: ignore[misc,assignment]
 
+# WalkForwardAnalyzer - Phase 12.11 ValidationRunner 整合
+try:
+    from ..optimizer.walk_forward import WalkForwardAnalyzer
+    WALK_FORWARD_AVAILABLE = True
+except ImportError:
+    WALK_FORWARD_AVAILABLE = False
+    WalkForwardAnalyzer = None  # type: ignore[misc,assignment]
+
 # GPUBatchOptimizer - Phase 12.3.3 GPU 批量優化
 try:
     from ..optimizer.gpu_batch import GPUBatchOptimizer, GPUOptimizationResult
@@ -298,6 +306,7 @@ class UltimateLoopController:
         self._init_learning()
         self._init_hyperloop()  # 新增：初始化 HyperLoop
         self._init_data_cache()  # Phase 12.7: 預載 OHLCV 資料
+        self._init_validation_runner()  # Phase 12.11: 初始化 ValidationRunner
 
         # 執行統計
         self.summary = UltimateLoopSummary()
@@ -308,6 +317,9 @@ class UltimateLoopController:
 
         # 檢查點
         self._checkpoint_data: Dict = {}
+
+        # 清理狀態標誌（防止重複清理）
+        self._cleaned_up: bool = False
 
         if self.verbose:
             logger.info("UltimateLoopController initialized")
@@ -450,6 +462,94 @@ class UltimateLoopController:
             self.memory = None
             if self.config.memory_mcp_enabled and not MEMORY_AVAILABLE:
                 logger.warning("Memory MCP enabled but module not available")
+
+    def _init_validation_runner(self):
+        """初始化 ValidationRunner 和相關模組（Phase 12.11）
+
+        建立完整的 5 階段驗證系統：
+        1. BacktestEngine - 用於執行回測
+        2. WalkForwardAnalyzer - 用於 Stage 4 Walk-Forward 分析
+        3. ValidationRunner - 整合所有驗證階段
+        """
+        from datetime import timedelta
+
+        self._validation_runner: Optional[Any] = None
+        self._validation_engine: Optional[Any] = None
+        self._wfa_analyzer: Optional[Any] = None
+
+        if not self.config.validation_enabled:
+            if self.verbose:
+                logger.info("Validation disabled by config")
+            return
+
+        # 檢查所有必要模組是否可用
+        if not VALIDATION_RUNNER_AVAILABLE or ValidationRunner is None:
+            logger.warning("ValidationRunner not available")
+            return
+
+        if not BACKTEST_ENGINE_AVAILABLE or BacktestEngine is None:
+            logger.warning("BacktestEngine not available for validation")
+            return
+
+        if not BACKTEST_CONFIG_AVAILABLE or BacktestConfig is None:
+            logger.warning("BacktestConfig not available for validation")
+            return
+
+        try:
+            # 從資料緩存取得時間範圍（如果可用）
+            start_date = datetime.now() - timedelta(days=365)
+            end_date = datetime.now()
+
+            if hasattr(self, '_data_cache') and self._data_cache:
+                # 使用第一個資料集的時間範圍
+                first_key = next(iter(self._data_cache.keys()), None)
+                if first_key and first_key in self._data_cache:
+                    df = self._data_cache[first_key]
+                    if hasattr(df.index, 'min') and hasattr(df.index, 'max'):
+                        idx_min = df.index.min()
+                        idx_max = df.index.max()
+                        if hasattr(idx_min, 'to_pydatetime'):
+                            start_date = idx_min.to_pydatetime()
+                        if hasattr(idx_max, 'to_pydatetime'):
+                            end_date = idx_max.to_pydatetime()
+
+            # 建立 BacktestConfig
+            bt_config = BacktestConfig(
+                symbol=self.config.symbols[0] if self.config.symbols else 'BTCUSDT',
+                timeframe=self.config.timeframes[0] if self.config.timeframes else '1h',
+                start_date=start_date,
+                end_date=end_date,
+                initial_capital=self.config.initial_capital,
+                leverage=self.config.leverage
+            )
+
+            # 建立 BacktestEngine
+            self._validation_engine = BacktestEngine(bt_config)
+
+            # 建立 WalkForwardAnalyzer（如果可用）
+            if WALK_FORWARD_AVAILABLE and WalkForwardAnalyzer is not None:
+                self._wfa_analyzer = WalkForwardAnalyzer(
+                    config=bt_config,
+                    mode='rolling'
+                )
+                if self.verbose:
+                    logger.info("WalkForwardAnalyzer initialized")
+
+            # 建立 ValidationRunner
+            self._validation_runner = ValidationRunner(
+                engine=self._validation_engine,
+                wfa_analyzer=self._wfa_analyzer,
+                stages=[1, 2, 3, 4, 5]  # 全 5 階段驗證
+            )
+
+            if self.verbose:
+                logger.info("ValidationRunner initialized with 5-stage validation")
+
+        except Exception as e:
+            logger.error(f"Failed to initialize ValidationRunner: {e}")
+            self._validation_runner = None
+            self._validation_engine = None
+            self._wfa_analyzer = None
 
     def _init_hyperloop(self):
         """初始化 HyperLoop 控制器"""
@@ -646,6 +746,16 @@ class UltimateLoopController:
                 if n_iterations > 0 else 0
             )
 
+            # Phase 12.11: 輸出 Memory MCP 存儲建議
+            if self._memory_suggestions and self.verbose:
+                logger.info("=" * 50)
+                logger.info("=== Memory MCP 存儲建議 ===")
+                logger.info(f"共 {len(self._memory_suggestions)} 個待存儲洞察")
+                for i, cmd in enumerate(self.get_memory_commands(), 1):
+                    logger.info(f"  [{i}] {cmd[:100]}..." if len(cmd) > 100 else f"  [{i}] {cmd}")
+                logger.info("=" * 50)
+                logger.info("提示：使用 controller.get_memory_commands() 取得完整命令")
+
             if self.verbose:
                 logger.info(self.summary.summary_text())
 
@@ -674,8 +784,8 @@ class UltimateLoopController:
         # Phase 3: Multi-Objective Optimization
         pareto_result = await self._run_optimization(selected_strategies)
 
-        # Phase 4: Validation
-        validated_solutions = await self._validate_pareto_solutions(pareto_result)
+        # Phase 4: Validation (Phase 12.11: 傳遞 market_state)
+        validated_solutions = await self._validate_pareto_solutions(pareto_result, market_state)
 
         # Phase 5: Learning
         await self._record_and_learn(validated_solutions, market_state, selected_strategies)
@@ -955,23 +1065,23 @@ class UltimateLoopController:
 
     async def _validate_pareto_solutions(
         self,
-        pareto_result: Optional[Any]
+        pareto_result: Optional[Any],
+        market_state: Optional[Any] = None
     ) -> List[Any]:
-        """驗證 Pareto 解
+        """驗證 Pareto 解（Phase 12.11 修復版）
 
         使用 ValidationRunner 進行 5 階段驗證。
-        因為 ValidationRunner 需要策略實例和市場資料，
-        但目前架構中這些資訊未傳遞，採用 fallback 模式。
 
         Args:
             pareto_result: Pareto 優化結果（包含 selected_solutions 屬性）
+            market_state: 市場狀態（用於取得 symbol/timeframe）
 
         Returns:
             List[ParetoSolution]: 通過驗證的解
 
         Note:
             - 優先使用 selected_solutions（由 _select_pareto_solutions 選出的最佳解）
-            - 如果 ValidationRunner 不可用，返回未驗證的解（標記為未驗證）
+            - 使用 _validation_runner 進行真正的 5 階段驗證
             - 並行驗證所有解，使用 Semaphore 控制並發數量（最多 4 個）
         """
         if not pareto_result:
@@ -991,21 +1101,42 @@ class UltimateLoopController:
         # 更新待驗證統計
         self.summary.validated_solutions += len(solutions_to_validate)
 
-        # Fallback 模式：如果 ValidationRunner 不可用，返回未驗證的解
-        if not VALIDATION_RUNNER_AVAILABLE or ValidationRunner is None:
+        # 檢查 ValidationRunner 是否已初始化（Phase 12.11）
+        if not hasattr(self, '_validation_runner') or self._validation_runner is None:
             if self.verbose:
                 logger.debug(
-                    f"ValidationRunner not available, returning {len(solutions_to_validate)} "
+                    f"ValidationRunner not initialized, returning {len(solutions_to_validate)} "
                     "unvalidated solutions"
                 )
-            # 標記所有解為未驗證
             for solution in solutions_to_validate:
                 solution._validation_grade = 'UNVALIDATED'
             return solutions_to_validate
 
-        # Phase 12.4: 並行驗證 Pareto 解
+        # 取得 symbol 和 timeframe
+        symbol = 'BTCUSDT'
+        timeframe = '1h'
+        if market_state:
+            symbol = getattr(market_state, 'symbol', symbol)
+            timeframe = getattr(market_state, 'timeframe', timeframe)
+        elif self.config.symbols:
+            symbol = self.config.symbols[0]
+        if self.config.timeframes:
+            timeframe = self.config.timeframes[0]
+
+        # 取得市場資料
+        data_key = f"{symbol}_{timeframe}"
+        data = self._data_cache.get(data_key) if hasattr(self, '_data_cache') else None
+
+        if data is None:
+            if self.verbose:
+                logger.warning(f"No data available for {data_key}, skipping validation")
+            for solution in solutions_to_validate:
+                solution._validation_grade = 'NO_DATA'
+            return solutions_to_validate
+
+        # Phase 12.11: 使用 ValidationRunner 進行真正的驗證
         if self.verbose:
-            logger.info(f"Starting validation for {len(solutions_to_validate)} Pareto solutions")
+            logger.info(f"Starting 5-stage validation for {len(solutions_to_validate)} Pareto solutions")
 
         validated_solutions = []
         failed_solutions = []
@@ -1014,41 +1145,40 @@ class UltimateLoopController:
         semaphore = asyncio.Semaphore(4)
 
         async def validate_solution(solution: Any) -> Tuple[Any, Optional[Any]]:
-            """驗證單個解
-
-            Returns:
-                (solution, validation_result): 如果驗證通過返回 (solution, result)，失敗返回 (solution, None)
-            """
+            """驗證單個解"""
             async with semaphore:
                 try:
-                    # NOTE: ValidationRunner 需要策略實例、參數、資料、標的、時間週期
-                    # 但目前架構中這些資訊未傳遞到此方法
-                    # 這是架構限制，暫時無法執行實際驗證
-                    #
-                    # 完整驗證需要：
-                    # runner = ValidationRunner(
-                    #     engine=backtest_engine,
-                    #     wfa_analyzer=wfa_analyzer,
-                    #     stages=[1, 2, 3, 4, 5]
-                    # )
-                    # result = runner.validate(
-                    #     strategy=strategy_instance,
-                    #     params=solution.params,
-                    #     data=market_data,
-                    #     symbol='BTCUSDT',
-                    #     timeframe='1h'
-                    # )
+                    # 提取策略名稱和參數
+                    strategy_name = getattr(solution, 'strategy_name', None)
+                    params = getattr(solution, 'params', {})
 
-                    # Fallback: 標記為未驗證（因為缺少必要依賴）
-                    logger.debug(
-                        f"Solution {solution.trial_number}: Validation skipped "
-                        "(missing strategy instance or market data)"
+                    if not strategy_name:
+                        # 嘗試從 metadata 取得
+                        metadata = getattr(solution, 'metadata', {})
+                        strategy_name = metadata.get('strategy_name')
+
+                    if not strategy_name or not REGISTRY_AVAILABLE or StrategyRegistry is None:
+                        logger.debug(f"Solution {getattr(solution, 'trial_number', '?')}: No strategy name")
+                        solution._validation_grade = 'NO_STRATEGY'
+                        return (solution, None)
+
+                    # 建立策略實例
+                    strategy = StrategyRegistry.create(strategy_name, **params)
+
+                    # 執行 5 階段驗證（同步呼叫）
+                    result = self._validation_runner.validate(
+                        strategy=strategy,
+                        params=params,
+                        data=data,
+                        symbol=symbol,
+                        timeframe=timeframe
                     )
-                    solution._validation_grade = 'UNVALIDATED'
-                    return (solution, None)
+
+                    return (solution, result)
 
                 except Exception as e:
-                    logger.error(f"Validation error for solution {solution.trial_number}: {e}")
+                    trial_num = getattr(solution, 'trial_number', '?')
+                    logger.warning(f"Validation error for solution {trial_num}: {e}")
                     solution._validation_grade = 'ERROR'
                     return (solution, None)
 
@@ -1065,17 +1195,19 @@ class UltimateLoopController:
             elif hasattr(result, 'grade') and result.grade in ['A', 'B', 'C']:
                 # 驗證通過（grade A/B/C）
                 solution._validation_grade = result.grade
+                solution._validation_result = result  # 保存完整結果
                 validated_solutions.append(solution)
                 self.summary.validation_passed_count += 1
             else:
                 # 驗證失敗（grade D/F）
                 grade = getattr(result, 'grade', 'F')
                 solution._validation_grade = grade
+                solution._validation_result = result
                 failed_solutions.append(solution)
                 self.summary.validation_failed_count += 1
                 if self.verbose:
                     logger.debug(
-                        f"Solution {solution.trial_number} failed validation: grade {grade}"
+                        f"Solution {getattr(solution, 'trial_number', '?')} failed validation: grade {grade}"
                     )
 
         # 記錄統計
@@ -1510,12 +1642,47 @@ class UltimateLoopController:
         """
         return self._memory_suggestions.copy()
 
+    def get_memory_commands(self) -> List[str]:
+        """取得 Memory MCP 存儲命令（供外部執行）
+
+        將 Memory 建議轉換為可執行的 MCP 命令字串。
+        這些命令可以由 Claude 或其他系統執行以存儲洞察。
+
+        Returns:
+            List[str]: Memory MCP 存儲命令列表
+
+        Example:
+            >>> commands = controller.get_memory_commands()
+            >>> for cmd in commands:
+            ...     print(cmd)
+            store_memory(content='MA Cross 策略...', metadata={'tags': 'strategy,success'})
+        """
+        commands = []
+        for suggestion in self._memory_suggestions:
+            content = suggestion.get('content', '')
+            metadata = suggestion.get('metadata', {})
+
+            # 格式化 tags
+            tags = metadata.get('tags', '')
+            if isinstance(tags, list):
+                tags = ','.join(tags)
+
+            # 建立命令字串
+            cmd = f"store_memory(content='{content}', metadata={{'tags': '{tags}'}})"
+            commands.append(cmd)
+
+        return commands
+
     def clear_memory_suggestions(self):
         """清除已處理的 Memory 建議"""
         self._memory_suggestions.clear()
 
     def _cleanup(self):
-        """清理資源"""
+        """清理資源（只執行一次）"""
+        # 防止重複清理
+        if self._cleaned_up:
+            return
+
         if self.verbose:
             logger.info("Cleaning up resources...")
 
@@ -1602,8 +1769,26 @@ class UltimateLoopController:
         self.validator = None
         self.recorder = None
 
+        # 標記清理完成
+        self._cleaned_up = True
+
         if self.verbose:
             logger.info("Resources cleaned up")
+
+    def __enter__(self):
+        """Context manager 進入"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager 退出（自動清理）"""
+        self._cleanup()
+
+    def __del__(self):
+        """析構函數：確保共享記憶體被清理，避免洩漏"""
+        try:
+            self._cleanup()
+        except Exception:
+            pass  # 忽略析構時的錯誤
 
     def _print_header(self, n_iterations: int):
         """輸出標題

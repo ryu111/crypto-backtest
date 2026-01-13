@@ -413,5 +413,5 @@ if __name__ == '__main__':
 
     fetcher.save_to_parquet(
         btc_funding,
-        'data/funding/BTCUSDT_funding.parquet'
+        'data/funding_rates/BTCUSDT_funding.parquet'
     )

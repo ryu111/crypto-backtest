@@ -598,6 +598,5350 @@
       },
       "status": "completed",
       "notes": "⚠️ 過擬合警訊：Walk-Forward Sharpe 顯著低於整體"
+    },
+    {
+      "id": "exp_20260114_021314",
+      "timestamp": "2026-01-14T02:13:14.735525",
+      "strategy": {
+        "name": "trend_donchian+mean_reversion_bollinger+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 1,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 25,
+        "std_dev": 2.397987726295555
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.19226784213818282,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.19, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "crypto",
+        "multi_objective",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021340",
+      "timestamp": "2026-01-14T02:13:40.352634",
+      "strategy": {
+        "name": "funding_rate_arb+mean_reversion_bollinger+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 3,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 25,
+        "std_dev": 2.397987726295555
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.19226784213818282,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.19, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "rsi",
+        "multi_objective",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021341",
+      "timestamp": "2026-01-14T02:13:41.132219",
+      "strategy": {
+        "name": "funding_rate_arb+funding_rate_settlement+momentum_macd",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 3,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "fast_period": 12,
+        "slow_period": 39,
+        "signal_period": 13,
+        "histogram_threshold": 0.01973169683940732
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.0037861720405698647,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "macd",
+        "ma",
+        "multi_objective",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021341",
+      "timestamp": "2026-01-14T02:13:41.968912",
+      "strategy": {
+        "name": "momentum_rsi+statistical_arb_basis+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 3,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "rsi_period": 15,
+        "oversold": 39,
+        "overbought": 75,
+        "trend_period": 220
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.13287475937511894,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.13, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "rsi",
+        "ma",
+        "multi_objective",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021358",
+      "timestamp": "2026-01-14T02:13:58.970292",
+      "strategy": {
+        "name": "momentum_stochastic+trend_donchian+funding_rate_settlement",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 3,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "rate_threshold": 0.00011844319751820405,
+        "hours_before_settlement": 4
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "crypto",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021407",
+      "timestamp": "2026-01-14T02:14:07.915212",
+      "strategy": {
+        "name": "trend_supertrend+funding_rate_settlement+funding_rate_arb",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 3,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "entry_rate": 0.00043708610696262625,
+        "exit_rate": 0.000287678576602479,
+        "min_holding_periods": 3
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "crypto",
+        "multi_objective",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021408",
+      "timestamp": "2026-01-14T02:14:08.752174",
+      "strategy": {
+        "name": "trend_donchian+momentum_macd+statistical_arb_basis",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 3,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "fast_period": 12,
+        "slow_period": 39,
+        "signal_period": 13,
+        "histogram_threshold": 0.01973169683940732
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.0037861720405698647,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "crypto",
+        "multi_objective",
+        "macd",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021611",
+      "timestamp": "2026-01-14T02:16:11.068328",
+      "strategy": {
+        "name": "momentum_macd+momentum_rsi+funding_rate_arb",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "entry_rate": 0.00043708610696262625,
+        "exit_rate": 0.000287678576602479,
+        "min_holding_periods": 3
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "multi_objective",
+        "rsi",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021614",
+      "timestamp": "2026-01-14T02:16:14.323409",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+trend_donchian+funding_rate_settlement",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.02502851785411929,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021650",
+      "timestamp": "2026-01-14T02:16:50.434599",
+      "strategy": {
+        "name": "momentum_macd+trend_supertrend+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 11,
+        "z_threshold": 2.863980603118173,
+        "exit_z": 0.2587799816000169
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.062006881568034855,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.06, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "multi_objective",
+        "supertrend",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021653",
+      "timestamp": "2026-01-14T02:16:53.759570",
+      "strategy": {
+        "name": "trend_donchian+momentum_stochastic+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.02502851785411929,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021657",
+      "timestamp": "2026-01-14T02:16:57.222548",
+      "strategy": {
+        "name": "funding_rate_settlement+momentum_macd+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "fast_period": 12,
+        "slow_period": 39,
+        "signal_period": 13,
+        "histogram_threshold": 0.01973169683940732
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.0037861720405698647,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "multi_objective",
+        "crypto",
+        "macd"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021700",
+      "timestamp": "2026-01-14T02:17:00.491241",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+funding_rate_settlement+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 44,
+        "z_threshold": 1.8185086660174141,
+        "exit_z": 0.18182496720710062
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.14919835808989612,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.15, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021704",
+      "timestamp": "2026-01-14T02:17:04.172733",
+      "strategy": {
+        "name": "momentum_rsi+momentum_macd+mean_reversion_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "rsi_period": 21,
+        "oversold": 38,
+        "overbought": 72,
+        "stop_loss_atr": 2.8828113525346755
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.16142246564184723,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.16, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "multi_objective",
+        "rsi",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021707",
+      "timestamp": "2026-01-14T02:17:07.372953",
+      "strategy": {
+        "name": "mean_reversion_bollinger+momentum_rsi+funding_rate_settlement",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "rate_threshold": 0.00011844319751820405,
+        "hours_before_settlement": 4
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021710",
+      "timestamp": "2026-01-14T02:17:10.767344",
+      "strategy": {
+        "name": "funding_rate_arb+mean_reversion_rsi+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "rsi_period": 12,
+        "oversold": 39,
+        "overbought": 75,
+        "stop_loss_atr": 2.397987726295555
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.20576491273707087,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.21, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021714",
+      "timestamp": "2026-01-14T02:17:14.137672",
+      "strategy": {
+        "name": "momentum_rsi+mean_reversion_bollinger+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 11,
+        "z_threshold": 2.863980603118173,
+        "exit_z": 0.2587799816000169
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.062006881568034855,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.06, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021717",
+      "timestamp": "2026-01-14T02:17:17.894670",
+      "strategy": {
+        "name": "trend_ma_cross+mean_reversion_bollinger+momentum_macd",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "multi_objective",
+        "rsi",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021720",
+      "timestamp": "2026-01-14T02:17:20.910205",
+      "strategy": {
+        "name": "funding_rate_arb+momentum_rsi+funding_rate_settlement",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "entry_rate": 0.00043708610696262625,
+        "exit_rate": 0.000287678576602479,
+        "min_holding_periods": 3
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021756",
+      "timestamp": "2026-01-14T02:17:56.910411",
+      "strategy": {
+        "name": "mean_reversion_rsi+trend_supertrend+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "rsi_period": 25,
+        "oversold": 24,
+        "overbought": 63,
+        "trend_period": 136
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.04640483919817755,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.05, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021800",
+      "timestamp": "2026-01-14T02:18:00.276011",
+      "strategy": {
+        "name": "funding_rate_arb+mean_reversion_bollinger+momentum_macd",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "fast_period": 12,
+        "slow_period": 39,
+        "signal_period": 13,
+        "histogram_threshold": 0.01973169683940732
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.0037861720405698647,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "multi_objective",
+        "rsi",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021803",
+      "timestamp": "2026-01-14T02:18:03.461648",
+      "strategy": {
+        "name": "trend_donchian+funding_rate_settlement+funding_rate_arb",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "entry_rate": 0.00043708610696262625,
+        "exit_rate": 0.000287678576602479,
+        "min_holding_periods": 3
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021806",
+      "timestamp": "2026-01-14T02:18:06.636067",
+      "strategy": {
+        "name": "funding_rate_settlement+mean_reversion_bollinger+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 44,
+        "z_threshold": 1.8185086660174141,
+        "exit_z": 0.18182496720710062
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.14919835808989612,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.15, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021809",
+      "timestamp": "2026-01-14T02:18:09.864987",
+      "strategy": {
+        "name": "statistical_arb_basis+mean_reversion_rsi+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 44,
+        "z_threshold": 1.8185086660174141,
+        "exit_z": 0.18182496720710062
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.14919835808989612,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.15, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021812",
+      "timestamp": "2026-01-14T02:18:12.946442",
+      "strategy": {
+        "name": "momentum_stochastic+statistical_arb_eth_btc_pairs+funding_rate_arb",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 44,
+        "z_threshold": 1.8185086660174141,
+        "exit_z": 0.18182496720710062
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.14919835808989612,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.15, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021816",
+      "timestamp": "2026-01-14T02:18:16.185451",
+      "strategy": {
+        "name": "mean_reversion_bollinger+mean_reversion_rsi+statistical_arb_basis",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "entry_threshold": 0.005621780831931537,
+        "exit_threshold": 0.0028767857660247907,
+        "period": 40
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021819",
+      "timestamp": "2026-01-14T02:18:19.609169",
+      "strategy": {
+        "name": "statistical_arb_basis+momentum_macd+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "fast_period": 12,
+        "slow_period": 39,
+        "signal_period": 13,
+        "histogram_threshold": 0.01973169683940732
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.0037861720405698647,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "multi_objective",
+        "rsi",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021822",
+      "timestamp": "2026-01-14T02:18:22.687883",
+      "strategy": {
+        "name": "mean_reversion_bollinger+funding_rate_arb+statistical_arb_basis",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "entry_threshold": 0.005621780831931537,
+        "exit_threshold": 0.0028767857660247907,
+        "period": 40
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021859",
+      "timestamp": "2026-01-14T02:18:59.017858",
+      "strategy": {
+        "name": "trend_supertrend+momentum_macd+mean_reversion_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "rsi_period": 21,
+        "oversold": 38,
+        "overbought": 72,
+        "stop_loss_atr": 2.8828113525346755
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.16142246564184723,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.16, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "multi_objective",
+        "supertrend",
+        "rsi",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021902",
+      "timestamp": "2026-01-14T02:19:02.367252",
+      "strategy": {
+        "name": "statistical_arb_basis+momentum_macd+funding_rate_settlement",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "fast_period": 12,
+        "slow_period": 39,
+        "signal_period": 13,
+        "histogram_threshold": 0.01973169683940732
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.0037861720405698647,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "multi_objective",
+        "crypto",
+        "macd"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021905",
+      "timestamp": "2026-01-14T02:19:05.771071",
+      "strategy": {
+        "name": "statistical_arb_basis+mean_reversion_bollinger+momentum_macd",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "multi_objective",
+        "rsi",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021908",
+      "timestamp": "2026-01-14T02:19:08.904650",
+      "strategy": {
+        "name": "mean_reversion_bollinger+momentum_stochastic+statistical_arb_basis",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "entry_threshold": 0.005621780831931537,
+        "exit_threshold": 0.0028767857660247907,
+        "period": 40
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021912",
+      "timestamp": "2026-01-14T02:19:12.496921",
+      "strategy": {
+        "name": "momentum_rsi+trend_ma_cross+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "fast_period": 5,
+        "slow_period": 55,
+        "stop_loss_atr": 2.8033450352296265
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.038818425932225106,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.04, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021915",
+      "timestamp": "2026-01-14T02:19:15.786627",
+      "strategy": {
+        "name": "funding_rate_settlement+mean_reversion_rsi+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021918",
+      "timestamp": "2026-01-14T02:19:18.804196",
+      "strategy": {
+        "name": "funding_rate_arb+momentum_stochastic+funding_rate_settlement",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "rate_threshold": 0.00011844319751820405,
+        "hours_before_settlement": 4
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021922",
+      "timestamp": "2026-01-14T02:19:22.302311",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+momentum_rsi+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "fast_period": 5,
+        "slow_period": 55,
+        "stop_loss_atr": 2.8033450352296265
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.038818425932225106,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.04, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_021926",
+      "timestamp": "2026-01-14T02:19:26.055120",
+      "strategy": {
+        "name": "funding_rate_settlement+trend_ma_cross+momentum_macd",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 30,
+        "validation_grade": "NO_STRATEGY"
+      },
+      "parameters": {
+        "fast_period": 12,
+        "slow_period": 39,
+        "signal_period": 13,
+        "histogram_threshold": 0.01973169683940732
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.0037861720405698647,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.00, MaxDD=100.0%, WinRate=0.0%"
+      ],
+      "tags": [
+        "ma",
+        "multi_objective",
+        "crypto",
+        "macd"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023246",
+      "timestamp": "2026-01-14T02:32:46.358157",
+      "strategy": {
+        "name": "mean_reversion_bollinger+momentum_stochastic+mean_reversion_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 13,
+        "oversold": 36,
+        "overbought": 64,
+        "stop_loss_atr": 2.2713516576204174
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.2495567335468774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9980253374336018,
+        "win_rate": 0.6172155200521683,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=61.7%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023246",
+      "timestamp": "2026-01-14T02:32:46.360359",
+      "strategy": {
+        "name": "mean_reversion_bollinger+momentum_stochastic+mean_reversion_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 13,
+        "oversold": 36,
+        "overbought": 64,
+        "stop_loss_atr": 2.2713516576204174
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.2495567335468774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9980253374336018,
+        "win_rate": 0.6172155200521683,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=61.7%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023246",
+      "timestamp": "2026-01-14T02:32:46.361973",
+      "strategy": {
+        "name": "mean_reversion_bollinger+momentum_stochastic+mean_reversion_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 13,
+        "oversold": 36,
+        "overbought": 64,
+        "stop_loss_atr": 2.2713516576204174
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.2495567335468774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9980253374336018,
+        "win_rate": 0.6172155200521683,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=61.7%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023248",
+      "timestamp": "2026-01-14T02:32:48.352406",
+      "strategy": {
+        "name": "momentum_macd+mean_reversion_rsi+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 5,
+        "slow_period": 55,
+        "stop_loss_atr": 2.8033450352296265
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.03881842593222543,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8787438879444751,
+        "win_rate": 0.2592,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.04, MaxDD=87.9%, WinRate=25.9%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "crypto",
+        "multi_objective",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023248",
+      "timestamp": "2026-01-14T02:32:48.354578",
+      "strategy": {
+        "name": "momentum_macd+mean_reversion_rsi+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 5,
+        "slow_period": 55,
+        "stop_loss_atr": 2.8033450352296265
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.03881842593222543,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8787438879444751,
+        "win_rate": 0.2592,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.04, MaxDD=87.9%, WinRate=25.9%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "crypto",
+        "multi_objective",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023248",
+      "timestamp": "2026-01-14T02:32:48.356387",
+      "strategy": {
+        "name": "momentum_macd+mean_reversion_rsi+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 5,
+        "slow_period": 55,
+        "stop_loss_atr": 2.8033450352296265
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.03881842593222543,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8787438879444751,
+        "win_rate": 0.2592,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.04, MaxDD=87.9%, WinRate=25.9%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "crypto",
+        "multi_objective",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023250",
+      "timestamp": "2026-01-14T02:32:50.162763",
+      "strategy": {
+        "name": "trend_ma_cross+mean_reversion_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "crypto",
+        "ma",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023250",
+      "timestamp": "2026-01-14T02:32:50.165004",
+      "strategy": {
+        "name": "trend_ma_cross+mean_reversion_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "crypto",
+        "ma",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023250",
+      "timestamp": "2026-01-14T02:32:50.166750",
+      "strategy": {
+        "name": "trend_ma_cross+mean_reversion_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "crypto",
+        "ma",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023251",
+      "timestamp": "2026-01-14T02:32:51.925381",
+      "strategy": {
+        "name": "momentum_stochastic+mean_reversion_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023251",
+      "timestamp": "2026-01-14T02:32:51.927783",
+      "strategy": {
+        "name": "momentum_stochastic+mean_reversion_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023251",
+      "timestamp": "2026-01-14T02:32:51.929664",
+      "strategy": {
+        "name": "momentum_stochastic+mean_reversion_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023253",
+      "timestamp": "2026-01-14T02:32:53.655073",
+      "strategy": {
+        "name": "trend_donchian+mean_reversion_bollinger+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 39,
+        "z_threshold": 1.5308767414437037,
+        "exit_z": 0.9699098521619943
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.3067540863663774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9979401773695324,
+        "win_rate": 0.6659132007233273,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=66.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023253",
+      "timestamp": "2026-01-14T02:32:53.657442",
+      "strategy": {
+        "name": "trend_donchian+mean_reversion_bollinger+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 39,
+        "z_threshold": 1.5308767414437037,
+        "exit_z": 0.9699098521619943
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.3067540863663774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9979401773695324,
+        "win_rate": 0.6659132007233273,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=66.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023253",
+      "timestamp": "2026-01-14T02:32:53.659415",
+      "strategy": {
+        "name": "trend_donchian+mean_reversion_bollinger+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 39,
+        "z_threshold": 1.5308767414437037,
+        "exit_z": 0.9699098521619943
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.3067540863663774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9979401773695324,
+        "win_rate": 0.6659132007233273,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=66.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023311",
+      "timestamp": "2026-01-14T02:33:11.725456",
+      "strategy": {
+        "name": "momentum_macd+statistical_arb_eth_btc_pairs+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 7,
+        "multiplier": 3.9398197043239884
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.07262246119142494,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8209983768588555,
+        "win_rate": 0.3393258426966292,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.07, MaxDD=82.1%, WinRate=33.9%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "crypto",
+        "multi_objective",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023311",
+      "timestamp": "2026-01-14T02:33:11.727939",
+      "strategy": {
+        "name": "momentum_macd+statistical_arb_eth_btc_pairs+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 7,
+        "multiplier": 3.73235229154987
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0750744744642041,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8264275600793127,
+        "win_rate": 0.3449367088607595,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.08, MaxDD=82.6%, WinRate=34.5%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "crypto",
+        "multi_objective",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023311",
+      "timestamp": "2026-01-14T02:33:11.730037",
+      "strategy": {
+        "name": "momentum_macd+statistical_arb_eth_btc_pairs+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 7,
+        "multiplier": 3.73235229154987
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0750744744642041,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8264275600793127,
+        "win_rate": 0.3449367088607595,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.08, MaxDD=82.6%, WinRate=34.5%"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "crypto",
+        "multi_objective",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023313",
+      "timestamp": "2026-01-14T02:33:13.415903",
+      "strategy": {
+        "name": "momentum_rsi+statistical_arb_eth_btc_pairs+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 20,
+        "oversold": 20,
+        "overbought": 72,
+        "trend_period": 134
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.07326070367993959,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.4249460553232015,
+        "win_rate": 0.632183908045977,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=63.2%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023313",
+      "timestamp": "2026-01-14T02:33:13.418437",
+      "strategy": {
+        "name": "momentum_rsi+statistical_arb_eth_btc_pairs+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 20,
+        "oversold": 20,
+        "overbought": 72,
+        "trend_period": 134
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.07326070367993959,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.4249460553232015,
+        "win_rate": 0.632183908045977,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=63.2%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023313",
+      "timestamp": "2026-01-14T02:33:13.420598",
+      "strategy": {
+        "name": "momentum_rsi+statistical_arb_eth_btc_pairs+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 25,
+        "oversold": 24,
+        "overbought": 63,
+        "trend_period": 136
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.046404839198176964,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.5163466324888417,
+        "win_rate": 0.65625,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=65.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023315",
+      "timestamp": "2026-01-14T02:33:15.279888",
+      "strategy": {
+        "name": "mean_reversion_rsi+trend_ma_cross+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 39,
+        "z_threshold": 1.5308767414437037,
+        "exit_z": 0.9699098521619943
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.3067540863663774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9979401773695324,
+        "win_rate": 0.6659132007233273,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=66.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "ma",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023315",
+      "timestamp": "2026-01-14T02:33:15.282699",
+      "strategy": {
+        "name": "mean_reversion_rsi+trend_ma_cross+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 39,
+        "z_threshold": 1.5308767414437037,
+        "exit_z": 0.9699098521619943
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.3067540863663774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9979401773695324,
+        "win_rate": 0.6659132007233273,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=66.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "ma",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023315",
+      "timestamp": "2026-01-14T02:33:15.284917",
+      "strategy": {
+        "name": "mean_reversion_rsi+trend_ma_cross+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 39,
+        "z_threshold": 1.5308767414437037,
+        "exit_z": 0.9699098521619943
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.3067540863663774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9979401773695324,
+        "win_rate": 0.6659132007233273,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=66.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "crypto",
+        "ma",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023317",
+      "timestamp": "2026-01-14T02:33:17.063679",
+      "strategy": {
+        "name": "mean_reversion_rsi+momentum_macd+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 39,
+        "z_threshold": 1.5308767414437037,
+        "exit_z": 0.9699098521619943
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.3067540863663774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9979401773695324,
+        "win_rate": 0.6659132007233273,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=66.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "crypto",
+        "multi_objective",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023317",
+      "timestamp": "2026-01-14T02:33:17.066400",
+      "strategy": {
+        "name": "mean_reversion_rsi+momentum_macd+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 39,
+        "z_threshold": 1.5308767414437037,
+        "exit_z": 0.9699098521619943
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.3067540863663774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9979401773695324,
+        "win_rate": 0.6659132007233273,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=66.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "crypto",
+        "multi_objective",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023317",
+      "timestamp": "2026-01-14T02:33:17.068706",
+      "strategy": {
+        "name": "mean_reversion_rsi+momentum_macd+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 39,
+        "z_threshold": 1.5308767414437037,
+        "exit_z": 0.9699098521619943
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.3067540863663774,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9979401773695324,
+        "win_rate": 0.6659132007233273,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=66.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "ma",
+        "macd",
+        "crypto",
+        "multi_objective",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023335",
+      "timestamp": "2026-01-14T02:33:35.267058",
+      "strategy": {
+        "name": "trend_supertrend+momentum_stochastic+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "crypto",
+        "supertrend",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023335",
+      "timestamp": "2026-01-14T02:33:35.269674",
+      "strategy": {
+        "name": "trend_supertrend+momentum_stochastic+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "crypto",
+        "supertrend",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023335",
+      "timestamp": "2026-01-14T02:33:35.272023",
+      "strategy": {
+        "name": "trend_supertrend+momentum_stochastic+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 10,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "crypto",
+        "supertrend",
+        "rsi",
+        "multi_objective"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023540",
+      "timestamp": "2026-01-14T02:35:40.537189",
+      "strategy": {
+        "name": "momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 1,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 25,
+        "oversold": 24,
+        "overbought": 63,
+        "trend_period": 136
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.04640483919817755,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.5163466324888448,
+        "win_rate": 0.65625,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=65.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "rsi",
+        "multi_objective",
+        "crypto"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023626",
+      "timestamp": "2026-01-14T02:36:26.591989",
+      "strategy": {
+        "name": "momentum_stochastic+statistical_arb_eth_btc_pairs+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023626",
+      "timestamp": "2026-01-14T02:36:26.595173",
+      "strategy": {
+        "name": "momentum_stochastic+statistical_arb_eth_btc_pairs+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023626",
+      "timestamp": "2026-01-14T02:36:26.597609",
+      "strategy": {
+        "name": "momentum_stochastic+statistical_arb_eth_btc_pairs+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023702",
+      "timestamp": "2026-01-14T02:37:02.595613",
+      "strategy": {
+        "name": "momentum_stochastic+mean_reversion_rsi+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 15,
+        "oversold": 23,
+        "overbought": 80,
+        "stop_loss_atr": 2.662699235041672
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.18684676290716698,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9661129837695352,
+        "win_rate": 0.5761741122565864,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.19, MaxDD=96.6%, WinRate=57.6%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023702",
+      "timestamp": "2026-01-14T02:37:02.598565",
+      "strategy": {
+        "name": "momentum_stochastic+mean_reversion_rsi+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 15,
+        "oversold": 23,
+        "overbought": 80,
+        "stop_loss_atr": 2.662699235041672
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.18684676290716698,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9661129837695352,
+        "win_rate": 0.5761741122565864,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.19, MaxDD=96.6%, WinRate=57.6%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023702",
+      "timestamp": "2026-01-14T02:37:02.601129",
+      "strategy": {
+        "name": "momentum_stochastic+mean_reversion_rsi+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 15,
+        "oversold": 23,
+        "overbought": 80,
+        "stop_loss_atr": 2.662699235041672
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.18684676290716698,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9661129837695352,
+        "win_rate": 0.5761741122565864,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.19, MaxDD=96.6%, WinRate=57.6%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023705",
+      "timestamp": "2026-01-14T02:37:05.863816",
+      "strategy": {
+        "name": "momentum_rsi+mean_reversion_bollinger+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023705",
+      "timestamp": "2026-01-14T02:37:05.866970",
+      "strategy": {
+        "name": "momentum_rsi+mean_reversion_bollinger+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023705",
+      "timestamp": "2026-01-14T02:37:05.869524",
+      "strategy": {
+        "name": "momentum_rsi+mean_reversion_bollinger+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023741",
+      "timestamp": "2026-01-14T02:37:41.859650",
+      "strategy": {
+        "name": "trend_supertrend+momentum_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023741",
+      "timestamp": "2026-01-14T02:37:41.862765",
+      "strategy": {
+        "name": "trend_supertrend+momentum_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 1.139351238159993
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023741",
+      "timestamp": "2026-01-14T02:37:41.865335",
+      "strategy": {
+        "name": "trend_supertrend+momentum_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 1.5115723710618747
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023818",
+      "timestamp": "2026-01-14T02:38:18.432122",
+      "strategy": {
+        "name": "trend_supertrend+trend_ma_cross+momentum_macd",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 20,
+        "slow_period": 38,
+        "signal_period": 11,
+        "histogram_threshold": 0.08437484700462337
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.02384673494429293,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8652664557248225,
+        "win_rate": 0.3267186392629341,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.02, MaxDD=86.5%, WinRate=32.7%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "macd",
+        "crypto",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023818",
+      "timestamp": "2026-01-14T02:38:18.436040",
+      "strategy": {
+        "name": "trend_supertrend+trend_ma_cross+momentum_macd",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 20,
+        "slow_period": 38,
+        "signal_period": 11,
+        "histogram_threshold": 0.08437484700462337
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.02384673494429293,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8652664557248225,
+        "win_rate": 0.3267186392629341,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.02, MaxDD=86.5%, WinRate=32.7%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "macd",
+        "crypto",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023818",
+      "timestamp": "2026-01-14T02:38:18.438682",
+      "strategy": {
+        "name": "trend_supertrend+trend_ma_cross+momentum_macd",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 20,
+        "slow_period": 38,
+        "signal_period": 11,
+        "histogram_threshold": 0.08437484700462337
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.02384673494429293,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8652664557248225,
+        "win_rate": 0.3267186392629341,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.02, MaxDD=86.5%, WinRate=32.7%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "macd",
+        "crypto",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023821",
+      "timestamp": "2026-01-14T02:38:21.801442",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+mean_reversion_rsi+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 25,
+        "oversold": 24,
+        "overbought": 63,
+        "trend_period": 136
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.046404839198176964,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.5163466324888417,
+        "win_rate": 0.65625,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=65.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023821",
+      "timestamp": "2026-01-14T02:38:21.804709",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+mean_reversion_rsi+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 25,
+        "oversold": 24,
+        "overbought": 63,
+        "trend_period": 136
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.046404839198176964,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.5163466324888417,
+        "win_rate": 0.65625,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=65.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023821",
+      "timestamp": "2026-01-14T02:38:21.807515",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+mean_reversion_rsi+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 25,
+        "oversold": 24,
+        "overbought": 63,
+        "trend_period": 136
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.046404839198176964,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.5163466324888417,
+        "win_rate": 0.65625,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=65.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023825",
+      "timestamp": "2026-01-14T02:38:25.327406",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+trend_donchian+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023825",
+      "timestamp": "2026-01-14T02:38:25.330646",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+trend_donchian+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 1.139351238159993
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023825",
+      "timestamp": "2026-01-14T02:38:25.334647",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+trend_donchian+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 1.139351238159993
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023829",
+      "timestamp": "2026-01-14T02:38:29.071148",
+      "strategy": {
+        "name": "momentum_macd+statistical_arb_eth_btc_pairs+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 16,
+        "slow_period": 20,
+        "stop_loss_atr": 3.909729556485983
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.03059438690690729,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9686853020240282,
+        "win_rate": 0.37019588395735187,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.03, MaxDD=96.9%, WinRate=37.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "macd",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023829",
+      "timestamp": "2026-01-14T02:38:29.074610",
+      "strategy": {
+        "name": "momentum_macd+statistical_arb_eth_btc_pairs+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 16,
+        "slow_period": 20,
+        "stop_loss_atr": 3.909729556485983
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.03059438690690729,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9686853020240282,
+        "win_rate": 0.37019588395735187,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.03, MaxDD=96.9%, WinRate=37.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "macd",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023829",
+      "timestamp": "2026-01-14T02:38:29.077516",
+      "strategy": {
+        "name": "momentum_macd+statistical_arb_eth_btc_pairs+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 16,
+        "slow_period": 20,
+        "stop_loss_atr": 3.909729556485983
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.03059438690690729,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9686853020240282,
+        "win_rate": 0.37019588395735187,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.03, MaxDD=96.9%, WinRate=37.0%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "macd",
+        "ma"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023832",
+      "timestamp": "2026-01-14T02:38:32.886975",
+      "strategy": {
+        "name": "mean_reversion_rsi+momentum_macd+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 3.1242177333881367
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "multi_objective",
+        "macd",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023832",
+      "timestamp": "2026-01-14T02:38:32.890562",
+      "strategy": {
+        "name": "mean_reversion_rsi+momentum_macd+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 1.139351238159993
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "multi_objective",
+        "macd",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023832",
+      "timestamp": "2026-01-14T02:38:32.895434",
+      "strategy": {
+        "name": "mean_reversion_rsi+momentum_macd+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 34,
+        "stop_loss_atr": 1.5115723710618747
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.025028517854119556,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9180952716954568,
+        "win_rate": 0.3238747553816047,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.03, MaxDD=91.8%, WinRate=32.4%"
+      ],
+      "tags": [
+        "multi_objective",
+        "macd",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023836",
+      "timestamp": "2026-01-14T02:38:36.270139",
+      "strategy": {
+        "name": "mean_reversion_bollinger+mean_reversion_rsi+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 15,
+        "oversold": 23,
+        "overbought": 80,
+        "stop_loss_atr": 2.662699235041672
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.18684676290716698,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9661129837695352,
+        "win_rate": 0.5761741122565864,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.19, MaxDD=96.6%, WinRate=57.6%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023836",
+      "timestamp": "2026-01-14T02:38:36.273552",
+      "strategy": {
+        "name": "mean_reversion_bollinger+mean_reversion_rsi+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 15,
+        "oversold": 23,
+        "overbought": 80,
+        "stop_loss_atr": 2.662699235041672
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.18684676290716698,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9661129837695352,
+        "win_rate": 0.5761741122565864,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.19, MaxDD=96.6%, WinRate=57.6%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023836",
+      "timestamp": "2026-01-14T02:38:36.276669",
+      "strategy": {
+        "name": "mean_reversion_bollinger+mean_reversion_rsi+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 15,
+        "oversold": 23,
+        "overbought": 80,
+        "stop_loss_atr": 2.662699235041672
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.18684676290716698,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9661129837695352,
+        "win_rate": 0.5761741122565864,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.19, MaxDD=96.6%, WinRate=57.6%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023912",
+      "timestamp": "2026-01-14T02:39:12.427844",
+      "strategy": {
+        "name": "trend_supertrend+mean_reversion_rsi+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 11,
+        "z_threshold": 2.863980603118173,
+        "exit_z": 0.2587799816000169
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.062006881568034515,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.36479628804997954,
+        "win_rate": 0.5268817204301075,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.06, MaxDD=36.5%, WinRate=52.7%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023912",
+      "timestamp": "2026-01-14T02:39:12.431302",
+      "strategy": {
+        "name": "trend_supertrend+mean_reversion_rsi+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 11,
+        "z_threshold": 2.863980603118173,
+        "exit_z": 0.2587799816000169
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.062006881568034515,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.36479628804997954,
+        "win_rate": 0.5268817204301075,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.06, MaxDD=36.5%, WinRate=52.7%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023912",
+      "timestamp": "2026-01-14T02:39:12.434447",
+      "strategy": {
+        "name": "trend_supertrend+mean_reversion_rsi+statistical_arb_eth_btc_pairs",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 11,
+        "z_threshold": 2.863980603118173,
+        "exit_z": 0.2587799816000169
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.062006881568034515,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.36479628804997954,
+        "win_rate": 0.5268817204301075,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.06, MaxDD=36.5%, WinRate=52.7%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023948",
+      "timestamp": "2026-01-14T02:39:48.693412",
+      "strategy": {
+        "name": "momentum_rsi+trend_ma_cross+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 7,
+        "multiplier": 3.8977710745066663
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.07954634664503879,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.7915513936577998,
+        "win_rate": 0.34075723830734966,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.08, MaxDD=79.2%, WinRate=34.1%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023948",
+      "timestamp": "2026-01-14T02:39:48.697162",
+      "strategy": {
+        "name": "momentum_rsi+trend_ma_cross+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 7,
+        "multiplier": 3.9398197043239884
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.07262246119142494,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8209983768588555,
+        "win_rate": 0.3393258426966292,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.07, MaxDD=82.1%, WinRate=33.9%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_023948",
+      "timestamp": "2026-01-14T02:39:48.700282",
+      "strategy": {
+        "name": "momentum_rsi+trend_ma_cross+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 7,
+        "multiplier": 3.9398197043239884
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.07262246119142494,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8209983768588555,
+        "win_rate": 0.3393258426966292,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.07, MaxDD=82.1%, WinRate=33.9%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024024",
+      "timestamp": "2026-01-14T02:40:24.780728",
+      "strategy": {
+        "name": "momentum_rsi+momentum_stochastic+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 7,
+        "multiplier": 3.8977710745066663
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.07954634664503879,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.7915513936577998,
+        "win_rate": 0.34075723830734966,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.08, MaxDD=79.2%, WinRate=34.1%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024024",
+      "timestamp": "2026-01-14T02:40:24.784643",
+      "strategy": {
+        "name": "momentum_rsi+momentum_stochastic+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 7,
+        "multiplier": 3.9398197043239884
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.07262246119142494,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8209983768588555,
+        "win_rate": 0.3393258426966292,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.07, MaxDD=82.1%, WinRate=33.9%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024024",
+      "timestamp": "2026-01-14T02:40:24.788130",
+      "strategy": {
+        "name": "momentum_rsi+momentum_stochastic+trend_supertrend",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 7,
+        "multiplier": 3.9398197043239884
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.07262246119142494,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.8209983768588555,
+        "win_rate": 0.3393258426966292,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.07, MaxDD=82.1%, WinRate=33.9%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024028",
+      "timestamp": "2026-01-14T02:40:28.410260",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+momentum_macd+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "macd",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024028",
+      "timestamp": "2026-01-14T02:40:28.414113",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+momentum_macd+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "macd",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024028",
+      "timestamp": "2026-01-14T02:40:28.417503",
+      "strategy": {
+        "name": "statistical_arb_eth_btc_pairs+momentum_macd+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "macd",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024104",
+      "timestamp": "2026-01-14T02:41:04.503141",
+      "strategy": {
+        "name": "trend_supertrend+mean_reversion_bollinger+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "k_period": 14,
+        "d_period": 4,
+        "smooth_k": 3,
+        "overbought": 70,
+        "oversold": 12
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.035918031690887996,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 1.004145270195481,
+        "win_rate": 0.48333333333333334,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.04, MaxDD=100.4%, WinRate=48.3%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024104",
+      "timestamp": "2026-01-14T02:41:04.507172",
+      "strategy": {
+        "name": "trend_supertrend+mean_reversion_bollinger+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "k_period": 14,
+        "d_period": 4,
+        "smooth_k": 3,
+        "overbought": 70,
+        "oversold": 12
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.035918031690887996,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 1.004145270195481,
+        "win_rate": 0.48333333333333334,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.04, MaxDD=100.4%, WinRate=48.3%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024104",
+      "timestamp": "2026-01-14T02:41:04.510562",
+      "strategy": {
+        "name": "trend_supertrend+mean_reversion_bollinger+momentum_stochastic",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "k_period": 16,
+        "d_period": 3,
+        "smooth_k": 4,
+        "overbought": 81,
+        "oversold": 13
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.020613347524932348,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 1.0021899524327078,
+        "win_rate": 0.611969111969112,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=61.2%)，進出場時機精確"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi",
+        "supertrend"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024140",
+      "timestamp": "2026-01-14T02:41:40.856196",
+      "strategy": {
+        "name": "trend_supertrend+mean_reversion_bollinger+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 16,
+        "slow_period": 20,
+        "stop_loss_atr": 3.909729556485983
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.03059438690690729,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9686853020240282,
+        "win_rate": 0.37019588395735187,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.03, MaxDD=96.9%, WinRate=37.0%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024140",
+      "timestamp": "2026-01-14T02:41:40.860334",
+      "strategy": {
+        "name": "trend_supertrend+mean_reversion_bollinger+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 16,
+        "slow_period": 20,
+        "stop_loss_atr": 3.909729556485983
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.03059438690690729,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9686853020240282,
+        "win_rate": 0.37019588395735187,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.03, MaxDD=96.9%, WinRate=37.0%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024140",
+      "timestamp": "2026-01-14T02:41:40.863907",
+      "strategy": {
+        "name": "trend_supertrend+mean_reversion_bollinger+trend_ma_cross",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "fast_period": 16,
+        "slow_period": 20,
+        "stop_loss_atr": 3.909729556485983
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.03059438690690729,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.9686853020240282,
+        "win_rate": 0.37019588395735187,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=-0.03, MaxDD=96.9%, WinRate=37.0%"
+      ],
+      "tags": [
+        "supertrend",
+        "multi_objective",
+        "crypto",
+        "ma",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024144",
+      "timestamp": "2026-01-14T02:41:44.141674",
+      "strategy": {
+        "name": "momentum_rsi+momentum_stochastic+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "k_period": 14,
+        "d_period": 4,
+        "smooth_k": 3,
+        "overbought": 70,
+        "oversold": 12
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.035918031690887996,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 1.004145270195481,
+        "win_rate": 0.48333333333333334,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.04, MaxDD=100.4%, WinRate=48.3%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024144",
+      "timestamp": "2026-01-14T02:41:44.146354",
+      "strategy": {
+        "name": "momentum_rsi+momentum_stochastic+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "k_period": 14,
+        "d_period": 4,
+        "smooth_k": 3,
+        "overbought": 70,
+        "oversold": 12
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.035918031690887996,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 1.004145270195481,
+        "win_rate": 0.48333333333333334,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "記錄 Pareto 解：Sharpe=0.04, MaxDD=100.4%, WinRate=48.3%"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024144",
+      "timestamp": "2026-01-14T02:41:44.150061",
+      "strategy": {
+        "name": "momentum_rsi+momentum_stochastic+mean_reversion_bollinger",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "k_period": 16,
+        "d_period": 3,
+        "smooth_k": 4,
+        "overbought": 81,
+        "oversold": 13
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.020613347524932348,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 1.0021899524327078,
+        "win_rate": 0.611969111969112,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=61.2%)，進出場時機精確"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024147",
+      "timestamp": "2026-01-14T02:41:47.489260",
+      "strategy": {
+        "name": "mean_reversion_bollinger+trend_donchian+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 25,
+        "oversold": 24,
+        "overbought": 63,
+        "trend_period": 136
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.046404839198176964,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.5163466324888417,
+        "win_rate": 0.65625,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=65.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024147",
+      "timestamp": "2026-01-14T02:41:47.493450",
+      "strategy": {
+        "name": "mean_reversion_bollinger+trend_donchian+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 25,
+        "oversold": 24,
+        "overbought": 63,
+        "trend_period": 136
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.046404839198176964,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.5163466324888417,
+        "win_rate": 0.65625,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=65.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024147",
+      "timestamp": "2026-01-14T02:41:47.497049",
+      "strategy": {
+        "name": "mean_reversion_bollinger+trend_donchian+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "rsi_period": 25,
+        "oversold": 24,
+        "overbought": 63,
+        "trend_period": 136
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": -0.046404839198176964,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.5163466324888417,
+        "win_rate": 0.65625,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "高勝率策略 (WinRate=65.6%)，進出場時機精確"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024150",
+      "timestamp": "2026-01-14T02:41:50.917238",
+      "strategy": {
+        "name": "mean_reversion_bollinger+momentum_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024150",
+      "timestamp": "2026-01-14T02:41:50.922202",
+      "strategy": {
+        "name": "mean_reversion_bollinger+momentum_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024150",
+      "timestamp": "2026-01-14T02:41:50.925931",
+      "strategy": {
+        "name": "mean_reversion_bollinger+momentum_rsi+trend_donchian",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024154",
+      "timestamp": "2026-01-14T02:41:54.174102",
+      "strategy": {
+        "name": "momentum_stochastic+mean_reversion_bollinger+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024154",
+      "timestamp": "2026-01-14T02:41:54.178551",
+      "strategy": {
+        "name": "momentum_stochastic+mean_reversion_bollinger+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
+    },
+    {
+      "id": "exp_20260114_024154",
+      "timestamp": "2026-01-14T02:41:54.183757",
+      "strategy": {
+        "name": "momentum_stochastic+mean_reversion_bollinger+momentum_rsi",
+        "type": "multi_objective",
+        "version": "1.0"
+      },
+      "config": {
+        "iteration": 20,
+        "validation_grade": "UNVALIDATED"
+      },
+      "parameters": {
+        "period": 10,
+        "std_dev": 2.9548647782429915
+      },
+      "results": {
+        "total_return": 0.0,
+        "annual_return": 0.0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "win_rate": 0.0,
+        "profit_factor": 1.0,
+        "total_trades": 0,
+        "avg_trade_duration": 0.0,
+        "expectancy": 0.0
+      },
+      "validation": {},
+      "insights": [
+        "低回撤策略 (MaxDD=0.0%)，風險控制優秀"
+      ],
+      "tags": [
+        "multi_objective",
+        "crypto",
+        "rsi"
+      ],
+      "parent_experiment": null,
+      "improvement": null
     }
-  ]
+  ],
+  "metadata": {
+    "total_experiments": 144,
+    "last_updated": "2026-01-14T02:41:54.184365",
+    "best_strategy": null
+  }
 }

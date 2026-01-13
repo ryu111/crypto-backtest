@@ -549,9 +549,16 @@ class BacktestEngine:
         equity_curve = portfolio.value()
         daily_returns = portfolio.returns()
 
-        # 計算年化報酬
-        total_days = (self.config.end_date - self.config.start_date).days
-        annual_return = (1 + total_return) ** (DAYS_PER_YEAR / total_days) - 1
+        # 計算年化報酬（帶數值保護）
+        total_days = max((self.config.end_date - self.config.start_date).days, 1)
+        base = 1 + total_return
+
+        if base <= 0:
+            # 本金歸零或爆倉（total_return <= -1）
+            annual_return = -1.0
+        else:
+            # 正常計算：base > 0 時分數次冪有效（含部分虧損和獲利）
+            annual_return = base ** (DAYS_PER_YEAR / total_days) - 1
 
         # 風險指標
         sharpe = self.metrics_calc.calculate_sharpe(daily_returns)

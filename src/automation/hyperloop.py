@@ -228,7 +228,12 @@ class HyperLoopController:
 
         # 共享資料池（稍後初始化）
         self.shared_pool: Optional[SharedDataPool] = None
-        self.pool_name = f"hyperloop_{int(time.time())}"
+        # 使用短名稱避免 POSIX 共享記憶體名稱限制（macOS 約 31 字元）
+        # 使用 PID + 實例計數器確保唯一性，避免高頻回測時名稱衝突
+        import os
+        self._instance_counter = getattr(HyperLoopController, '_instance_counter', 0)
+        HyperLoopController._instance_counter = self._instance_counter + 1
+        self.pool_name = f"hl_{os.getpid() % 10000}_{self._instance_counter}"
 
         # 統計資訊
         self.summary = HyperLoopSummary(
@@ -242,6 +247,9 @@ class HyperLoopController:
             total_gpu_time=0.0,
             total_cpu_time=0.0
         )
+
+        # 清理狀態標誌（防止重複清理）
+        self._cleaned_up: bool = False
 
         if self.verbose:
             logger.info(
@@ -502,13 +510,20 @@ class HyperLoopController:
                 )
 
     def _cleanup(self):
-        """清理所有共享記憶體"""
+        """清理所有共享記憶體（只執行一次）"""
+        # 防止重複清理
+        if self._cleaned_up:
+            return
+
         if self.verbose:
             logger.info("\n清理資源...")
 
         if self.shared_pool:
             self.shared_pool.cleanup()
             self.shared_pool = None
+
+        # 標記清理完成
+        self._cleaned_up = True
 
         if self.verbose:
             logger.info("✓ 資源已清理")
@@ -543,6 +558,13 @@ class HyperLoopController:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager 退出（自動清理）"""
         self._cleanup()
+
+    def __del__(self):
+        """析構函數：確保共享記憶體被清理，避免洩漏"""
+        try:
+            self._cleanup()
+        except Exception:
+            pass  # 忽略析構時的錯誤
 
 
 # ===== Worker 函數（在子進程中執行） =====

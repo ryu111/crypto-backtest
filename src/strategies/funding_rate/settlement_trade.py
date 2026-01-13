@@ -39,6 +39,21 @@ class SettlementTradeStrategy(FundingRateStrategy):
     version = "1.0"
     description = "Settlement period trading based on funding rate extremes"
 
+    # 類別屬性：參數優化空間（供 StrategyRegistry.get_param_space() 使用）
+    param_space = {
+        'rate_threshold': {
+            'type': 'float',
+            'low': 0.00005,
+            'high': 0.0005,
+            'log': True  # 對數空間搜尋
+        },
+        'hours_before_settlement': {
+            'type': 'int',
+            'low': 1,
+            'high': 4
+        }
+    }
+
     def __init__(
         self,
         rate_threshold: float = 0.0001,
@@ -62,21 +77,6 @@ class SettlementTradeStrategy(FundingRateStrategy):
 
         # 呼叫父類別初始化（會執行驗證）
         super().__init__(**params)
-
-        # 設定參數優化空間（必須在 super().__init__() 之後）
-        self.param_space = {
-            'rate_threshold': {
-                'type': 'float',
-                'low': 0.00005,
-                'high': 0.0005,
-                'log': True  # 對數空間搜尋
-            },
-            'hours_before_settlement': {
-                'type': 'int',
-                'low': 1,
-                'high': 4
-            }
-        }
 
     def calculate_indicators(self, data: DataFrame) -> Dict[str, Series]:
         """

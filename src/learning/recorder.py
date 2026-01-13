@@ -533,7 +533,24 @@ class ExperimentRecorder:
 
         try:
             with open(self.experiments_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                data = json.load(f)
+
+            # 向下相容：確保 metadata 欄位存在（舊版本檔案可能沒有）
+            if 'metadata' not in data:
+                data['metadata'] = {
+                    'total_experiments': len(data.get('experiments', [])),
+                    'last_updated': None,
+                    'best_strategy': None
+                }
+            # 確保 metadata 中的必要欄位存在
+            if 'total_experiments' not in data['metadata']:
+                data['metadata']['total_experiments'] = len(data.get('experiments', []))
+            if 'last_updated' not in data['metadata']:
+                data['metadata']['last_updated'] = None
+            if 'best_strategy' not in data['metadata']:
+                data['metadata']['best_strategy'] = None
+
+            return data
         except json.JSONDecodeError as e:
             import logging
             logger = logging.getLogger(__name__)

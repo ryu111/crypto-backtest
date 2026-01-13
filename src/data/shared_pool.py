@@ -90,6 +90,7 @@ class SharedDataPool:
         self._shm_blocks: Dict[str, shared_memory.SharedMemory] = {}
         self._is_creator = False  # 標記此實例是否為建立者
         self._registry_file = REGISTRY_DIR / f"{pool_name}_registry.json"
+        self._cleaned_up = False  # 防止重複清理
 
         # 如果是附加模式，嘗試載入現有 registry
         if self._registry_file.exists():
@@ -171,14 +172,14 @@ class SharedDataPool:
         """預載資金費率資料
 
         Args:
-            data_dir: 資料目錄路徑（包含 funding/ 子目錄）
+            data_dir: 資料目錄路徑（包含 funding_rates/ 子目錄）
             symbols: 標的列表，如 ['BTCUSDT', 'ETHUSDT']
 
         Returns:
             已載入資料的大小字典 {key: nbytes}
         """
         data_path = Path(data_dir)
-        funding_dir = data_path / "funding"
+        funding_dir = data_path / "funding_rates"
 
         if not funding_dir.exists():
             raise FileNotFoundError(f"資金費率資料目錄不存在: {funding_dir}")
@@ -229,11 +230,28 @@ class SharedDataPool:
             SharedDataInfo 物件
 
         Raises:
-            ValueError: 如果鍵名已存在
             MemoryError: 如果記憶體不足
         """
+        # 如果 key 已存在，檢查共享記憶體是否真的可用
         if key in self._registry:
-            raise ValueError(f"鍵名已存在: {key}")
+            old_info = self._registry[key]
+            try:
+                # 嘗試附加到現有共享記憶體
+                test_shm = shared_memory.SharedMemory(name=old_info.shm_name)
+                test_shm.close()
+                # 共享記憶體存在，直接返回現有 info
+                logger.debug(f"鍵名 {key} 已存在且共享記憶體有效，跳過重複載入")
+                return old_info
+            except FileNotFoundError:
+                # 共享記憶體已被釋放，清理殘留的 registry 項目
+                logger.warning(f"鍵名 {key} 的共享記憶體已失效，清理殘留並重新建立")
+                del self._registry[key]
+                if key in self._shm_blocks:
+                    try:
+                        self._shm_blocks[key].close()
+                    except Exception:
+                        pass
+                    del self._shm_blocks[key]
 
         # 確保資料是 C-contiguous（提升存取效能）
         if not data.flags['C_CONTIGUOUS']:
@@ -391,10 +409,14 @@ class SharedDataPool:
         logger.info("共享記憶體引用已分離")
 
     def cleanup(self):
-        """清理所有共享記憶體
+        """清理所有共享記憶體（只執行一次）
 
         注意：只有建立者應該 unlink，其他進程只需 close
         """
+        # 防止重複清理
+        if self._cleaned_up:
+            return
+
         for key, shm in self._shm_blocks.items():
             try:
                 shm.close()
@@ -418,6 +440,9 @@ class SharedDataPool:
             except Exception as e:
                 logger.warning(f"刪除 registry 檔案失敗: {e}")
 
+        # 標記清理完成
+        self._cleaned_up = True
+
         if self._is_creator:
             logger.info("共享記憶體已清理（建立者）")
         else:
@@ -430,6 +455,13 @@ class SharedDataPool:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager 退出（自動清理）"""
         self.cleanup()
+
+    def __del__(self):
+        """析構函數：確保共享記憶體被清理，避免洩漏"""
+        try:
+            self.cleanup()
+        except Exception:
+            pass  # 忽略析構時的錯誤
 
     def __repr__(self) -> str:
         return (
