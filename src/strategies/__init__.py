@@ -57,6 +57,12 @@ from .base import (
     FundingRateStrategy
 )
 
+from .composite import (
+    CompositeStrategy,
+    SignalAggregation,
+    RebalanceTrigger
+)
+
 from .registry import (
     StrategyRegistry,
     register_strategy,
@@ -111,6 +117,11 @@ __all__ = [
     # 資金費率策略
     'FundingArbStrategy',
     'SettlementTradeStrategy',
+
+    # 組合策略
+    'CompositeStrategy',
+    'SignalAggregation',
+    'RebalanceTrigger',
 ]
 
 __version__ = '1.0.0'

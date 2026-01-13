@@ -11,6 +11,25 @@ from typing import Dict, Tuple, Optional, Any
 from pandas import Series, DataFrame
 from .utils.dataframe_ops import DataFrameOps, SeriesOps
 
+# Regime Detection（延遲導入以避免循環依賴）
+# 這些類型在 apply_regime_filter 中動態導入
+REGIME_AVAILABLE = False
+MarketStateAnalyzer: Any = None
+StrategyConfig: Any = None
+
+def _load_regime_module() -> bool:
+    """延遲載入 regime 模組"""
+    global REGIME_AVAILABLE, MarketStateAnalyzer, StrategyConfig
+    if not REGIME_AVAILABLE:
+        try:
+            from ..regime import MarketStateAnalyzer as _MSA, StrategyConfig as _SC
+            MarketStateAnalyzer = _MSA
+            StrategyConfig = _SC
+            REGIME_AVAILABLE = True
+        except ImportError:
+            pass
+    return REGIME_AVAILABLE
+
 
 class BaseStrategy(ABC):
     """
@@ -223,7 +242,101 @@ class BaseStrategy(ABC):
         Returns:
             tuple: 過濾後的訊號
         """
+        # 如果啟用 Regime Filter，則應用過濾
+        if self.params.get('use_regime_filter', False):
+            regime_config = self.params.get('regime_config', None)
+            return self.apply_regime_filter(
+                data, long_entry, long_exit, short_entry, short_exit, regime_config
+            )
+
         # 預設不過濾
+        return long_entry, long_exit, short_entry, short_exit
+
+    def apply_regime_filter(
+        self,
+        data: DataFrame,
+        long_entry: Series,
+        long_exit: Series,
+        short_entry: Series,
+        short_exit: Series,
+        regime_config: Optional[Dict] = None
+    ) -> Tuple[Series, Series, Series, Series]:
+        """
+        根據市場狀態（Regime）過濾交易訊號
+
+        只在策略適用的市場環境中允許進場。
+
+        Args:
+            data: OHLCV DataFrame
+            long_entry: 多單進場訊號
+            long_exit: 多單出場訊號
+            short_entry: 空單進場訊號
+            short_exit: 空單出場訊號
+            regime_config: Regime 配置
+                {
+                    'direction_range': (min, max),     # 方向性範圍 -10 到 10
+                    'volatility_range': (min, max),    # 波動度範圍 0 到 10
+                    'analyzer_params': {               # MarketStateAnalyzer 參數（可選）
+                        'direction_threshold_strong': 5.0,
+                        'direction_threshold_weak': 2.0,
+                        'volatility_threshold': 5.0,
+                        'direction_method': 'composite'
+                    }
+                }
+
+        Returns:
+            tuple: (long_entry, long_exit, short_entry, short_exit) 過濾後的訊號
+
+        Raises:
+            ImportError: 如果 regime 模組未安裝
+
+        Example:
+            >>> # 只在強趨勢高波動環境進場
+            >>> strategy.params['use_regime_filter'] = True
+            >>> strategy.params['regime_config'] = {
+            ...     'direction_range': (3, 10),
+            ...     'volatility_range': (5, 10)
+            ... }
+        """
+        # 延遲載入 regime 模組
+        if not _load_regime_module():
+            raise ImportError(
+                "Regime Detection 模組未安裝。請確認 src/regime/ 可用。"
+            )
+
+        # 預設配置：適用於趨勢策略
+        if regime_config is None:
+            regime_config = {
+                'direction_range': (-10, 10),  # 接受所有方向
+                'volatility_range': (0, 10),   # 接受所有波動
+            }
+
+        # 建立 MarketStateAnalyzer
+        analyzer_params = regime_config.get('analyzer_params', {})
+        analyzer = MarketStateAnalyzer(**analyzer_params)
+
+        # 計算當前市場狀態
+        market_state = analyzer.calculate_state(data)
+
+        # 建立 StrategyConfig
+        strategy_config = StrategyConfig(
+            name=self.name,
+            direction_range=regime_config['direction_range'],
+            volatility_range=regime_config['volatility_range'],
+            weight=1.0
+        )
+
+        # 判斷策略是否適用當前市場狀態
+        is_active = strategy_config.is_active(
+            market_state.direction,
+            market_state.volatility
+        )
+
+        # 如果不適用，清除所有進場訊號（保留出場訊號）
+        if not is_active:
+            long_entry = self._create_signal_series(data, value=False)
+            short_entry = self._create_signal_series(data, value=False)
+
         return long_entry, long_exit, short_entry, short_exit
 
     def __repr__(self) -> str:
