@@ -1,1 +1,603 @@
-{"version": "1.0", "experiments": []}
+{
+  "version": "1.0",
+  "experiments": [
+    {
+      "id": "exp_20260113_093205_BTCUSDT_trend_ma_cross",
+      "timestamp": "2026-01-13T09:32:05.356552",
+      "strategy": {
+        "name": "trend_ma_cross",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "fast_period": 10,
+          "slow_period": 30
+        }
+      },
+      "config": {
+        "symbol": "BTCUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-09-08 17:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.7615295109732646,
+        "total_return": 3.3662858903525357,
+        "max_drawdown": 0.5065726624181016,
+        "win_rate": 0.32180851063829785,
+        "profit_factor": 1.0806940418548503,
+        "total_trades": 1129,
+        "sortino_ratio": 1.1290941430140289,
+        "calmar_ratio": 0.5159092471906628
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093205_BTCUSDT_trend_ma_cross",
+      "timestamp": "2026-01-13T09:32:05.381631",
+      "strategy": {
+        "name": "trend_ma_cross",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "fast_period": 5,
+          "slow_period": 20
+        }
+      },
+      "config": {
+        "symbol": "BTCUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-09-08 17:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.5198399160274348,
+        "total_return": 1.2942151747293025,
+        "max_drawdown": 0.66525898524721,
+        "win_rate": 0.31884845192829986,
+        "profit_factor": 1.038403865108049,
+        "total_trades": 1842,
+        "sortino_ratio": 0.7662241196205287,
+        "calmar_ratio": 0.2100666655404439
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093205_BTCUSDT_trend_ma_cross",
+      "timestamp": "2026-01-13T09:32:05.405484",
+      "strategy": {
+        "name": "trend_ma_cross",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "fast_period": 20,
+          "slow_period": 50
+        }
+      },
+      "config": {
+        "symbol": "BTCUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-09-08 17:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.6164336362482528,
+        "total_return": 1.9248739531609724,
+        "max_drawdown": 0.6031585123565686,
+        "win_rate": 0.33383010432190763,
+        "profit_factor": 1.0885481285443235,
+        "total_trades": 672,
+        "sortino_ratio": 0.8869204198053409,
+        "calmar_ratio": 0.3053867703092256
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093207_BTCUSDT_trend_supertrend",
+      "timestamp": "2026-01-13T09:32:07.087835",
+      "strategy": {
+        "name": "trend_supertrend",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "atr_period": 10,
+          "multiplier": 3.0
+        }
+      },
+      "config": {
+        "symbol": "BTCUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-09-08 17:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.6607847303060708,
+        "total_return": 2.257804141854835,
+        "max_drawdown": 0.6616341548690033,
+        "win_rate": 0.3581847649918963,
+        "profit_factor": 1.1056711862843431,
+        "total_trades": 618,
+        "sortino_ratio": 0.9476536255942631,
+        "calmar_ratio": 0.30904975616371166
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093208_BTCUSDT_trend_supertrend",
+      "timestamp": "2026-01-13T09:32:08.764195",
+      "strategy": {
+        "name": "trend_supertrend",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "atr_period": 14,
+          "multiplier": 2.0
+        }
+      },
+      "config": {
+        "symbol": "BTCUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-09-08 17:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.48770161626844083,
+        "total_return": 1.096321967490185,
+        "max_drawdown": 0.49063697458188066,
+        "win_rate": 0.34643510054844606,
+        "profit_factor": 1.045172892884597,
+        "total_trades": 1095,
+        "sortino_ratio": 0.7125604237058528,
+        "calmar_ratio": 0.25205525903119796
+      },
+      "validation": {
+        "grade": "D",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093208_BTCUSDT_momentum_macd",
+      "timestamp": "2026-01-13T09:32:08.785869",
+      "strategy": {
+        "name": "momentum_macd",
+        "type": "momentum",
+        "version": "1.0",
+        "params": {
+          "fast_period": 12,
+          "slow_period": 26,
+          "signal_period": 9
+        }
+      },
+      "config": {
+        "symbol": "BTCUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-09-08 17:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.34906382943293496,
+        "total_return": 0.44667647332394256,
+        "max_drawdown": 0.699257827990901,
+        "win_rate": 0.3432906590801328,
+        "profit_factor": 1.0136556355804818,
+        "total_trades": 2110,
+        "sortino_ratio": 0.5115371846081589,
+        "calmar_ratio": 0.08565427945175927
+      },
+      "validation": {
+        "grade": "D",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093208_ETHUSDT_trend_ma_cross",
+      "timestamp": "2026-01-13T09:32:08.811648",
+      "strategy": {
+        "name": "trend_ma_cross",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "fast_period": 10,
+          "slow_period": 30
+        }
+      },
+      "config": {
+        "symbol": "ETHUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-11-27 07:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.8939336767646069,
+        "total_return": 6.882547761664757,
+        "max_drawdown": 0.6264823118228081,
+        "win_rate": 0.34242709313264347,
+        "profit_factor": 1.0631830023962503,
+        "total_trades": 1064,
+        "sortino_ratio": 1.3014129940391799,
+        "calmar_ratio": 0.639225947567712
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093208_ETHUSDT_trend_ma_cross",
+      "timestamp": "2026-01-13T09:32:08.835280",
+      "strategy": {
+        "name": "trend_ma_cross",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "fast_period": 5,
+          "slow_period": 20
+        }
+      },
+      "config": {
+        "symbol": "ETHUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-11-27 07:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 1.2527038912239232,
+        "total_return": 24.614315526245512,
+        "max_drawdown": 0.4589352678391897,
+        "win_rate": 0.33120649651972156,
+        "profit_factor": 1.1034813591224477,
+        "total_trades": 1725,
+        "sortino_ratio": 1.8570829518510397,
+        "calmar_ratio": 1.519429446871102
+      },
+      "validation": {
+        "grade": "B",
+        "stages_passed": [
+          1,
+          2,
+          3
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093208_ETHUSDT_trend_ma_cross",
+      "timestamp": "2026-01-13T09:32:08.859304",
+      "strategy": {
+        "name": "trend_ma_cross",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "fast_period": 20,
+          "slow_period": 50
+        }
+      },
+      "config": {
+        "symbol": "ETHUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-11-27 07:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.982612971862995,
+        "total_return": 9.490790727418116,
+        "max_drawdown": 0.7322038924695549,
+        "win_rate": 0.33333333333333326,
+        "profit_factor": 1.1080861773644017,
+        "total_trades": 637,
+        "sortino_ratio": 1.4155254112746791,
+        "calmar_ratio": 0.6382286128553427
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093210_ETHUSDT_trend_supertrend",
+      "timestamp": "2026-01-13T09:32:10.462909",
+      "strategy": {
+        "name": "trend_supertrend",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "atr_period": 10,
+          "multiplier": 3.0
+        }
+      },
+      "config": {
+        "symbol": "ETHUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-11-27 07:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.8717513238675714,
+        "total_return": 5.982084666720221,
+        "max_drawdown": 0.6775213700343204,
+        "win_rate": 0.37828947368421045,
+        "profit_factor": 1.0829811518366288,
+        "total_trades": 609,
+        "sortino_ratio": 1.2662187396465947,
+        "calmar_ratio": 0.5505710476993385
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093212_ETHUSDT_trend_supertrend",
+      "timestamp": "2026-01-13T09:32:12.084715",
+      "strategy": {
+        "name": "trend_supertrend",
+        "type": "trend",
+        "version": "1.0",
+        "params": {
+          "atr_period": 14,
+          "multiplier": 2.0
+        }
+      },
+      "config": {
+        "symbol": "ETHUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-11-27 07:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.8308447754765736,
+        "total_return": 5.465061117326002,
+        "max_drawdown": 0.5282014225964006,
+        "win_rate": 0.358264081255771,
+        "profit_factor": 1.0711037319993946,
+        "total_trades": 1084,
+        "sortino_ratio": 1.2121502881920927,
+        "calmar_ratio": 0.6737949874655416
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_093212_ETHUSDT_momentum_macd",
+      "timestamp": "2026-01-13T09:32:12.108109",
+      "strategy": {
+        "name": "momentum_macd",
+        "type": "momentum",
+        "version": "1.0",
+        "params": {
+          "fast_period": 12,
+          "slow_period": 26,
+          "signal_period": 9
+        }
+      },
+      "config": {
+        "symbol": "ETHUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-11-27 07:00:00",
+        "end_date": "2026-01-11 18:00:00"
+      },
+      "results": {
+        "sharpe_ratio": 0.7271188911389401,
+        "total_return": 3.5337185996517553,
+        "max_drawdown": 0.60430079419332,
+        "win_rate": 0.35086872586872586,
+        "profit_factor": 1.0390899350192282,
+        "total_trades": 2073,
+        "sortino_ratio": 1.0639358165876485,
+        "calmar_ratio": 0.4627430266747626
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1
+        ]
+      },
+      "status": "completed"
+    },
+    {
+      "id": "exp_20260113_094528_ETHUSDT_bayesian_ma_cross",
+      "timestamp": "2026-01-13T09:45:28.153253",
+      "strategy": {
+        "name": "bayesian_ma_cross",
+        "type": "trend",
+        "version": "2.0",
+        "params": {
+          "fast_period": 4,
+          "slow_period": 76
+        }
+      },
+      "config": {
+        "symbol": "ETHUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-11-27",
+        "end_date": "2026-01-13"
+      },
+      "results": {
+        "sharpe_ratio": 1.4919,
+        "total_return": 52.717,
+        "max_drawdown": 0.514,
+        "win_rate": 0.35,
+        "profit_factor": 1.15,
+        "total_trades": 784,
+        "sortino_ratio": 2.1,
+        "calmar_ratio": 1.05
+      },
+      "validation": {
+        "grade": "B",
+        "stages_passed": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "walk_forward_sharpe": 0.535,
+        "robustness": 0.3
+      },
+      "status": "completed",
+      "notes": "Bayesian 優化後參數，通過 Walk-Forward 驗證"
+    },
+    {
+      "id": "exp_20260113_094528_BTCUSDT_bayesian_ma_cross",
+      "timestamp": "2026-01-13T09:45:28.153253",
+      "strategy": {
+        "name": "bayesian_ma_cross",
+        "type": "trend",
+        "version": "2.0",
+        "params": {
+          "fast_period": 21,
+          "slow_period": 72
+        }
+      },
+      "config": {
+        "symbol": "BTCUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-09-08",
+        "end_date": "2026-01-13"
+      },
+      "results": {
+        "sharpe_ratio": 0.9749,
+        "total_return": 6.522,
+        "max_drawdown": 0.585,
+        "win_rate": 0.33,
+        "profit_factor": 1.08,
+        "total_trades": 473,
+        "sortino_ratio": 1.4,
+        "calmar_ratio": 0.55
+      },
+      "validation": {
+        "grade": "C",
+        "stages_passed": [
+          1,
+          2
+        ],
+        "walk_forward_sharpe": 0.42,
+        "robustness": 0.2
+      },
+      "status": "completed",
+      "notes": "Bayesian 優化後參數"
+    },
+    {
+      "id": "exp_20260113_094528_ETHUSDT_bayesian_supertrend",
+      "timestamp": "2026-01-13T09:45:28.153253",
+      "strategy": {
+        "name": "bayesian_supertrend",
+        "type": "trend",
+        "version": "2.0",
+        "params": {
+          "atr_period": 15,
+          "multiplier": 2.4
+        }
+      },
+      "config": {
+        "symbol": "ETHUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-11-27",
+        "end_date": "2026-01-13"
+      },
+      "results": {
+        "sharpe_ratio": 1.5399,
+        "total_return": 67.427,
+        "max_drawdown": 0.56,
+        "win_rate": 0.38,
+        "profit_factor": 1.18,
+        "total_trades": 60,
+        "sortino_ratio": 2.2,
+        "calmar_ratio": 1.1
+      },
+      "validation": {
+        "grade": "D",
+        "stages_passed": [
+          1
+        ],
+        "walk_forward_sharpe": 0.068,
+        "robustness": 0.04,
+        "overfit_warning": true
+      },
+      "status": "completed",
+      "notes": "⚠️ 過擬合警訊：Walk-Forward Sharpe 顯著低於整體"
+    },
+    {
+      "id": "exp_20260113_094528_BTCUSDT_bayesian_supertrend",
+      "timestamp": "2026-01-13T09:45:28.153253",
+      "strategy": {
+        "name": "bayesian_supertrend",
+        "type": "trend",
+        "version": "2.0",
+        "params": {
+          "atr_period": 18,
+          "multiplier": 3.8
+        }
+      },
+      "config": {
+        "symbol": "BTCUSDT",
+        "timeframe": "1h",
+        "start_date": "2019-09-08",
+        "end_date": "2026-01-13"
+      },
+      "results": {
+        "sharpe_ratio": 1.4314,
+        "total_return": 22.35,
+        "max_drawdown": 0.351,
+        "win_rate": 0.4,
+        "profit_factor": 1.2,
+        "total_trades": 21,
+        "sortino_ratio": 2.0,
+        "calmar_ratio": 0.95
+      },
+      "validation": {
+        "grade": "D",
+        "stages_passed": [
+          1
+        ],
+        "walk_forward_sharpe": 0.117,
+        "robustness": 0.09,
+        "overfit_warning": true
+      },
+      "status": "completed",
+      "notes": "⚠️ 過擬合警訊：Walk-Forward Sharpe 顯著低於整體"
+    }
+  ]
+}

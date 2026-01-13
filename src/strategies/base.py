@@ -9,6 +9,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from typing import Dict, Tuple, Optional, Any
 from pandas import Series, DataFrame
+from .utils.dataframe_ops import DataFrameOps, SeriesOps
 
 
 class BaseStrategy(ABC):
@@ -132,6 +133,47 @@ class BaseStrategy(ABC):
 
         return size
 
+    def _wrap_data(self, data) -> DataFrameOps:
+        """
+        包裝 DataFrame 為 DataFrameOps
+
+        Args:
+            data: Pandas 或 Polars DataFrame
+
+        Returns:
+            DataFrameOps: 統一操作層
+        """
+        return DataFrameOps(data)
+
+    def _to_pandas_series(self, series_ops: SeriesOps) -> pd.Series:
+        """
+        將 SeriesOps 轉為 Pandas Series（供 VectorBT 使用）
+
+        Args:
+            series_ops: SeriesOps 實例
+
+        Returns:
+            pd.Series: Pandas Series
+        """
+        return series_ops.to_pandas()
+
+    def _create_signal_series(self, data, value: bool = False) -> pd.Series:
+        """
+        建立訊號 Series（統一使用 Pandas 輸出）
+
+        Args:
+            data: DataFrame（Pandas 或 Polars）
+            value: 初始值（預設 False）
+
+        Returns:
+            pd.Series: 訊號 Series
+        """
+        if hasattr(data, 'to_pandas'):  # Polars DataFrame
+            index = pd.RangeIndex(len(data))
+        else:  # Pandas DataFrame
+            index = data.index
+        return pd.Series(value, index=index)
+
     def validate_params(self) -> bool:
         """
         驗證參數有效性
@@ -204,7 +246,7 @@ class TrendStrategy(BaseStrategy):
         period: int = 200
     ) -> Tuple[Series, Series]:
         """
-        趨勢過濾器
+        趨勢過濾器（使用 DataFrameOps）
 
         Args:
             data: OHLCV DataFrame
@@ -213,9 +255,13 @@ class TrendStrategy(BaseStrategy):
         Returns:
             tuple: (uptrend, downtrend) boolean Series
         """
-        ma = data['close'].rolling(period).mean()
-        uptrend = data['close'] > ma
-        downtrend = data['close'] < ma
+        ops = self._wrap_data(data)
+        ma = ops['close'].rolling_mean(period)
+
+        # 比較並轉為 Pandas
+        uptrend = (ops['close'] > ma).to_pandas()
+        downtrend = (ops['close'] < ma).to_pandas()
+
         return uptrend, downtrend
 
 
@@ -226,26 +272,35 @@ class MeanReversionStrategy(BaseStrategy):
 
     def calculate_bollinger_bands(
         self,
-        close: Series,
+        close,
         period: int = 20,
         std_dev: float = 2.0
     ) -> Tuple[Series, Series, Series]:
         """
-        計算布林帶
+        計算布林帶（使用 DataFrameOps）
 
         Args:
-            close: 收盤價 Series
+            close: 收盤價（Series 或 SeriesOps）
             period: 計算週期
             std_dev: 標準差倍數
 
         Returns:
             tuple: (upper_band, middle_band, lower_band)
         """
-        middle = close.rolling(period).mean()
-        std = close.rolling(period).std()
-        upper = middle + std_dev * std
-        lower = middle - std_dev * std
-        return upper, middle, lower
+        from .utils.dataframe_ops import SeriesOps, POLARS_AVAILABLE
+
+        if isinstance(close, SeriesOps):
+            series = close
+        else:
+            is_polars = POLARS_AVAILABLE and type(close).__module__.startswith('polars')
+            series = SeriesOps(close, is_polars)
+
+        middle = series.rolling_mean(period)
+        std = series.rolling_std(period)
+        upper = middle + std * std_dev
+        lower = middle - std * std_dev
+
+        return upper.to_pandas(), middle.to_pandas(), lower.to_pandas()
 
 
 class MomentumStrategy(BaseStrategy):
@@ -255,39 +310,63 @@ class MomentumStrategy(BaseStrategy):
 
     def calculate_rsi(
         self,
-        close: Series,
+        close,
         period: int = 14
     ) -> Series:
         """
-        計算 RSI 指標
+        計算 RSI 指標（使用 DataFrameOps）
 
         Args:
-            close: 收盤價 Series
+            close: 收盤價（Series 或 SeriesOps）
             period: RSI 週期
 
         Returns:
             Series: RSI 值 (0-100)
         """
-        delta = close.diff()
-        gain = delta.where(delta > 0, 0).rolling(period).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(period).mean()
+        from .utils.dataframe_ops import SeriesOps, POLARS_AVAILABLE
 
-        rs = gain / loss
-        rsi = 100 - (100 / (1 + rs))
-        return rsi
+        # 將輸入轉為 SeriesOps
+        if isinstance(close, SeriesOps):
+            series = close
+            is_polars = close._is_polars
+        else:
+            is_polars = POLARS_AVAILABLE and type(close).__module__.startswith('polars')
+            series = SeriesOps(close, is_polars)
+
+        delta = series.diff()
+
+        # 計算 gain 和 loss
+        # 使用 SeriesOps.where() 統一處理（已經處理好 Polars/Pandas 差異）
+        zero_series = SeriesOps(series.raw * 0, is_polars)  # 全 0 的 SeriesOps
+
+        # gain: 當 delta > 0 時保留，否則為 0
+        gain = delta.where(delta > zero_series, zero_series)
+        # loss: 當 delta < 0 時取負值，否則為 0
+        loss = (-delta).where(delta < zero_series, zero_series)
+
+        avg_gain = gain.rolling_mean(period)
+        avg_loss = loss.rolling_mean(period)
+
+        rs = avg_gain / avg_loss
+        # 需要先轉換為數值計算（SeriesOps 不支援與 int 的直接運算）
+        one = SeriesOps(series.raw * 0 + 1, is_polars)  # 建立全 1 的 SeriesOps
+        hundred = SeriesOps(series.raw * 0 + 100, is_polars)  # 建立全 100 的 SeriesOps
+        rsi = hundred - (hundred / (one + rs))
+
+        return rsi.to_pandas()
 
     def calculate_macd(
         self,
-        close: Series,
+        close,
         fast: int = 12,
         slow: int = 26,
         signal: int = 9
     ) -> Tuple[Series, Series, Series]:
         """
-        計算 MACD 指標
+        計算 MACD 指標（使用 DataFrameOps）
 
         Args:
-            close: 收盤價 Series
+            close: 收盤價（Series 或 SeriesOps）
             fast: 快線週期
             slow: 慢線週期
             signal: 訊號線週期
@@ -295,9 +374,277 @@ class MomentumStrategy(BaseStrategy):
         Returns:
             tuple: (macd_line, signal_line, histogram)
         """
-        ema_fast = close.ewm(span=fast).mean()
-        ema_slow = close.ewm(span=slow).mean()
+        from .utils.dataframe_ops import SeriesOps, POLARS_AVAILABLE
+
+        if isinstance(close, SeriesOps):
+            series = close
+        else:
+            is_polars = POLARS_AVAILABLE and type(close).__module__.startswith('polars')
+            series = SeriesOps(close, is_polars)
+
+        ema_fast = series.ewm_mean(fast)
+        ema_slow = series.ewm_mean(slow)
         macd_line = ema_fast - ema_slow
-        signal_line = macd_line.ewm(span=signal).mean()
+        signal_line = macd_line.ewm_mean(signal)
         histogram = macd_line - signal_line
-        return macd_line, signal_line, histogram
+
+        return macd_line.to_pandas(), signal_line.to_pandas(), histogram.to_pandas()
+
+
+class StatisticalArbStrategy(BaseStrategy):
+    """
+    統計套利策略基礎類別
+
+    用於配對交易、基差套利等需要雙標的數據的策略。
+
+    特點：
+    - 支援雙標的數據輸入（data_primary, data_secondary）
+    - 提供價差/比率計算方法
+    - 提供 Z-Score 標準化方法
+
+    子類別實作：
+    - ETH/BTC 配對交易
+    - 永續/現貨基差套利
+    """
+
+    strategy_type = "statistical_arbitrage"
+
+    def calculate_spread(
+        self,
+        price1: Series,
+        price2: Series,
+        method: str = 'ratio'
+    ) -> Series:
+        """
+        計算兩標的價差
+
+        Args:
+            price1: 第一標的價格 Series
+            price2: 第二標的價格 Series
+            method: 計算方法
+                - 'ratio': price1 / price2（比率）
+                - 'diff': price1 - price2（價差）
+                - 'log_ratio': log(price1) - log(price2)（對數比率）
+
+        Returns:
+            Series: 價差/比率 Series
+        """
+        if method == 'ratio':
+            return price1 / price2
+        elif method == 'diff':
+            return price1 - price2
+        elif method == 'log_ratio':
+            return np.log(price1) - np.log(price2)
+        else:
+            raise ValueError(f"Unknown method: {method}")
+
+    def calculate_zscore(
+        self,
+        spread: Series,
+        period: int = 20
+    ) -> Series:
+        """
+        計算 Z-Score（標準化偏離度）
+
+        Args:
+            spread: 價差 Series
+            period: 滾動視窗週期
+
+        Returns:
+            Series: Z-Score Series
+        """
+        mean = spread.rolling(period).mean()
+        std = spread.rolling(period).std()
+        zscore = (spread - mean) / std
+        return zscore
+
+    def calculate_half_life(
+        self,
+        spread: Series
+    ) -> float:
+        """
+        計算均值回歸半衰期（用於判斷配對有效性）
+
+        Args:
+            spread: 價差 Series
+
+        Returns:
+            float: 半衰期（期數）
+        """
+        spread_clean = spread.dropna()
+        if len(spread_clean) < 2:
+            return float('inf')
+
+        # 計算 AR(1) 係數
+        spread_lag = spread_clean.shift(1).dropna()
+        spread_diff = spread_clean.diff().dropna()
+
+        # 對齊長度
+        spread_lag = spread_lag.iloc[1:]
+
+        if len(spread_lag) < 2:
+            return float('inf')
+
+        # 線性回歸 delta_spread = alpha + beta * spread_lag
+        correlation = spread_diff.corr(spread_lag)
+        std_diff = spread_diff.std()
+        std_lag = spread_lag.std()
+
+        if std_lag == 0:
+            return float('inf')
+
+        beta = correlation * (std_diff / std_lag)
+
+        if beta >= 0:
+            return float('inf')
+
+        # 半衰期 = -ln(2) / ln(1 + beta)
+        half_life = -np.log(2) / np.log(1 + beta)
+        return half_life
+
+    def generate_signals_dual(
+        self,
+        data_primary: DataFrame,
+        data_secondary: DataFrame
+    ) -> Tuple[Series, Series, Series, Series]:
+        """
+        產生雙標的交易訊號（子類別必須實作）
+
+        統計套利策略通常需要兩個標的的數據。
+        此方法是 generate_signals 的擴展版本。
+
+        Args:
+            data_primary: 主標的 OHLCV DataFrame（如 ETH）
+            data_secondary: 次標的 OHLCV DataFrame（如 BTC）
+
+        Returns:
+            tuple: (long_entry, long_exit, short_entry, short_exit)
+                   long = 做多主標的，做空次標的
+                   short = 做空主標的，做多次標的
+        """
+        raise NotImplementedError("Subclass must implement generate_signals_dual()")
+
+
+class FundingRateStrategy(BaseStrategy):
+    """
+    資金費率策略基礎類別
+
+    用於基於永續合約資金費率的策略。
+
+    特點：
+    - 支援資金費率數據輸入
+    - 提供費率成本計算方法
+    - 支援結算時間判斷
+
+    子類別實作：
+    - Delta Neutral 資金費率套利
+    - 結算時段交易
+    """
+
+    strategy_type = "funding_rate"
+
+    # 主流交易所結算時間（UTC）
+    SETTLEMENT_HOURS = [0, 8, 16]
+
+    def calculate_funding_cost(
+        self,
+        rate: float,
+        position_value: float,
+        direction: int
+    ) -> float:
+        """
+        計算資金費率成本
+
+        Args:
+            rate: 資金費率（如 0.0001 = 0.01%）
+            position_value: 部位價值（USDT）
+            direction: 部位方向（1=多，-1=空）
+
+        Returns:
+            float: 費率成本（正=支付，負=收取）
+        """
+        # 多單：費率為正時支付，為負時收取
+        # 空單：費率為正時收取，為負時支付
+        return rate * position_value * direction
+
+    def is_settlement_hour(
+        self,
+        timestamp: pd.Timestamp,
+        hours_before: int = 1
+    ) -> bool:
+        """
+        判斷是否接近結算時間
+
+        Args:
+            timestamp: 時間戳
+            hours_before: 結算前幾小時判定為「接近」
+
+        Returns:
+            bool: 是否接近結算時間
+        """
+        hour = timestamp.hour
+        for settlement_hour in self.SETTLEMENT_HOURS:
+            # 檢查是否在結算前 hours_before 小時內
+            hours_until = (settlement_hour - hour) % 24
+            if hours_until <= hours_before:
+                return True
+        return False
+
+    def calculate_annualized_rate(
+        self,
+        funding_rate: float,
+        settlements_per_day: int = 3
+    ) -> float:
+        """
+        計算年化資金費率
+
+        Args:
+            funding_rate: 單次結算費率
+            settlements_per_day: 每日結算次數（預設 3）
+
+        Returns:
+            float: 年化費率
+        """
+        daily_rate = funding_rate * settlements_per_day
+        annual_rate = daily_rate * 365
+        return annual_rate
+
+    def calculate_expected_return(
+        self,
+        funding_rates: Series,
+        holding_periods: int = 1
+    ) -> float:
+        """
+        計算預期收益（基於歷史費率）
+
+        Args:
+            funding_rates: 歷史資金費率 Series
+            holding_periods: 預期持有結算次數
+
+        Returns:
+            float: 預期收益率
+        """
+        if len(funding_rates) < holding_periods:
+            return 0.0
+
+        # 使用最近 N 期費率的平均值估算
+        recent_rates = funding_rates.tail(holding_periods)
+        expected_return = recent_rates.mean() * holding_periods
+        return expected_return
+
+    def generate_signals_with_funding(
+        self,
+        data: DataFrame,
+        funding_rates: Series
+    ) -> Tuple[Series, Series, Series, Series]:
+        """
+        產生考慮資金費率的交易訊號（子類別必須實作）
+
+        Args:
+            data: OHLCV DataFrame
+            funding_rates: 資金費率 Series（與 data 時間對齊）
+
+        Returns:
+            tuple: (long_entry, long_exit, short_entry, short_exit)
+        """
+        raise NotImplementedError("Subclass must implement generate_signals_with_funding()")

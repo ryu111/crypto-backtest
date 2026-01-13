@@ -49,6 +49,19 @@ BTC/ETH 交易策略常用技術指標參考。
 | CMF | Chaikin Money Flow | 資金流向 | 20 | > 0 / < 0 |
 | Volume MA | - | 成交量趨勢 | 20 | 放量確認 |
 
+### 市場狀態偵測（Regime Detection）
+
+| 方法 | 類型 | 用途 | 輸出 |
+|------|------|------|------|
+| 方向×波動矩陣 | 可解釋指標 | 即時策略切換 | 方向(-10~+10), 波動(0~10) |
+| HMM | 學術方法 | 狀態機率估計 | 狀態機率分佈 |
+| HSMM | 學術方法 | 含持續時間建模 | 狀態+預期持續 |
+| Jump Model | 學術方法 | 突變點偵測 | 狀態轉換點 |
+
+**方向分數指標**：MA位置、MA斜率、RSI偏離、MACD柱狀、ADX +DI/-DI、Elder Power
+
+**波動分數指標**：ATR百分位、Bollinger Band Width、Choppiness Index
+
 ## VectorBT 內建指標
 
 ```python
@@ -230,3 +243,4 @@ def calculate_supertrend(high, low, close, period=10, multiplier=3.0):
 
 For 趨勢指標詳解 → read `references/trend-indicators.md`
 For 動量指標詳解 → read `references/momentum-indicators.md`
+For 市場狀態偵測與策略切換 → read `references/regime-detection.md`

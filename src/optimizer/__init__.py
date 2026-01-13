@@ -9,10 +9,20 @@ from .portfolio import (
     PortfolioOptimizer,
     PortfolioWeights
 )
+from .gpu_batch import (
+    GPUBatchOptimizer,
+    GPUBatchResult,
+    GPUOptimizationResult,
+    gpu_optimize_strategy
+)
 
 __all__ = [
     'PortfolioOptimizer',
     'PortfolioWeights',
+    'GPUBatchOptimizer',
+    'GPUBatchResult',
+    'GPUOptimizationResult',
+    'gpu_optimize_strategy',
 ]
 
 # 有 VectorBT 依賴的模組（延遲導入）

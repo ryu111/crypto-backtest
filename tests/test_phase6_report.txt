@@ -1,0 +1,25 @@
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.12.12, pytest-9.0.2, pluggy-1.6.0 -- /Users/sbu/.pyenv/versions/3.12.12/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/sbu/Desktop/side project/合約交易
+plugins: anyio-4.12.1, mock-3.15.1, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+[1mcollecting ... [0mcollected 15 items
+
+tests/test_phase6_backtest_loop.py::test_module_imports [32mPASSED[0m[32m           [  6%][0m
+tests/test_phase6_backtest_loop.py::test_backtest_loop_config_defaults [32mPASSED[0m[32m [ 13%][0m
+tests/test_phase6_backtest_loop.py::test_backtest_loop_config_validation [32mPASSED[0m[32m [ 20%][0m
+tests/test_phase6_backtest_loop.py::test_backtest_loop_config_convenience_functions [32mPASSED[0m[32m [ 26%][0m
+tests/test_phase6_backtest_loop.py::test_iteration_summary [32mPASSED[0m[32m        [ 33%][0m
+tests/test_phase6_backtest_loop.py::test_loop_result_summary [32mPASSED[0m[32m      [ 40%][0m
+tests/test_phase6_backtest_loop.py::test_loop_result_serialization [32mPASSED[0m[32m [ 46%][0m
+tests/test_phase6_backtest_loop.py::test_validation_runner_basic [32mPASSED[0m[32m  [ 53%][0m
+tests/test_phase6_backtest_loop.py::test_validation_runner_stage_1_basic [32mPASSED[0m[32m [ 60%][0m
+tests/test_phase6_backtest_loop.py::test_validation_runner_stage_2_statistical [32mPASSED[0m[32m [ 66%][0m
+tests/test_phase6_backtest_loop.py::test_validation_runner_grade_calculation [32mPASSED[0m[32m [ 73%][0m
+tests/test_phase6_backtest_loop.py::test_backtest_loop_context_manager [32mPASSED[0m[32m [ 80%][0m
+tests/test_phase6_backtest_loop.py::test_backtest_loop_state_management [32mPASSED[0m[32m [ 86%][0m
+tests/test_phase6_backtest_loop.py::test_backtest_loop_integration [32mPASSED[0m[32m [ 93%][0m
+tests/test_phase6_backtest_loop.py::test_validate_strategy_placeholder [32mPASSED[0m[32m [100%][0m
+
+[32m============================== [32m[1m15 passed[0m[32m in 2.11s[0m[32m ==============================[0m

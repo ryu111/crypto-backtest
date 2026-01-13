@@ -9,8 +9,9 @@ import json
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union, TYPE_CHECKING
+from typing import Dict, List, Optional, Any, TYPE_CHECKING
 import pandas as pd
+import numpy as np
 
 # 使用 TYPE_CHECKING 避免執行時 import（避免 vectorbt 依賴問題）
 if TYPE_CHECKING:
@@ -69,6 +70,10 @@ class Experiment:
         if isinstance(data['timestamp'], str):
             data['timestamp'] = datetime.fromisoformat(data['timestamp'])
         return cls(**data)
+
+
+# 通過驗證的評級（A/B 為成功）
+PASSING_GRADES = ['A', 'B']
 
 
 class ExperimentRecorder:
@@ -602,7 +607,7 @@ class ExperimentRecorder:
 
     def _calculate_improvement(
         self,
-        exp_id: str,
+        _exp_id: str,  # 保留參數以維持 API 一致性
         parent_id: str,
         results: Dict[str, float]
     ) -> Optional[float]:
@@ -657,3 +662,141 @@ class ExperimentRecorder:
             pd.DataFrame: 交易記錄，如果不存在則返回 None
         """
         return self.storage.load_trades(exp_id)
+
+    def get_strategy_stats(self, strategy_name: str) -> Optional[Dict[str, Any]]:
+        """
+        從歷史實驗中提取策略統計
+
+        Args:
+            strategy_name: 策略名稱（可為前綴匹配，如 'ma_cross'）
+
+        Returns:
+            Optional[Dict]: 策略統計，如果無歷史記錄則返回 None
+            {
+                'name': str,
+                'attempts': int,        # 嘗試次數
+                'successes': int,       # 成功次數（A/B 評級）
+                'avg_sharpe': float,    # 平均 Sharpe
+                'best_sharpe': float,   # 最佳 Sharpe
+                'last_updated': datetime  # 最後更新時間
+            }
+        """
+        # 查詢相關實驗（使用前綴匹配）
+        experiments = self.query_experiments()
+        related = [
+            e for e in experiments
+            if e.strategy['name'].startswith(strategy_name)
+        ]
+
+        # 無歷史記錄
+        if not related:
+            return None
+
+        # 計算統計
+        attempts = len(related)
+
+        # 成功次數（A/B 評級）
+        successes = sum(
+            1 for e in related
+            if e.validation.get('grade') in PASSING_GRADES
+        )
+
+        # Sharpe 比率列表
+        sharpe_list = [
+            e.results.get('sharpe_ratio', 0)
+            for e in related
+        ]
+
+        avg_sharpe = float(np.mean(sharpe_list))
+        best_sharpe = float(np.max(sharpe_list))
+
+        # 最後更新時間
+        last_updated = max(e.timestamp for e in related)
+
+        return {
+            'name': strategy_name,
+            'attempts': attempts,
+            'successes': successes,
+            'avg_sharpe': avg_sharpe,
+            'best_sharpe': best_sharpe,
+            'last_updated': last_updated
+        }
+
+    def update_strategy_stats(
+        self,
+        strategy_name: str,
+        stats: Dict[str, Any]
+    ) -> bool:
+        """
+        更新策略的最近一筆實驗記錄
+
+        此方法用於 StrategySelector 更新策略績效追蹤。它會找到指定策略的
+        最近一筆實驗記錄，並更新其 results 或 validation 欄位。
+
+        Args:
+            strategy_name: 策略名稱（需完全匹配，如 'trend_ma_cross'）
+            stats: 要更新的欄位
+                - results 欄位：'sharpe_ratio', 'total_return', 'max_drawdown' 等
+                - validation 欄位：'grade'（會自動識別並放入 validation）
+
+        Returns:
+            bool: 是否成功更新
+
+        Raises:
+            無。找不到記錄時會 log warning 並返回 False。
+
+        Note:
+            - 只會更新最近一筆實驗，不會修改歷史記錄
+            - 更新會同時刷新 timestamp
+            - 如需記錄新實驗，請使用 log_experiment()
+
+        Example:
+            >>> recorder.update_strategy_stats('trend_ma_cross', {
+            ...     'sharpe_ratio': 1.5,
+            ...     'grade': 'B'
+            ... })
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+
+        # 查詢該策略的所有實驗
+        experiments = self.query_experiments()
+        related = [
+            e for e in experiments
+            if e.strategy['name'] == strategy_name
+        ]
+
+        # 如果沒有實驗記錄，無法更新
+        if not related:
+            logger.warning(f"找不到策略 '{strategy_name}' 的實驗記錄")
+            return False
+
+        # 找到最近的實驗
+        latest_exp = max(related, key=lambda e: e.timestamp)
+
+        # 載入完整數據
+        data = self._load_experiments()
+
+        # 找到對應的實驗並更新
+        for exp_data in data['experiments']:
+            if exp_data['id'] == latest_exp.id:
+                # 更新 results 欄位
+                for key, value in stats.items():
+                    if key in exp_data['results']:
+                        exp_data['results'][key] = value
+                    elif 'validation' in exp_data and key == 'grade':
+                        # 如果是 grade，更新 validation 中的 grade
+                        exp_data['validation']['grade'] = value
+
+                # 更新時間戳記
+                exp_data['timestamp'] = datetime.now().isoformat()
+
+                # 儲存回檔案
+                self._save_experiments(data)
+
+                logger.info(f"已更新策略 '{strategy_name}' 的統計資料（實驗 ID: {latest_exp.id}）")
+                return True
+
+        # 如果執行到這裡，表示找不到實驗（不應該發生）
+        logger.error(f"找不到實驗 ID '{latest_exp.id}' 的記錄")
+        return False

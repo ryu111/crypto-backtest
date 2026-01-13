@@ -12,7 +12,10 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 import random
 import math
+import logging
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -168,7 +171,7 @@ class StrategySelector:
 
     def _random_select(self) -> str:
         """隨機選擇策略"""
-        strategies = self.registry.list_strategies()
+        strategies = self.registry.list_all()
         return random.choice(strategies)
 
     def _best_select(self) -> str:
@@ -231,9 +234,6 @@ class StrategySelector:
         stat.last_attempt = datetime.now()
         stat.last_params = result.get('params', {})
 
-        # 同步到 ExperimentRecorder
-        self.recorder.record_strategy_stats(strategy_name, stat)
-
     def get_strategy_stats(self) -> Dict[str, StrategyStats]:
         """
         取得所有策略的統計資訊
@@ -248,16 +248,22 @@ class StrategySelector:
 
     def _update_stats_cache(self):
         """從 ExperimentRecorder 更新統計快取"""
-        strategies = self.registry.list_strategies()
+        strategies = self.registry.list_all()
 
         for name in strategies:
-            # 從記錄器載入歷史資料
-            stats = self.recorder.get_strategy_stats(name)
+            # 嘗試從記錄器載入歷史資料
+            try:
+                if hasattr(self.recorder, 'get_strategy_stats'):
+                    stats = self.recorder.get_strategy_stats(name)
+                    if stats:
+                        self._stats_cache[name] = stats
+                        continue
+            except Exception as e:
+                logger.debug(f"無法載入 {name} 的統計資料: {e}")
+                pass  # 使用空統計
 
-            if stats:
-                self._stats_cache[name] = stats
-            else:
-                # 新策略，建立空統計
+            # 新策略或無法載入，建立空統計
+            if name not in self._stats_cache:
                 self._stats_cache[name] = StrategyStats(name=name)
 
         self._cache_updated = True
@@ -277,7 +283,7 @@ class StrategySelector:
             }
         """
         stats = self.get_strategy_stats()
-        total_strategies = len(self.registry.list_strategies())
+        total_strategies = len(self.registry.list_all())
 
         total_attempts = sum(s.attempts for s in stats.values())
         strategies_tried = sum(1 for s in stats.values() if s.attempts > 0)

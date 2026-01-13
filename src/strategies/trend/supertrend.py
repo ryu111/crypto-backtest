@@ -61,6 +61,14 @@ class SupertrendStrategy(TrendStrategy):
         'multiplier': {'type': 'float', 'low': 2.0, 'high': 4.0},
     }
 
+    def __init__(self, **kwargs):
+        """初始化策略"""
+        self.params = self.__class__.params.copy()
+        self.param_space = self.__class__.param_space.copy()
+        self.params.update(kwargs)
+        if not self.validate_params():
+            raise ValueError(f"Invalid parameters for {self.name}")
+
     def validate_params(self) -> bool:
         """驗證參數有效性"""
         # ATR 週期必須為正整數

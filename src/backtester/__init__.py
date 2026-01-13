@@ -42,6 +42,7 @@ from .liquidity import (
 try:
     from .engine import BacktestEngine, BacktestConfig, BacktestResult
     from .metrics import MetricsCalculator
+    from .validator import BacktestValidator, ValidationResult, ValidationReport
     _has_vectorbt = True
 except ImportError:
     _has_vectorbt = False
@@ -49,6 +50,9 @@ except ImportError:
     BacktestConfig = None
     BacktestResult = None
     MetricsCalculator = None
+    BacktestValidator = None
+    ValidationResult = None
+    ValidationReport = None
 
 __all__ = [
     # 永續合約
@@ -79,6 +83,9 @@ if _has_vectorbt:
         'BacktestConfig',
         'BacktestResult',
         'MetricsCalculator',
+        'BacktestValidator',
+        'ValidationResult',
+        'ValidationReport',
     ])
 
 __version__ = '1.0.0'

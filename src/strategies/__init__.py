@@ -52,7 +52,9 @@ from .base import (
     BaseStrategy,
     TrendStrategy,
     MeanReversionStrategy,
-    MomentumStrategy
+    MomentumStrategy,
+    StatisticalArbStrategy,
+    FundingRateStrategy
 )
 
 from .registry import (
@@ -64,8 +66,11 @@ from .registry import (
 )
 
 # 匯入策略以觸發註冊
-from .momentum import RSIStrategy, MACDStrategy
-from .trend import MACrossStrategy, SupertrendStrategy
+from .momentum import RSIStrategy, MACDStrategy, StochasticStrategy
+from .trend import MACrossStrategy, SupertrendStrategy, DonchianStrategy
+from .mean_reversion import BollingerMeanReversionStrategy, RSIReversionStrategy
+from .statistical_arb import ETHBTCPairsStrategy, BasisArbStrategy
+from .funding_rate import FundingArbStrategy, SettlementTradeStrategy
 
 __all__ = [
     # 基礎類別
@@ -73,6 +78,8 @@ __all__ = [
     'TrendStrategy',
     'MeanReversionStrategy',
     'MomentumStrategy',
+    'StatisticalArbStrategy',
+    'FundingRateStrategy',
 
     # 註冊表
     'StrategyRegistry',
@@ -86,10 +93,24 @@ __all__ = [
     # 動量策略
     'RSIStrategy',
     'MACDStrategy',
+    'StochasticStrategy',
 
     # 趨勢策略
     'MACrossStrategy',
     'SupertrendStrategy',
+    'DonchianStrategy',
+
+    # 均值回歸策略
+    'BollingerMeanReversionStrategy',
+    'RSIReversionStrategy',
+
+    # 統計套利策略
+    'ETHBTCPairsStrategy',
+    'BasisArbStrategy',
+
+    # 資金費率策略
+    'FundingArbStrategy',
+    'SettlementTradeStrategy',
 ]
 
 __version__ = '1.0.0'

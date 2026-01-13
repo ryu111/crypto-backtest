@@ -89,12 +89,12 @@
 
 ## 5. Testing & Validation (sequential)
 
-- [ ] 5.1 單元測試數據載入函數 | files: tests/ui/test_data_loader.py
+- [x] 5.1 單元測試數據載入函數 | files: tests/ui/test_data_loader.py
   - 測試 `load_equity_curve()` 正確載入
   - 測試 `calculate_monthly_returns()` 計算正確
   - 測試檔案不存在的錯誤處理
 
-- [ ] 5.2 整合測試策略頁面 | files: tests/ui/test_strategies_page.py
+- [x] 5.2 整合測試策略頁面 | files: tests/ui/test_strategies_page.py
   - 測試選擇策略後圖表正確顯示
   - 測試時間範圍調整圖表同步更新
   - 測試數據缺失時提示訊息顯示
