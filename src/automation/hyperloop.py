@@ -65,7 +65,11 @@ class HyperLoopConfig:
 
     # 資料設定
     symbols: List[str] = field(default_factory=lambda: ['BTCUSDT', 'ETHUSDT'])
-    timeframes: List[str] = field(default_factory=lambda: ['5m', '15m', '30m', '1h', '4h', '1d'])
+    timeframes: List[str] = field(default_factory=lambda: [
+        '1m', '3m', '5m', '15m', '30m',      # 短線
+        '1h', '2h', '4h', '6h', '8h',        # 中線（8h 對齊資金費率）
+        '12h', '1d', '3d', '1w'              # 長線
+    ])
     data_dir: str = "data"
 
     # 優化設定

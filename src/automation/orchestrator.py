@@ -37,7 +37,11 @@ class OrchestratorConfig:
 
     # 交易參數
     symbols: List[str] = field(default_factory=lambda: ['BTCUSDT', 'ETHUSDT'])
-    timeframes: List[str] = field(default_factory=lambda: ['4h'])
+    timeframes: List[str] = field(default_factory=lambda: [
+        '1m', '3m', '5m', '15m', '30m',      # 短線
+        '1h', '2h', '4h', '6h', '8h',        # 中線（8h 對齊資金費率）
+        '12h', '1d', '3d', '1w'              # 長線
+    ])
     leverage: int = 5
     initial_capital: float = 10000.0
 

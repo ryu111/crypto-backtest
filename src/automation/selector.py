@@ -234,6 +234,13 @@ class StrategySelector:
         stat.last_attempt = datetime.now()
         stat.last_params = result.get('params', {})
 
+        # 持久化到記錄器
+        if hasattr(self.recorder, 'record_strategy_stats'):
+            try:
+                self.recorder.record_strategy_stats(stat)
+            except Exception as e:
+                logger.debug(f"無法記錄 {strategy_name} 的統計資料: {e}")
+
     def get_strategy_stats(self) -> Dict[str, StrategyStats]:
         """
         取得所有策略的統計資訊

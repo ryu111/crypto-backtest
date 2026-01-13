@@ -486,8 +486,8 @@ class StageValidator:
         data_second = data.iloc[mid_point:]
         result_second = engine.run(strategy, params, data_second)
 
-        # 兩期皆獲利
-        return (
+        # 兩期皆獲利（確保返回 Python bool）
+        return bool(
             result_first.total_return > 0 and
             result_second.total_return > 0
         )
@@ -504,8 +504,8 @@ class StageValidator:
         result_btc = engine.run(strategy, params, data_btc)
         result_eth = engine.run(strategy, params, data_eth)
 
-        # 兩個標的皆獲利
-        return (
+        # 兩個標的皆獲利（確保返回 Python bool）
+        return bool(
             result_btc.total_return > 0 and
             result_eth.total_return > 0
         )

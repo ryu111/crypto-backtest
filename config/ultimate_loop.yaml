@@ -1,0 +1,161 @@
+# UltimateLoop 配置檔
+# 最強回測系統 - 整合所有進階功能
+
+# =============================================================================
+# 基礎設定
+# =============================================================================
+base:
+  max_workers: 8
+  use_gpu: true
+  gpu_batch_size: 50
+  data_dir: "data"
+
+# =============================================================================
+# HyperLoop 高效能引擎
+# =============================================================================
+hyperloop:
+  enabled: true
+  param_sweep_threshold: 100  # 超過此參數組合數使用 GPU
+
+# 標的與時間框架
+symbols:
+  - BTCUSDT
+  - ETHUSDT
+
+timeframes:
+  short:
+    - 1m
+    - 3m
+    - 5m
+    - 15m
+    - 30m
+  medium:
+    - 1h
+    - 2h
+    - 4h
+    - 6h
+    - 8h
+  long:
+    - 12h
+    - 1d
+    - 3d
+    - 1w
+
+# =============================================================================
+# Regime Detection（市場狀態識別）
+# =============================================================================
+regime:
+  enabled: true
+  direction_method: composite  # composite, adx, elder
+  thresholds:
+    direction_strong: 5.0
+    direction_weak: 2.0
+    volatility: 5.0
+
+# =============================================================================
+# 策略組合設定
+# =============================================================================
+strategy:
+  selection_mode: regime_aware  # regime_aware, random, exploit
+  exploit_ratio: 0.8  # 80% exploit / 20% explore
+  aggregation: weighted  # weighted, voting, ranked, unanimous
+  # enabled_strategies: null  # null = 使用所有註冊策略
+  # 或明確指定：
+  # enabled_strategies:
+  #   - ma_cross
+  #   - momentum_rsi
+  #   - momentum_macd
+
+# =============================================================================
+# 多目標優化
+# =============================================================================
+optimization:
+  n_trials: 100
+  objectives:
+    - name: sharpe_ratio
+      direction: maximize
+    - name: max_drawdown
+      direction: minimize
+    - name: win_rate
+      direction: maximize
+  pareto:
+    select_method: knee  # knee, crowding, random
+    top_n: 3
+
+# =============================================================================
+# 驗證設定
+# =============================================================================
+validation:
+  enabled: true
+  min_stages: 3
+  thresholds:
+    min_sharpe: 1.0
+    max_overfit: 0.5
+    min_win_rate: 0.4
+
+# =============================================================================
+# 學習系統
+# =============================================================================
+learning:
+  enabled: true
+  memory_mcp: true
+  auto_insights: true
+  experiment_dir: learning
+
+# =============================================================================
+# 交易設定
+# =============================================================================
+trading:
+  leverage: 5
+  initial_capital: 10000.0
+  fees:
+    maker: 0.0002
+    taker: 0.0004
+
+# =============================================================================
+# 執行設定
+# =============================================================================
+execution:
+  timeout_per_iteration: 600
+  max_retries: 3
+  checkpoint:
+    enabled: true
+    interval: 10
+    dir: checkpoints
+
+# =============================================================================
+# 預設配置 Profiles
+# =============================================================================
+profiles:
+  production:
+    # 完整配置，使用所有功能
+    base.use_gpu: true
+    optimization.n_trials: 200
+    validation.min_stages: 5
+
+  development:
+    # 開發測試，減少迭代次數
+    base.use_gpu: false
+    optimization.n_trials: 20
+    validation.min_stages: 2
+    symbols:
+      - BTCUSDT
+    timeframes.short: []
+    timeframes.medium:
+      - 4h
+    timeframes.long:
+      - 1d
+
+  quick_test:
+    # 快速測試，最小配置
+    base.use_gpu: false
+    base.max_workers: 2
+    optimization.n_trials: 5
+    validation.enabled: false
+    learning.enabled: false
+    symbols:
+      - BTCUSDT
+    timeframes.medium:
+      - 1h
+    timeframes.short: []
+    timeframes.long: []

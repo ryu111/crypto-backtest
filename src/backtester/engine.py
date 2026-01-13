@@ -400,7 +400,9 @@ class BacktestEngine:
     ):
         """建立 VectorBT 投資組合"""
 
-        close = self.data['close']
+        # 確保使用 Pandas DataFrame（Polars 不支援 .index）
+        data_pandas = ensure_pandas(self.data)
+        close = data_pandas['close']
 
         # 根據持倉模式決定訊號處理
         if self.config.position_mode == "one-way":

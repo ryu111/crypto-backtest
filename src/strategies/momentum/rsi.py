@@ -6,7 +6,6 @@ RSI 動量策略
 可選擇性加入趨勢過濾器，只在趨勢方向交易。
 """
 
-import pandas as pd
 from typing import Dict, Tuple
 from pandas import Series, DataFrame
 
@@ -130,16 +129,17 @@ class RSIStrategy(MomentumStrategy):
         """
         indicators = {}
 
-        # 計算 RSI
+        # 計算 RSI（使用 BaseStrategy 已重構的方法）
         rsi = self.calculate_rsi(
             data['close'],
             period=self.params['rsi_period']
         )
         indicators['rsi'] = rsi
 
-        # 如果啟用趨勢過濾，計算趨勢均線
+        # 如果啟用趨勢過濾，計算趨勢均線（使用 DataFrameOps）
         if self.params['trend_filter']:
-            trend_ma = data['close'].rolling(self.params['trend_period']).mean()
+            ops = self._wrap_data(data)
+            trend_ma = ops['close'].rolling_mean(self.params['trend_period']).to_pandas()
             indicators['trend_ma'] = trend_ma
 
         return indicators
@@ -162,11 +162,11 @@ class RSIStrategy(MomentumStrategy):
         rsi = indicators['rsi']
         close = data['close']
 
-        # 初始化訊號
-        long_entry = pd.Series(False, index=data.index)
-        long_exit = pd.Series(False, index=data.index)
-        short_entry = pd.Series(False, index=data.index)
-        short_exit = pd.Series(False, index=data.index)
+        # 初始化訊號（使用 BaseStrategy 提供的方法）
+        long_entry = self._create_signal_series(data)
+        long_exit = self._create_signal_series(data)
+        short_entry = self._create_signal_series(data)
+        short_exit = self._create_signal_series(data)
 
         # RSI 超賣超買條件
         rsi_oversold = rsi < self.params['oversold']
@@ -180,8 +180,9 @@ class RSIStrategy(MomentumStrategy):
             uptrend = close > trend_ma
             downtrend = close < trend_ma
         else:
-            uptrend = pd.Series(True, index=data.index)
-            downtrend = pd.Series(True, index=data.index)
+            # 無趨勢過濾時，所有時間點都允許交易
+            uptrend = self._create_signal_series(data, value=True)
+            downtrend = self._create_signal_series(data, value=True)
 
         # 多單訊號：RSI 超賣且在上升趨勢（或無趨勢過濾）
         long_entry = rsi_oversold & uptrend
@@ -199,7 +200,7 @@ class RSIStrategy(MomentumStrategy):
 
     def apply_filters(
         self,
-        data: DataFrame,
+        data: DataFrame,  # noqa: ARG002 - interface requirement
         long_entry: Series,
         long_exit: Series,
         short_entry: Series,

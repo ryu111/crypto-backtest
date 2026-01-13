@@ -76,10 +76,14 @@ class BacktestLoopConfig:
     範例: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']
     """
 
-    timeframes: List[str] = field(default_factory=lambda: ['1h'])
+    timeframes: List[str] = field(default_factory=lambda: [
+        '1m', '3m', '5m', '15m', '30m',      # 短線
+        '1h', '2h', '4h', '6h', '8h',        # 中線（8h 對齊資金費率）
+        '12h', '1d', '3d', '1w'              # 長線
+    ])
     """時間框架列表
 
-    範例: ['5m', '15m', '1h', '4h', '1d']
+    涵蓋從超短線到長線的完整週期，8h 特別適合資金費率策略
     """
 
     # ===== 執行控制 =====
@@ -779,7 +783,11 @@ def create_production_config(
     return BacktestLoopConfig(
         strategies=strategies or [],
         symbols=['BTCUSDT', 'ETHUSDT'],
-        timeframes=['1h', '4h', '1d'],
+        timeframes=[
+            '5m', '15m', '30m',              # 短線
+            '1h', '2h', '4h', '6h', '8h',    # 中線
+            '12h', '1d', '3d', '1w'          # 長線
+        ],
         n_iterations=n_iterations,
         selection_mode='ucb',
         validation_stages=[1, 2, 3, 4, 5],  # 全部五個階段

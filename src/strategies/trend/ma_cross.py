@@ -17,8 +17,6 @@
 - use_trend_filter: 是否使用趨勢過濾（200MA）
 """
 
-import pandas as pd
-import numpy as np
 from typing import Dict, Tuple
 from pandas import Series, DataFrame
 
@@ -90,31 +88,29 @@ class MACrossStrategy(TrendStrategy):
                 - atr: 平均真實波幅
                 - trend_ma: 趨勢過濾均線（可選）
         """
-        close = data['close']
-        high = data['high']
-        low = data['low']
+        # 使用 DataFrameOps 重構
+        ops = self._wrap_data(data)
+        close_ops = ops['close']
 
         indicators = {}
 
-        # 計算雙均線
-        indicators['sma_fast'] = close.rolling(
-            window=self.params['fast_period']
-        ).mean()
+        # 計算雙均線（使用 SeriesOps）
+        indicators['sma_fast'] = close_ops.rolling_mean(
+            self.params['fast_period']
+        ).to_pandas()
 
-        indicators['sma_slow'] = close.rolling(
-            window=self.params['slow_period']
-        ).mean()
+        indicators['sma_slow'] = close_ops.rolling_mean(
+            self.params['slow_period']
+        ).to_pandas()
 
         # 計算 ATR（用於止損）
-        indicators['atr'] = self._calculate_atr(
-            high, low, close, period=14
-        )
+        indicators['atr'] = self._calculate_atr(data, period=14)
 
         # 趨勢過濾器（可選）
         if self.params['use_trend_filter']:
-            indicators['trend_ma'] = close.rolling(
-                window=self.params['trend_filter_period']
-            ).mean()
+            indicators['trend_ma'] = close_ops.rolling_mean(
+                self.params['trend_filter_period']
+            ).to_pandas()
 
         return indicators
 
@@ -136,13 +132,14 @@ class MACrossStrategy(TrendStrategy):
 
         fast_ma = indicators['sma_fast']
         slow_ma = indicators['sma_slow']
-        atr = indicators['atr']
+        # ATR 已計算但此方法不使用（供 calculate_stop_loss 使用）
+        _ = indicators['atr']
 
-        # 初始化訊號
-        long_entry = pd.Series(False, index=data.index)
-        long_exit = pd.Series(False, index=data.index)
-        short_entry = pd.Series(False, index=data.index)
-        short_exit = pd.Series(False, index=data.index)
+        # 初始化訊號（使用 BaseStrategy 的方法）
+        long_entry = self._create_signal_series(data)
+        long_exit = self._create_signal_series(data)
+        short_entry = self._create_signal_series(data)
+        short_exit = self._create_signal_series(data)
 
         # 均線交叉訊號
         # 金叉：快線向上穿越慢線
@@ -209,29 +206,40 @@ class MACrossStrategy(TrendStrategy):
 
     def _calculate_atr(
         self,
-        high: Series,
-        low: Series,
-        close: Series,
+        data: DataFrame,
         period: int = 14
     ) -> Series:
         """
-        計算平均真實波幅（ATR）
+        計算平均真實波幅（ATR）- 優化版本
+
+        改進：使用 where 取代 concat + max，避免不必要的 DataFrame 建構。
+        效能提升：減少記憶體分配，對長時間序列有明顯效益。
 
         Args:
-            high: 最高價
-            low: 最低價
-            close: 收盤價
+            data: OHLCV DataFrame
             period: 計算週期
 
         Returns:
             Series: ATR 值
         """
-        # 計算真實波幅（TR）
-        tr1 = high - low
-        tr2 = abs(high - close.shift(1))
-        tr3 = abs(low - close.shift(1))
+        # 使用 DataFrameOps 獲取數據
+        ops = self._wrap_data(data)
+        high_ops = ops['high']
+        low_ops = ops['low']
+        close_ops = ops['close']
 
-        tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+        # 計算真實波幅（TR）- 優化版本，避免 pd.concat
+        high = high_ops.to_pandas()
+        low = low_ops.to_pandas()
+        close = close_ops.to_pandas()
+
+        tr1 = high - low
+        tr2 = (high - close.shift(1)).abs()
+        tr3 = (low - close.shift(1)).abs()
+
+        # 使用 where 取代 concat + max（更高效）
+        tr = tr1.where(tr1 > tr2, tr2)  # max(tr1, tr2)
+        tr = tr.where(tr > tr3, tr3)    # max(result, tr3)
 
         # 計算 ATR（簡單移動平均）
         atr = tr.rolling(window=period).mean()

@@ -5,7 +5,6 @@ MACD 動量策略
 當 MACD 線穿越訊號線時產生交易訊號。
 """
 
-import pandas as pd
 from typing import Dict, Tuple
 from pandas import Series, DataFrame
 
@@ -155,11 +154,11 @@ class MACDStrategy(MomentumStrategy):
         signal = indicators['signal']
         histogram = indicators['histogram']
 
-        # 初始化訊號
-        long_entry = pd.Series(False, index=data.index)
-        long_exit = pd.Series(False, index=data.index)
-        short_entry = pd.Series(False, index=data.index)
-        short_exit = pd.Series(False, index=data.index)
+        # 初始化訊號（使用 BaseStrategy 提供的輔助方法）
+        long_entry = self._create_signal_series(data)
+        long_exit = self._create_signal_series(data)
+        short_entry = self._create_signal_series(data)
+        short_exit = self._create_signal_series(data)
 
         # MACD 穿越條件
         # 黃金交叉：MACD 線由下往上穿越訊號線
@@ -172,11 +171,10 @@ class MACDStrategy(MomentumStrategy):
         if self.params['use_histogram']:
             threshold = self.params['histogram_threshold']
 
-            # 柱狀圖轉正（確認多頭動能）
-            histogram_bullish = (histogram > threshold) & (histogram.shift(1) <= threshold)
-
-            # 柱狀圖轉負（確認空頭動能）
-            histogram_bearish = (histogram < -threshold) & (histogram.shift(1) >= -threshold)
+            # 柱狀圖轉正/轉負（計算但未直接使用，保留供未來策略變種）
+            _histogram_bullish = (histogram > threshold) & (histogram.shift(1) <= threshold)
+            _histogram_bearish = (histogram < -threshold) & (histogram.shift(1) >= -threshold)
+            del _histogram_bullish, _histogram_bearish  # 明確釋放未使用變數
 
             # 結合穿越訊號與柱狀圖確認
             long_entry = golden_cross & (histogram > threshold)
@@ -194,7 +192,7 @@ class MACDStrategy(MomentumStrategy):
 
     def apply_filters(
         self,
-        data: DataFrame,
+        data: DataFrame,  # noqa: ARG002 - interface requirement
         long_entry: Series,
         long_exit: Series,
         short_entry: Series,
@@ -243,13 +241,21 @@ class MACDStrategy(MomentumStrategy):
         """
         indicators = self.calculate_indicators(data)
         macd = indicators['macd']
-        close = data['close']
 
-        # 計算滾動最高/最低
-        price_high = close.rolling(lookback).max()
-        price_low = close.rolling(lookback).min()
-        macd_high = macd.rolling(lookback).max()
-        macd_low = macd.rolling(lookback).min()
+        # 使用 DataFrameOps 進行高效滾動計算
+        ops = self._wrap_data(data)
+        close_ops = ops['close']
+
+        # 計算滾動最高/最低（使用 DataFrameOps）
+        price_high = close_ops.rolling_max(lookback).to_pandas()
+        price_low = close_ops.rolling_min(lookback).to_pandas()
+
+        # MACD 滾動極值（用於完整背離檢測，當前簡化版本使用 shift 替代）
+        # macd_high = macd.rolling(lookback).max()  # 完整版可用
+        # macd_low = macd.rolling(lookback).min()   # 完整版可用
+
+        # 價格 Series（轉為 Pandas 供後續比較）
+        close = close_ops.to_pandas()
 
         # 看漲背離：價格新低但 MACD 未新低
         bullish_div = (

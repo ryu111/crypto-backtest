@@ -20,7 +20,7 @@ def test_basic_instantiation():
     validator = BacktestValidator()
     assert validator is not None
     print("✅ PASS - BacktestValidator 成功實例化")
-    return True
+    # Test passed (no return value for pytest)
 
 
 def test_validate_all():
@@ -32,7 +32,7 @@ def test_validate_all():
     assert report is not None
     assert report.total > 0
     print(f"✅ PASS - 執行了 {report.total} 個測試")
-    return True
+    # Test passed (no return value for pytest)
 
 
 def test_validation_levels():
@@ -62,7 +62,7 @@ def test_validation_levels():
     print(f"    - 失敗: {l3_report.failed}")
 
     print("\n✅ PASS - 各層級驗證可正確執行")
-    return True
+    # Test passed (no return value for pytest)
 
 
 def test_individual_validations():
@@ -125,7 +125,7 @@ def test_individual_validations():
         print(f"    - validate_monte_carlo_distribution: ❌ {str(e)}")
 
     print("\n✅ PASS - 個別驗證功能可執行")
-    return True
+    # Test passed (no return value for pytest)
 
 
 def test_report_format():
@@ -146,7 +146,7 @@ def test_report_format():
     assert "失敗" in summary
 
     print("\n✅ PASS - 報告格式正確")
-    return True
+    # Test passed (no return value for pytest)
 
 
 def main():

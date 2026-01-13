@@ -12,7 +12,8 @@ from src.automation.selector import StrategySelector, StrategyStats
 def mock_registry():
     """模擬策略註冊表"""
     registry = Mock()
-    registry.list_strategies.return_value = [
+    # StrategySelector 呼叫的是 list_all()，不是 list_strategies()
+    registry.list_all.return_value = [
         'momentum',
         'mean_reversion',
         'breakout',
@@ -92,7 +93,7 @@ class TestStrategyStats:
     def test_failure_rate(self):
         """測試失敗率計算"""
         stats = StrategyStats(name='test', attempts=10, successes=7)
-        assert stats.failure_rate == 0.3
+        assert stats.failure_rate == pytest.approx(0.3)
 
 
 class TestStrategySelector:
@@ -119,7 +120,7 @@ class TestStrategySelector:
         strategy = selector.select('ucb')
 
         # UCB 應該平衡探索和利用
-        assert strategy in selector.registry.list_strategies()
+        assert strategy in selector.registry.list_all()
 
         # 嘗試次數少的策略（grid_trading）應該有機會被選中
         # 因為探索獎勵高
@@ -135,6 +136,10 @@ class TestStrategySelector:
 
     def test_update_stats(self, selector):
         """測試更新統計"""
+        # 先初始化快取，載入 mock 的歷史統計
+        initial_stats = selector.get_strategy_stats()
+        assert initial_stats['momentum'].attempts == 10  # 確認初始值
+
         result = {
             'passed': True,
             'sharpe_ratio': 2.5,
@@ -208,7 +213,7 @@ class TestStrategySelector:
         assert 'alternatives' in recommendation
 
         assert recommendation['method'] == 'ensemble'
-        assert recommendation['strategy'] in selector.registry.list_strategies()
+        assert recommendation['strategy'] in selector.registry.list_all()
 
     def test_random_select(self, selector):
         """測試隨機選擇"""
@@ -221,7 +226,7 @@ class TestStrategySelector:
 
         # 所有選擇都應該在可用策略中
         for s in selections:
-            assert s in selector.registry.list_strategies()
+            assert s in selector.registry.list_all()
 
     def test_best_select(self, selector):
         """測試選擇最佳策略"""
@@ -237,7 +242,7 @@ class TestStrategySelector:
 
         # 應該回退到隨機選擇
         strategy = selector._best_select()
-        assert strategy in selector.registry.list_strategies()
+        assert strategy in selector.registry.list_all()
 
     def test_reset_cache(self, selector):
         """測試重置快取"""
@@ -283,7 +288,7 @@ class TestStrategySelector:
         # 有可能選擇 grid_trading（因為 UCB = inf）
         # 但由於有隨機性，不保證一定選中
         # 只測試不會崩潰
-        assert strategy in selector.registry.list_strategies()
+        assert strategy in selector.registry.list_all()
 
 
 class TestIntegration:
