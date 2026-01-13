@@ -404,48 +404,27 @@ class BacktestEngine:
         data_pandas = ensure_pandas(self.data)
         close = data_pandas['close']
 
-        # 根據持倉模式決定訊號處理
-        if self.config.position_mode == "one-way":
-            # 單向持倉：做多和做空互斥
-            entries = long_entry | short_entry
-            exits = long_exit | short_exit
-            direction = pd.Series(0, index=close.index)
-            direction[long_entry] = 1
-            direction[short_entry] = -1
+        # VectorBT 使用 size 參數模擬槓桿效果
+        # size=np.inf + size_type='value' = 使用全部可用資金
+        # 槓桿效果通過調整 init_cash 實現（init_cash * leverage）
+        effective_cash = self.config.initial_capital * self.config.leverage
 
-            # VectorBT 使用 size 參數模擬槓桿效果
-            # size = inf 表示全倉投入（再乘以槓桿）
-            effective_size = self.config.initial_capital * self.config.leverage
-
-            pf = vbt.Portfolio.from_signals(
-                close,
-                entries=entries,
-                exits=exits,
-                direction=direction,
-                init_cash=self.config.initial_capital,
-                size=effective_size,
-                size_type='amount',  # 使用固定金額
-                fees=self.config.taker_fee,
-                slippage=self.config.slippage,
-                freq=self.config.timeframe
-            )
-        else:
-            # 對沖模式：可同時持有多空
-            effective_size = self.config.initial_capital * self.config.leverage
-
-            pf = vbt.Portfolio.from_signals(
-                close,
-                entries=long_entry,
-                exits=long_exit,
-                short_entries=short_entry,
-                short_exits=short_exit,
-                init_cash=self.config.initial_capital,
-                size=effective_size,
-                size_type='amount',
-                fees=self.config.taker_fee,
-                slippage=self.config.slippage,
-                freq=self.config.timeframe
-            )
+        # 統一使用 short_entries/short_exits 方式建立 Portfolio
+        # 這是 VectorBT 正確的多空訊號處理方式
+        # position_mode 的差異在於風控邏輯，而非 VectorBT 建立方式
+        pf = vbt.Portfolio.from_signals(
+            close,
+            entries=long_entry,
+            exits=long_exit,
+            short_entries=short_entry,
+            short_exits=short_exit,
+            init_cash=effective_cash,
+            size=np.inf,
+            size_type='value',
+            fees=self.config.taker_fee,
+            slippage=self.config.slippage,
+            freq=self.config.timeframe
+        )
 
         return pf
 
@@ -461,11 +440,13 @@ class BacktestEngine:
         if len(trades) == 0:
             return 0.0, 0.0
 
-        # 計算每筆交易的持倉時間
-        trades['duration_hours'] = (
-            (trades['Exit Timestamp'] - trades['Entry Timestamp'])
-            .dt.total_seconds() / 3600
-        )
+        # 計算每筆交易的持倉時間（防禦性處理：確保時間戳為 datetime 類型）
+        try:
+            entry_ts = pd.to_datetime(trades['Entry Timestamp'])
+            exit_ts = pd.to_datetime(trades['Exit Timestamp'])
+            trades['duration_hours'] = (exit_ts - entry_ts).dt.total_seconds() / 3600
+        except (KeyError, TypeError):
+            trades['duration_hours'] = 0.0
 
         # 計算資金費率次數
         trades['funding_count'] = (
@@ -538,11 +519,14 @@ class BacktestEngine:
         # 期望值
         expectancy = avg_win * win_rate + avg_loss * (1 - win_rate)
 
-        # 平均持倉時間
-        trades_df['duration'] = (
-            trades_df['Exit Timestamp'] - trades_df['Entry Timestamp']
-        ).dt.total_seconds() / 3600
-        avg_duration = trades_df['duration'].mean()
+        # 平均持倉時間（防禦性處理：確保時間戳為 datetime 類型）
+        try:
+            entry_ts = pd.to_datetime(trades_df['Entry Timestamp'])
+            exit_ts = pd.to_datetime(trades_df['Exit Timestamp'])
+            duration_hours = (exit_ts - entry_ts).dt.total_seconds() / 3600
+            avg_duration = duration_hours.mean()
+        except (KeyError, TypeError):
+            avg_duration = 0.0
 
         return {
             'total_trades': total_trades,
