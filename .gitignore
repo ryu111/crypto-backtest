@@ -70,3 +70,6 @@ logs/
 !data/ohlcv/.gitkeep
 !data/funding_rates/.gitkeep
 !results/.gitkeep
+
+# Runtime checkpoints
+checkpoints/
