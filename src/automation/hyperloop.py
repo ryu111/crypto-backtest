@@ -316,6 +316,17 @@ class HyperLoopController:
         if self.verbose:
             logger.info("\n[1/4] 預載資料到共享記憶體...")
 
+        # 先清理舊的共享池（如果存在）
+        if self.shared_pool is not None:
+            try:
+                self.shared_pool.cleanup()
+            except Exception:
+                pass  # 忽略清理錯誤
+            self.shared_pool = None
+
+        # 重置清理標誌，允許新一輪清理
+        self._cleaned_up = False
+
         # 建立共享資料池
         self.shared_pool = create_shared_pool(
             data_dir=self.config.data_dir,
@@ -560,11 +571,15 @@ class HyperLoopController:
         self._cleanup()
 
     def __del__(self):
-        """析構函數：確保共享記憶體被清理，避免洩漏"""
-        try:
-            self._cleanup()
-        except Exception:
-            pass  # 忽略析構時的錯誤
+        """析構函數
+
+        注意：在多進程環境中，不應在 __del__ 中調用 _cleanup()，
+        因為 Python GC 可能在不可預期的時間點調用 __del__。
+        共享記憶體的清理應該由 run_loop() 的 finally 塊或
+        顯式調用 _cleanup() 來處理。
+        """
+        # 不在 __del__ 中調用 _cleanup()，避免意外清理共享記憶體
+        pass
 
 
 # ===== Worker 函數（在子進程中執行） =====
@@ -633,6 +648,20 @@ def _worker_execute_task(
             best_params = opt_result.best_params
             best_sharpe = opt_result.best_sharpe
 
+            # 從 all_results 中找到最佳結果的完整資訊
+            best_max_dd = 0.5  # 預設值
+            best_win_rate = 0.5  # 預設值
+            best_total_return = 0.0  # 預設值
+            best_total_trades = 0  # 預設值
+            if opt_result.all_results:
+                # 找到 sharpe 最高的結果
+                best_result = max(opt_result.all_results, key=lambda r: r.sharpe_ratio)
+                best_max_dd = best_result.max_drawdown
+                best_win_rate = best_result.win_rate
+                best_total_return = getattr(best_result, 'total_return', 0.0)
+                # 從非零 returns 估算交易數
+                best_total_trades = getattr(best_result, 'total_trades', len(opt_result.all_results))
+
         else:
             # CPU 優化（簡化版本）
             # TODO: 整合 BayesianOptimizer 實現完整優化
@@ -656,6 +685,12 @@ def _worker_execute_task(
             returns = _calculate_returns(prices, signals)
             best_sharpe = _calculate_sharpe(returns)
 
+            # CPU 暫時使用預設值
+            best_max_dd = 0.5
+            best_win_rate = 0.5
+            best_total_return = 0.0
+            best_total_trades = 0
+
         duration = time.time() - start_time
 
         # 返回結果
@@ -667,6 +702,10 @@ def _worker_execute_task(
             'timeframe': task.timeframe,
             'best_params': best_params,
             'sharpe': best_sharpe,
+            'max_drawdown': best_max_dd,
+            'win_rate': best_win_rate,
+            'total_return': best_total_return,
+            'total_trades': best_total_trades,
             'duration': duration,
             'used_gpu': use_gpu
         }
@@ -695,18 +734,50 @@ def _create_strategy_fn(strategy) -> Callable:
 
     Returns:
         Callable: 策略函數 (data, params) -> signals
+                  或 (data, **kwargs) -> signals
+
+    Note:
+        支援兩種調用方式：
+        1. strategy_fn(price_data, params_dict)  - GPU batch optimizer
+        2. strategy_fn(price_data, **params)     - Metal engine
+
+        策略返回格式處理：
+        - 如果返回 tuple (long_entry, short_entry, ...)：轉換為 +1/-1/0 信號
+        - 如果返回單一 Series/ndarray：直接使用
     """
-    def strategy_fn(price_data: np.ndarray, params: Dict) -> np.ndarray:
+    def strategy_fn(price_data: np.ndarray, params: Optional[Dict] = None, **kwargs) -> np.ndarray:
+        # 處理兩種調用方式
+        # 1. strategy_fn(data, {'rsi_period': 14})  -> params 是字典
+        # 2. strategy_fn(data, rsi_period=14)       -> kwargs 包含參數
+        if params is None:
+            params = kwargs
+        elif kwargs:
+            # 如果兩者都有，合併（kwargs 優先）
+            params = {**params, **kwargs}
+
         # 更新策略參數
         for key, value in params.items():
-            setattr(strategy, key, value)
+            strategy.params[key] = value
 
         # 生成信號
         df = pd.DataFrame(price_data)
         df.columns = pd.Index(['open', 'high', 'low', 'close', 'volume'])
-        signals = strategy.generate_signals(df)
+        result = strategy.generate_signals(df)
 
-        return np.asarray(signals)
+        # 處理不同的返回格式
+        if isinstance(result, tuple):
+            # 策略返回 (long_entry, short_entry, long_exit, short_exit)
+            # 轉換為 +1 (做多) / -1 (做空) / 0 (無持倉) 信號
+            long_entry = np.asarray(result[0]).astype(float)
+            short_entry = np.asarray(result[1]).astype(float)
+
+            # 簡單信號：long_entry 為 +1，short_entry 為 -1
+            # 注意：這是簡化版本，不考慮 exit 信號
+            signals = long_entry - short_entry
+        else:
+            signals = np.asarray(result)
+
+        return signals
 
     return strategy_fn
 

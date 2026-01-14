@@ -221,10 +221,29 @@ class MetalBacktestEngine:
     # 注意：這些函數只在 MLX 可用時被調用，由 _mlx_backtest 保證
 
     def _calculate_returns_mlx(self, prices: Any, signals: Any) -> Any:
-        """計算報酬（MLX）"""
+        """計算報酬（MLX）
+
+        使用 t 時刻的信號預測 t+1 的漲跌，報酬 = 信號 × 價格變化率。
+        正確處理信號長度可能與價格長度不同的情況。
+        """
         _mx = mx  # type: ignore[assignment]
+        # 價格變化：diff 後長度 N-1
         price_changes = _mx.diff(prices[:, 0])  # 假設第一列是收盤價
-        returns = price_changes * signals[:-1]  # 對齊訊號
+
+        # 信號對齊：信號長度可能是 N（與價格相同）或 N-1（已經 shift 過）
+        # 我們使用 min_len 來確保正確對齊
+        signal_len = signals.shape[0]
+        change_len = price_changes.shape[0]
+
+        # 如果信號長度等於價格長度，使用 signals[:-1]
+        # 如果信號長度等於價格變化長度，直接使用
+        if signal_len > change_len:
+            aligned_signals = signals[:change_len]
+        else:
+            aligned_signals = signals
+
+        min_len = min(change_len, aligned_signals.shape[0])
+        returns = price_changes[:min_len] * aligned_signals[:min_len]
         return returns
 
     def _calculate_sharpe_mlx(self, returns: Any, periods_per_year: int = 252) -> Any:
@@ -253,10 +272,28 @@ class MetalBacktestEngine:
     # 注意：這些函數只在 PyTorch MPS 可用時被調用，由 _torch_backtest 保證
 
     def _calculate_returns_torch(self, prices: Any, signals: Any) -> Any:
-        """計算報酬（PyTorch）"""
+        """計算報酬（PyTorch）
+
+        使用 t 時刻的信號預測 t+1 的漲跌，報酬 = 信號 × 價格變化率。
+        正確處理信號長度可能與價格長度不同的情況。
+        """
         _torch = torch  # type: ignore[assignment]
+        # 價格變化：diff 後長度 N-1
         price_changes = _torch.diff(prices[:, 0])
-        returns = price_changes * signals[:-1]
+
+        # 信號對齊：信號長度可能是 N（與價格相同）或 N-1（已經 shift 過）
+        signal_len = signals.shape[0]
+        change_len = price_changes.shape[0]
+
+        # 如果信號長度等於價格長度，使用 signals[:-1]
+        # 如果信號長度等於價格變化長度，直接使用
+        if signal_len > change_len:
+            aligned_signals = signals[:change_len]
+        else:
+            aligned_signals = signals
+
+        min_len = min(change_len, aligned_signals.shape[0])
+        returns = price_changes[:min_len] * aligned_signals[:min_len]
         return returns
 
     def _calculate_sharpe_torch(self, returns: Any, periods_per_year: int = 252) -> Any:

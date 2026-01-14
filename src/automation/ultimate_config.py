@@ -561,8 +561,9 @@ class UltimateLoopConfig:
             # ===== 完整標的和時間框架 =====
             symbols=['BTCUSDT', 'ETHUSDT'],
             timeframes=[
-                '1h', '2h', '4h', '6h', '8h',   # 中線為主
-                '12h', '1d'                     # 配合長線
+                '15m', '30m',           # 短線
+                '1h', '4h',             # 中線
+                '1d'                    # 長線
             ],
 
             # ===== 啟用所有交易優化功能 =====

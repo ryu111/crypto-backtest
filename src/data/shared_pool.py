@@ -457,11 +457,19 @@ class SharedDataPool:
         self.cleanup()
 
     def __del__(self):
-        """析構函數：確保共享記憶體被清理，避免洩漏"""
-        try:
-            self.cleanup()
-        except Exception:
-            pass  # 忽略析構時的錯誤
+        """析構函數
+
+        注意：在多進程環境中，不應在 __del__ 中調用 cleanup()，
+        因為 Python GC 可能在不可預期的時間點調用 __del__。
+        共享記憶體的清理應該由顯式調用 cleanup() 或使用 context manager 來處理。
+        """
+        # 只在非建立者模式下關閉引用（不 unlink）
+        # 建立者應該顯式調用 cleanup() 來清理共享記憶體
+        if not self._is_creator and not self._cleaned_up:
+            try:
+                self.detach()
+            except Exception:
+                pass  # 忽略析構時的錯誤
 
     def __repr__(self) -> str:
         return (

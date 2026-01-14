@@ -978,9 +978,15 @@ class UltimateLoopController:
                     n_iterations=len(strategies)
                 )
 
-                # 轉換 HyperLoop 結果為 OptimizationResult 格式
-                # 這裡返回摘要，供後續驗證階段使用
-                return hyperloop_summary
+                # 轉換 HyperLoop 結果為 MultiObjectiveResult 格式
+                # 這樣後續驗證階段可以正確處理 Pareto 解
+                result = self._convert_hyperloop_to_multi_objective_result(hyperloop_summary)
+
+                # 更新 Pareto 解統計
+                if hasattr(result, 'pareto_front') and result.pareto_front:
+                    self.summary.total_pareto_solutions += len(result.pareto_front)
+
+                return result
 
             except Exception as e:
                 logger.error(f"HyperLoop optimization failed: {e}")
@@ -1148,8 +1154,10 @@ class UltimateLoopController:
             """驗證單個解"""
             async with semaphore:
                 try:
-                    # 提取策略名稱和參數
-                    strategy_name = getattr(solution, 'strategy_name', None)
+                    # 提取策略名稱和參數（優先檢查 _strategy_name）
+                    strategy_name = getattr(solution, '_strategy_name', None)
+                    if not strategy_name:
+                        strategy_name = getattr(solution, 'strategy_name', None)
                     params = getattr(solution, 'params', {})
 
                     if not strategy_name:
@@ -1292,7 +1300,8 @@ class UltimateLoopController:
                     strategy_info={
                         'name': combined_strategy_name,
                         'type': 'multi_objective',
-                        'version': '1.0'
+                        'version': '1.0',
+                        'params': params  # 包含策略參數
                     },
                     config={
                         'iteration': self.summary.total_iterations,
@@ -1991,6 +2000,124 @@ class UltimateLoopController:
         result = await asyncio.get_event_loop().run_in_executor(None, optimize_task)
 
         return result
+
+    def _convert_hyperloop_to_multi_objective_result(
+        self,
+        hyperloop_summary: Any
+    ) -> Any:
+        """將 HyperLoopSummary 轉換為 MultiObjectiveResult 格式
+
+        Args:
+            hyperloop_summary: HyperLoop 執行摘要
+
+        Returns:
+            MultiObjectiveResult 格式的結果
+        """
+        if not OPTIMIZER_AVAILABLE or MultiObjectiveResult is None or ParetoSolution is None:
+            logger.warning("Optimizer not available, cannot convert HyperLoop result")
+            return hyperloop_summary
+
+        if ObjectiveResult is None:
+            logger.warning("ObjectiveResult not available, returning raw HyperLoop result")
+            return hyperloop_summary
+
+        # 從 HyperLoop 結果提取迭代結果
+        iteration_results = getattr(hyperloop_summary, 'iteration_results', [])
+        if not iteration_results:
+            logger.warning("No iteration results in HyperLoop summary")
+            # 返回空的 MultiObjectiveResult 而非原始 summary
+            return MultiObjectiveResult(
+                pareto_front=[],
+                all_solutions=[],
+                n_trials=0,
+                study=None,
+                optimization_time=getattr(hyperloop_summary, 'total_duration_seconds', 0.0),
+                n_completed_trials=0,
+                n_failed_trials=getattr(hyperloop_summary, 'failed_iterations', 0)
+            )
+
+        # 建立所有解的 objectives 列表（用於 Pareto rank 計算）
+        all_objectives = []
+        for result in iteration_results:
+            sharpe = result.get('sharpe', 0.0)
+            max_dd = result.get('max_drawdown', 0.5)  # 預設 50% 如果沒有
+            win_rate = result.get('win_rate', 0.5)    # 預設 50% 如果沒有
+            all_objectives.append({
+                'sharpe_ratio': sharpe,
+                'max_drawdown': max_dd,
+                'win_rate': win_rate
+            })
+
+        # 計算 Pareto ranks
+        pareto_ranks = self._calculate_pareto_ranks(all_objectives)
+
+        # 建立 ParetoSolution 列表
+        pareto_solutions = []
+        for idx, result in enumerate(iteration_results):
+            objectives_list = [
+                ObjectiveResult(
+                    name='sharpe_ratio',
+                    value=result.get('sharpe', 0.0),
+                    direction='maximize'
+                ),
+                ObjectiveResult(
+                    name='max_drawdown',
+                    value=result.get('max_drawdown', 0.5),
+                    direction='minimize'
+                ),
+                ObjectiveResult(
+                    name='win_rate',
+                    value=result.get('win_rate', 0.5),
+                    direction='maximize'
+                ),
+                # 新增：total_return 和 total_trades
+                ObjectiveResult(
+                    name='total_return',
+                    value=result.get('total_return', 0.0),
+                    direction='maximize'
+                ),
+                ObjectiveResult(
+                    name='total_trades',
+                    value=float(result.get('total_trades', 0)),
+                    direction='maximize'
+                )
+            ]
+
+            solution = ParetoSolution(
+                params=result.get('best_params', {}),
+                objectives=objectives_list,
+                rank=pareto_ranks[idx],
+                crowding_distance=0.0,
+                trial_number=idx
+            )
+            # 附加策略資訊
+            solution._strategy_name = result.get('strategy_name', 'unknown')
+            solution._symbol = result.get('symbol', 'BTCUSDT')
+            solution._timeframe = result.get('timeframe', '1h')
+            # 附加額外指標（供記錄器使用）
+            solution._total_return = result.get('total_return', 0.0)
+            solution._total_trades = result.get('total_trades', 0)
+            pareto_solutions.append(solution)
+
+        # Pareto front = rank 0 的解
+        pareto_front = [s for s in pareto_solutions if s.rank == 0]
+
+        if self.verbose:
+            logger.info(
+                f"Converted HyperLoop result: {len(iteration_results)} iterations -> "
+                f"{len(pareto_front)} Pareto solutions"
+            )
+
+        # 建立 MultiObjectiveResult
+        return MultiObjectiveResult(
+            pareto_front=pareto_front,
+            all_solutions=pareto_solutions,
+            n_trials=len(iteration_results),
+            study=None,
+            optimization_time=getattr(hyperloop_summary, 'total_duration_seconds', 0.0),
+            n_completed_trials=getattr(hyperloop_summary, 'successful_iterations', 0),
+            n_failed_trials=getattr(hyperloop_summary, 'failed_iterations', 0)
+        )
 
     def _convert_gpu_to_multi_objective_result(
         self,
