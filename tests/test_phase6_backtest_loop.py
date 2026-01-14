@@ -113,7 +113,13 @@ def test_backtest_loop_config_defaults():
     # 檢查預設值
     assert config.strategies == []
     assert config.symbols == ['BTCUSDT', 'ETHUSDT']
-    assert config.timeframes == ['1h']
+    # 預設包含多個時間框架
+    expected_timeframes = [
+        '1m', '3m', '5m', '15m', '30m',      # 短線
+        '1h', '2h', '4h', '6h', '8h',        # 中線（8h 對齊資金費率）
+        '12h', '1d', '3d', '1w'              # 長線
+    ]
+    assert config.timeframes == expected_timeframes
     assert config.n_iterations == 100
     assert config.selection_mode == 'epsilon_greedy'
     assert config.epsilon == 0.2

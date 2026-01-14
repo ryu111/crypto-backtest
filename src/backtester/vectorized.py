@@ -37,8 +37,8 @@ def vectorized_sma(series: Union[Any, pd.Series], period: int) -> Union[Any, pd.
         SMA 序列
     """
     if POLARS_AVAILABLE and pl is not None and isinstance(series, pl.Series):
-        # 使用 min_periods=1 避免 None 填充問題
-        return series.rolling_mean(window_size=period, min_periods=1)
+        # 使用 min_samples=1 避免 None 填充問題
+        return series.rolling_mean(window_size=period, min_samples=1)
     else:
         return series.rolling(window=period, min_periods=1).mean()
 
@@ -239,7 +239,7 @@ def vectorized_positions(
         # Polars 實作：使用 cumulative operations
         if position_mode == "one-way":
             # 單向持倉：訊號累積（但需處理反向訊號）
-            positions = signals.fill_null(0).shift_and_fill(fill_value=0)
+            positions = signals.fill_null(0).shift(1, fill_value=0)
         else:
             # 對沖模式：可同時多空
             positions = signals.fill_null(0).cum_sum()

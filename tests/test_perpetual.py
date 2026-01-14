@@ -35,7 +35,7 @@ class TestPerpetualCalculator:
             funding_rate=0.0001,
             direction=1
         )
-        assert cost == 1.0
+        assert cost == pytest.approx(1.0)
 
     def test_calculate_funding_cost_short(self, calc):
         """測試做空的資金費率成本計算"""
@@ -63,7 +63,7 @@ class TestPerpetualCalculator:
             entry_price=50000,
             leverage=10
         )
-        assert margin == 5000.0
+        assert margin == pytest.approx(5000.0)
 
     def test_calculate_margin_ratio(self, calc):
         """測試保證金率計算"""
@@ -91,7 +91,7 @@ class TestPerpetualCalculator:
             direction=1
         )
         # 強平價 = 50000 * (1 - 0.1 + 0.005) = 45250
-        assert liq_price == 45250.0
+        assert liq_price == pytest.approx(45250.0)
 
     def test_liquidation_price_short(self, calc):
         """測試做空強平價格計算"""
@@ -101,7 +101,7 @@ class TestPerpetualCalculator:
             direction=-1
         )
         # 強平價 = 50000 * (1 + 0.1 - 0.005) = 54750
-        assert liq_price == 54750.0
+        assert liq_price == pytest.approx(54750.0)
 
     def test_check_liquidation_long_safe(self, calc):
         """測試做多未爆倉情況"""
@@ -166,7 +166,7 @@ class TestPerpetualCalculator:
             size=1,
             direction=1
         )
-        assert pnl == 2000.0
+        assert pnl == pytest.approx(2000.0)
 
     def test_unrealized_pnl_long_loss(self, calc):
         """測試做多浮虧計算"""
@@ -186,7 +186,7 @@ class TestPerpetualCalculator:
             size=1,
             direction=-1
         )
-        assert pnl == 2000.0
+        assert pnl == pytest.approx(2000.0)
 
     def test_unrealized_pnl_short_loss(self, calc):
         """測試做空浮虧計算"""
@@ -204,7 +204,7 @@ class TestPerpetualCalculator:
             pnl=500,
             margin=5000
         )
-        assert pnl_pct == 10.0
+        assert pnl_pct == pytest.approx(10.0)
 
     # ===== Mark Price 和基差測試 =====
 
@@ -214,8 +214,8 @@ class TestPerpetualCalculator:
             perp_price=50500,
             spot_price=50000
         )
-        assert basis_abs == 500.0
-        assert basis_pct == 1.0
+        assert basis_abs == pytest.approx(500.0)
+        assert basis_pct == pytest.approx(1.0)
 
     def test_calculate_basis_discount(self, calc):
         """測試負基差計算"""
@@ -244,7 +244,7 @@ class TestPerpetualCalculator:
             direction=1
         )
         # 破產價 = 50000 * (1 - 0.1) = 45000
-        assert bankruptcy_price == 45000.0
+        assert bankruptcy_price == pytest.approx(45000.0)
 
     def test_bankruptcy_price_short(self, calc):
         """測試做空破產價格計算"""
@@ -254,7 +254,7 @@ class TestPerpetualCalculator:
             direction=-1
         )
         # 破產價 = 50000 * (1 + 0.1) = 55000
-        assert bankruptcy_price == 55000.0
+        assert bankruptcy_price == pytest.approx(55000.0)
 
     def test_estimate_max_position_size(self, calc):
         """測試最大倉位估算"""
@@ -371,8 +371,8 @@ class TestPerpetualRiskMonitor:
         assert 'margin_ratio' in report
         assert 'unrealized_pnl' in report
 
-        assert report['liquidation_price'] == 45250.0
-        assert report['unrealized_pnl'] == -2000.0
+        assert report['liquidation_price'] == pytest.approx(45250.0)
+        assert report['unrealized_pnl'] == pytest.approx(-2000.0)
         assert report['current_price'] == 48000
         assert report['entry_price'] == 50000
 
@@ -407,7 +407,7 @@ class TestFundingRateIntegration:
         )
 
         # 做多支付 2 次，每次 1 USDT
-        assert adjusted_equity.iloc[-1] == 9998.0
+        assert adjusted_equity.iloc[-1] == pytest.approx(9998.0)
 
 
 if __name__ == '__main__':

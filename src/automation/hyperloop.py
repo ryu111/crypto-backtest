@@ -224,7 +224,9 @@ class HyperLoopController:
             verbose=verbose
         ) if self.config.use_gpu else None
 
-        self.recorder = ExperimentRecorder()
+        # ExperimentRecorder（使用 context manager 管理資源）
+        # 在 run_loop 中使用 with 語句確保正確關閉
+        self.recorder: Optional[ExperimentRecorder] = None
 
         # 共享資料池（稍後初始化）
         self.shared_pool: Optional[SharedDataPool] = None
@@ -280,36 +282,41 @@ class HyperLoopController:
             logger.info(f"開始 HyperLoop (共 {n_iterations} 次迭代)")
             logger.info(f"{'='*70}")
 
-        try:
-            # 1. 預載所有資料到共享記憶體
-            await self._preload_all_data()
+        # 使用 context manager 管理 ExperimentRecorder 資源
+        with ExperimentRecorder() as recorder:
+            self.recorder = recorder
 
-            # 2. 建立策略批次
-            batches = self._create_strategy_batches(n_iterations)
+            try:
+                # 1. 預載所有資料到共享記憶體
+                await self._preload_all_data()
 
-            # 3. 並行執行
-            for batch_idx, batch in enumerate(batches):
+                # 2. 建立策略批次
+                batches = self._create_strategy_batches(n_iterations)
+
+                # 3. 並行執行
+                for batch_idx, batch in enumerate(batches):
+                    if self.verbose:
+                        logger.info(f"\n執行批次 {batch_idx + 1}/{len(batches)} (共 {len(batch)} 個任務)")
+
+                    results = await self._execute_batch_parallel(batch)
+                    self._process_and_record_results(results)
+
+                # 4. 計算統計
+                self.summary.total_duration_seconds = time.time() - start_time
+                self.summary.avg_iteration_time = (
+                    self.summary.total_duration_seconds / n_iterations
+                    if n_iterations > 0 else 0
+                )
+
                 if self.verbose:
-                    logger.info(f"\n執行批次 {batch_idx + 1}/{len(batches)} (共 {len(batch)} 個任務)")
+                    logger.info(self.summary.summary_text())
 
-                results = await self._execute_batch_parallel(batch)
-                self._process_and_record_results(results)
+                return self.summary
 
-            # 4. 計算統計
-            self.summary.total_duration_seconds = time.time() - start_time
-            self.summary.avg_iteration_time = (
-                self.summary.total_duration_seconds / n_iterations
-                if n_iterations > 0 else 0
-            )
-
-            if self.verbose:
-                logger.info(self.summary.summary_text())
-
-            return self.summary
-
-        finally:
-            # 確保清理資源
-            self._cleanup()
+            finally:
+                # 確保清理資源
+                self._cleanup()
+                # recorder 會在 with block 結束時自動關閉
 
     async def _preload_all_data(self):
         """預載所有資料到共享記憶體"""

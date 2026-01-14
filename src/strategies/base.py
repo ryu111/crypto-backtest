@@ -59,11 +59,20 @@ class BaseStrategy(ABC):
         Args:
             **kwargs: 覆寫預設參數
         """
-        # 初始化實例屬性（避免類別屬性共享問題）
-        self.params: Dict[str, Any] = {}
-        self.param_space: Dict[str, Any] = {}
+        # 強制複製類別屬性為實例屬性（避免類別屬性共享問題）
+        # 即使子類已經定義了 params/param_space 類別屬性，
+        # 也要為每個實例建立獨立副本
+        if hasattr(self.__class__, 'params'):
+            self.params: Dict[str, Any] = self.__class__.params.copy()
+        else:
+            self.params: Dict[str, Any] = {}
 
-        # 合併預設參數與傳入參數
+        if hasattr(self.__class__, 'param_space'):
+            self.param_space: Dict[str, Any] = self.__class__.param_space.copy()
+        else:
+            self.param_space: Dict[str, Any] = {}
+
+        # 合併傳入參數
         self.params.update(kwargs)
 
         # 驗證參數

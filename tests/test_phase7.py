@@ -125,31 +125,24 @@ class TestExperimentRecorder:
     def test_get_strategy_stats_no_experiments(self):
         """測試無實驗記錄時返回 None"""
         from src.learning.recorder import ExperimentRecorder
-        import tempfile
-        import os
+        from src.db import Repository
+        from unittest.mock import MagicMock
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # 建立臨時 experiments.json
-            exp_file = Path(tmpdir) / 'learning' / 'experiments.json'
-            exp_file.parent.mkdir(parents=True, exist_ok=True)
-            exp_file.write_text('{"version": "1.0", "metadata": {"total_experiments": 0}, "experiments": []}')
+        # 使用 mock 來測試，不需要實際建立資料庫
+        recorder = ExperimentRecorder.__new__(ExperimentRecorder)
 
-            insights_file = Path(tmpdir) / 'learning' / 'insights.md'
-            insights_file.write_text('# Insights')
+        # 建立 mock repository
+        mock_repo = MagicMock(spec=Repository)
+        mock_repo.query_experiments_by_strategy_prefix.return_value = []
 
-            # 暫時修改專案根目錄（這是個 hack，用於測試）
-            recorder = ExperimentRecorder.__new__(ExperimentRecorder)
-            recorder.project_root = Path(tmpdir)
-            recorder.experiments_file = exp_file
+        recorder.repo = mock_repo
 
-            # 建立 storage 和 insights_manager mock
-            from src.learning.storage import TimeSeriesStorage
-            from src.learning.insights import InsightsManager
-            recorder.storage = TimeSeriesStorage(Path(tmpdir))
-            recorder.insights_manager = InsightsManager(insights_file)
+        # 測試
+        result = recorder.get_strategy_stats('nonexistent')
+        assert result is None
 
-            result = recorder.get_strategy_stats('nonexistent')
-            assert result is None
+        # 驗證呼叫
+        mock_repo.query_experiments_by_strategy_prefix.assert_called_once()
 
     def test_passing_grades_constant(self):
         """測試 PASSING_GRADES 常數存在"""

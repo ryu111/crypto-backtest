@@ -21,6 +21,10 @@ class MockStrategyRegistry:
     def list_strategies(self):
         return self.strategies.copy()
 
+    def list_all(self):
+        """返回所有策略名稱（與 list_strategies 相同）"""
+        return self.list_strategies()
+
 
 class MockExperimentRecorder:
     """模擬實驗記錄器"""
@@ -28,9 +32,9 @@ class MockExperimentRecorder:
     def __init__(self):
         self.stats_db = {}
 
-    def record_strategy_stats(self, name, stats):
-        """記錄統計"""
-        self.stats_db[name] = stats
+    def record_strategy_stats(self, stats):
+        """記錄統計（接受 StrategyStats 物件）"""
+        self.stats_db[stats.name] = stats
 
     def get_strategy_stats(self, name):
         """取得統計"""
@@ -74,8 +78,8 @@ class TestStrategyStatsDataclass:
         """測試成功率計算"""
         stat = StrategyStats(name='test', attempts=10, successes=7)
 
-        assert stat.success_rate == 0.7
-        assert stat.failure_rate == 0.3
+        assert stat.success_rate == pytest.approx(0.7)
+        assert stat.failure_rate == pytest.approx(0.3)
 
     def test_success_rate_zero_attempts(self):
         """測試零嘗試次數的成功率"""
@@ -285,8 +289,8 @@ class TestUpdateStats:
 
         assert stat.attempts == 1
         assert stat.successes == 1
-        assert stat.avg_sharpe == 1.8
-        assert stat.best_sharpe == 1.8
+        assert stat.avg_sharpe == pytest.approx(1.8)
+        assert stat.best_sharpe == pytest.approx(1.8)
         assert stat.last_params == {'period': 20}
 
     def test_update_stats_incremental_avg(self, selector):
@@ -310,7 +314,7 @@ class TestUpdateStats:
         # 平均 = (2.0 + 1.0) / 2 = 1.5
         assert stat.attempts == 2
         assert stat.successes == 1  # 只有第一次通過
-        assert stat.avg_sharpe == 1.5
+        assert stat.avg_sharpe == pytest.approx(1.5)
 
     def test_update_stats_best_sharpe_tracking(self, selector):
         """測試最佳 Sharpe 追蹤"""
@@ -326,7 +330,7 @@ class TestUpdateStats:
         stat = selector._stats_cache['test']
 
         # 最佳應該是 2.5
-        assert stat.best_sharpe == 2.5
+        assert stat.best_sharpe == pytest.approx(2.5)
 
     def test_update_stats_syncs_to_recorder(self, selector, mock_recorder):
         """測試統計同步到記錄器"""
@@ -390,9 +394,9 @@ class TestExplorationStats:
         assert stats['total_attempts'] == 15
         assert stats['strategies_tried'] == 2  # strategy_c 未嘗試
         assert stats['strategies_available'] == 3
-        assert stats['exploration_rate'] == 2 / 3
+        assert stats['exploration_rate'] == pytest.approx(2 / 3)
         assert stats['best_strategy'] == 'strategy_b'
-        assert stats['best_sharpe'] == 2.2
+        assert stats['best_sharpe'] == pytest.approx(2.2)
 
     def test_exploration_stats_empty(self, selector):
         """測試空探索統計"""

@@ -7,10 +7,9 @@
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, TYPE_CHECKING
+from typing import Dict, Any
 
-if TYPE_CHECKING:
-    from .recorder import Experiment
+from src.types import ExperimentRecord
 
 
 class InsightsManager:
@@ -71,12 +70,12 @@ class InsightsManager:
 """
         self.insights_file.write_text(initial_content, encoding='utf-8')
 
-    def update(self, experiment: 'Experiment', total_experiments: int):
+    def update(self, experiment: ExperimentRecord, total_experiments: int):
         """
         更新洞察文件
 
         Args:
-            experiment: 實驗物件
+            experiment: 實驗記錄
             total_experiments: 總實驗數
         """
         content = self.insights_file.read_text(encoding='utf-8')
@@ -85,16 +84,16 @@ class InsightsManager:
         content = self._update_header(content, total_experiments)
 
         # 根據策略類型更新相應區塊
-        strategy_type = experiment.strategy.get('type', 'unknown')
+        strategy_type = experiment.strategy_type
         content = self._update_strategy_section(content, experiment, strategy_type)
 
         # 更新標的特性
-        symbol = experiment.config.get('symbol', '')
+        symbol = experiment.symbol
         if symbol:
             content = self._update_asset_section(content, experiment, symbol)
 
         # 更新失敗教訓（如果驗證不通過）
-        if experiment.validation.get('grade') in ['D', 'F']:
+        if experiment.grade in ['D', 'F']:
             content = self._update_failure_section(content, experiment)
 
         # 儲存
@@ -117,7 +116,7 @@ class InsightsManager:
     def _update_strategy_section(
         self,
         content: str,
-        experiment: 'Experiment',
+        experiment: ExperimentRecord,
         strategy_type: str
     ) -> str:
         """
@@ -125,7 +124,7 @@ class InsightsManager:
 
         Args:
             content: 當前內容
-            experiment: 實驗物件
+            experiment: 實驗記錄
             strategy_type: 策略類型（trend/trend_following/momentum 等）
         """
         # 映射策略類型到區塊標題
@@ -165,7 +164,7 @@ class InsightsManager:
     def _update_asset_section(
         self,
         content: str,
-        experiment: 'Experiment',
+        experiment: ExperimentRecord,
         symbol: str
     ) -> str:
         """更新標的特性區塊"""
@@ -182,7 +181,7 @@ class InsightsManager:
         current_section = content[start:next_section if next_section != -1 else len(content)]
 
         if '*尚無記錄*' in current_section:
-            new_content = f"- {experiment.strategy['type']} 策略表現良好（Sharpe: {experiment.results['sharpe_ratio']:.2f}）\n"
+            new_content = f"- {experiment.strategy_type} 策略表現良好（Sharpe: {experiment.sharpe_ratio:.2f}）\n"
             if experiment.insights:
                 new_content += f"- {experiment.insights[0]}\n"
 
@@ -196,7 +195,7 @@ class InsightsManager:
     def _update_failure_section(
         self,
         content: str,
-        experiment: 'Experiment'
+        experiment: ExperimentRecord
     ) -> str:
         """更新失敗教訓區塊"""
         section = "## 過擬合教訓\n"
@@ -208,7 +207,7 @@ class InsightsManager:
 
         # 產生教訓內容
         lesson = f"\n### 失敗案例：{experiment.id}\n"
-        lesson += f"- 策略：{experiment.strategy['name']}\n"
+        lesson += f"- 策略：{experiment.strategy_name}\n"
         lesson += f"- 問題：{self._diagnose_failure(experiment)}\n"
 
         # 插入
@@ -220,16 +219,16 @@ class InsightsManager:
 
         return content
 
-    def _format_strategy_insight(self, experiment: 'Experiment') -> str:
+    def _format_strategy_insight(self, experiment: ExperimentRecord) -> str:
         """格式化策略洞察"""
         lines = [
-            f"\n#### {experiment.strategy['name']}",
-            f"- **最佳參數**：{self._format_params(experiment.parameters)}",
-            f"- **績效**：Sharpe {experiment.results['sharpe_ratio']:.2f}, Return {experiment.results['total_return']:.1%}",
+            f"\n#### {experiment.strategy_name}",
+            f"- **最佳參數**：{self._format_params(experiment.params)}",
+            f"- **績效**：Sharpe {experiment.sharpe_ratio:.2f}, Return {experiment.total_return:.1%}",
         ]
 
-        if experiment.validation.get('grade'):
-            lines.append(f"- **驗證等級**：{experiment.validation['grade']}")
+        if experiment.grade:
+            lines.append(f"- **驗證等級**：{experiment.grade}")
 
         if experiment.insights:
             lines.append(f"- **洞察**：{experiment.insights[0]}")
@@ -243,15 +242,16 @@ class InsightsManager:
 
         return ', '.join(f"{k}={v}" for k, v in params.items())
 
-    def _diagnose_failure(self, experiment: 'Experiment') -> str:
+    def _diagnose_failure(self, experiment: ExperimentRecord) -> str:
         """診斷失敗原因"""
-        validation = experiment.validation
+        stages_passed = experiment.validation.get('stages_passed', [])
+        num_stages = len(stages_passed)
 
-        if validation.get('passed_stages', 0) == 0:
+        if num_stages == 0:
             return "基礎績效不達標"
-        elif validation.get('passed_stages', 0) == 1:
+        elif num_stages == 1:
             return "統計檢驗失敗，可能為隨機結果"
-        elif validation.get('passed_stages', 0) == 2:
+        elif num_stages == 2:
             return "穩健性不足（參數敏感或時間/標的不一致）"
         else:
             return "Walk-Forward 失敗，可能過擬合"

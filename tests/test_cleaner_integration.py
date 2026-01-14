@@ -36,13 +36,15 @@ class TestCleanerIntegration(unittest.TestCase):
         }, index=timestamps)
 
         # 確保 OHLC 邏輯正確
-        df['high'] = df[['open', 'high', 'close']].max(axis=1)
-        df['low'] = df[['open', 'low', 'close']].min(axis=1)
+        max_values = df[['open', 'high', 'close']].max(axis=1)
+        min_values = df[['open', 'low', 'close']].min(axis=1)
+        df['high'] = max_values
+        df['low'] = min_values
 
         # 加入問題：
         # - 移除一些資料（gap）
-        df = df.drop(df.index[10:13])
-        df = df.drop(df.index[50:52])
+        df = df.drop(index=df.index[10:13].tolist())
+        df = df.drop(index=df.index[50:52].tolist())
 
         # - 加入重複
         dup_rows = df.iloc[20:22].copy()
@@ -94,14 +96,16 @@ class TestCleanerIntegration(unittest.TestCase):
                 'volume': np.random.uniform(1000, 5000, 50)
             }, index=timestamps)
 
-            df['high'] = df[['open', 'high', 'close']].max(axis=1)
-            df['low'] = df[['open', 'low', 'close']].min(axis=1)
+            max_vals = df[['open', 'high', 'close']].max(axis=1)
+            min_vals = df[['open', 'low', 'close']].min(axis=1)
+            df['high'] = max_vals
+            df['low'] = min_vals
 
             # 隨機加入一些 gap
             if symbol == 'BTCUSDT':
-                df = df.drop(df.index[10:12])
+                df = df.drop(index=df.index[10:12].tolist())
             elif symbol == 'ETHUSDT':
-                df = df.drop(df.index[20:25])
+                df = df.drop(index=df.index[20:25].tolist())
 
             # 清理
             df_cleaned = self.cleaner.clean(df)
@@ -130,8 +134,10 @@ class TestCleanerIntegration(unittest.TestCase):
             'volume': np.random.uniform(1000, 5000, 50)
         }, index=timestamps1)
 
-        df1['high'] = df1[['open', 'high', 'close']].max(axis=1)
-        df1['low'] = df1[['open', 'low', 'close']].min(axis=1)
+        max_values1 = df1[['open', 'high', 'close']].max(axis=1)
+        min_values1 = df1[['open', 'low', 'close']].min(axis=1)
+        df1['high'] = max_values1
+        df1['low'] = min_values1
 
         # 第一次清理
         df1_cleaned = self.cleaner.clean(df1)
@@ -150,8 +156,10 @@ class TestCleanerIntegration(unittest.TestCase):
             'volume': np.random.uniform(1000, 5000, 20)
         }, index=timestamps2)
 
-        df2['high'] = df2[['open', 'high', 'close']].max(axis=1)
-        df2['low'] = df2[['open', 'low', 'close']].min(axis=1)
+        max_values2 = df2[['open', 'high', 'close']].max(axis=1)
+        min_values2 = df2[['open', 'low', 'close']].min(axis=1)
+        df2['high'] = max_values2
+        df2['low'] = min_values2
 
         # 合併並清理
         df_combined = pd.concat([df1_cleaned, df2])
@@ -178,11 +186,13 @@ class TestCleanerIntegration(unittest.TestCase):
                 'volume': np.random.uniform(1000, 5000, 100)
             }, index=timestamps)
 
-            df['high'] = df[['open', 'high', 'close']].max(axis=1)
-            df['low'] = df[['open', 'low', 'close']].min(axis=1)
+            max_vals_tf = df[['open', 'high', 'close']].max(axis=1)
+            min_vals_tf = df[['open', 'low', 'close']].min(axis=1)
+            df['high'] = max_vals_tf
+            df['low'] = min_vals_tf
 
             # 移除一些資料
-            df = df.drop(df.index[10:12])
+            df = df.drop(index=df.index[10:12].tolist())
 
             # 執行清理
             df_cleaned = cleaner.clean(df)

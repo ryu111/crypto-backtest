@@ -18,25 +18,22 @@ class ConcreteStrategy(BaseStrategy):
     version = "1.0"
     description = "Test strategy for unit testing"
 
+    # 類別層級定義預設參數（與實際策略一致）
+    params = {
+        'period': 20,
+        'threshold': 0.5
+    }
+
+    # 類別層級定義參數空間（與實際策略一致）
+    param_space = {
+        'period': (10, 50, 5),
+        'threshold': (0.1, 1.0, 0.1)
+    }
+
     def __init__(self, **kwargs):
-        # 設定預設參數
-        default_params = {
-            'period': 20,
-            'threshold': 0.5
-        }
-        # 在呼叫父類別之前設定實例屬性
-        self.params = {}
-        self.param_space = {
-            'period': (10, 50, 5),
-            'threshold': (0.1, 1.0, 0.1)
-        }
-
-        # 合併預設參數
-        self.params.update(default_params)
-        self.params.update(kwargs)
-
-        # 呼叫父類別初始化（會執行驗證）
-        super().__init__(**self.params)
+        # 複製類別屬性為實例屬性（BaseStrategy.__init__ 會處理）
+        # 然後更新傳入的參數
+        super().__init__(**kwargs)
 
     def calculate_indicators(self, data: pd.DataFrame):
         """計算測試指標"""
@@ -79,7 +76,7 @@ class TestBaseStrategyInstanceAttributes:
         strategy1 = ConcreteStrategy()
         strategy2 = ConcreteStrategy()
 
-        # 先確認初始值相同
+        # 先確認初始值相同（param_space 是 dict，值是 tuple）
         assert strategy1.param_space['period'] == (10, 50, 5)
         assert strategy2.param_space['period'] == (10, 50, 5)
 
@@ -120,10 +117,10 @@ class TestBaseStrategyInheritance:
 
         class ConcreteTrendStrategy(TrendStrategy):
             name = "test_trend"
+            params = {}
+            param_space = {}
 
             def __init__(self, **kwargs):
-                self.params = kwargs
-                self.param_space = {}
                 super().__init__(**kwargs)
 
             def calculate_indicators(self, data):
@@ -143,10 +140,10 @@ class TestBaseStrategyInheritance:
 
         class ConcreteMomentumStrategy(MomentumStrategy):
             name = "test_momentum"
+            params = {}
+            param_space = {}
 
             def __init__(self, **kwargs):
-                self.params = kwargs
-                self.param_space = {}
                 super().__init__(**kwargs)
 
             def calculate_indicators(self, data):
@@ -339,10 +336,10 @@ class TestTrendStrategy:
 
         class TestTrend(TrendStrategy):
             name = "test_trend"
+            params = {}
+            param_space = {}
 
             def __init__(self, **kwargs):
-                self.params = kwargs
-                self.param_space = {}
                 super().__init__(**kwargs)
 
             def calculate_indicators(self, data):
@@ -375,10 +372,10 @@ class TestMomentumStrategy:
 
         class TestMomentum(MomentumStrategy):
             name = "test_momentum"
+            params = {}
+            param_space = {}
 
             def __init__(self, **kwargs):
-                self.params = kwargs
-                self.param_space = {}
                 super().__init__(**kwargs)
 
             def calculate_indicators(self, data):
@@ -408,10 +405,10 @@ class TestMomentumStrategy:
 
         class TestMomentum(MomentumStrategy):
             name = "test_momentum"
+            params = {}
+            param_space = {}
 
             def __init__(self, **kwargs):
-                self.params = kwargs
-                self.param_space = {}
                 super().__init__(**kwargs)
 
             def calculate_indicators(self, data):

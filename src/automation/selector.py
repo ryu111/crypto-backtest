@@ -7,13 +7,14 @@
 3. Thompson Sampling: 貝葉斯後驗抽樣
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 import random
 import math
 import logging
 import numpy as np
+from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
@@ -246,12 +247,13 @@ class StrategySelector:
         取得所有策略的統計資訊
 
         Returns:
-            策略名稱 -> StrategyStats
+            策略名稱 -> StrategyStats（深拷貝，不影響快取）
         """
         if not self._cache_updated:
             self._update_stats_cache()
 
-        return self._stats_cache.copy()
+        # 返回深拷貝，避免外部修改影響快取
+        return {name: deepcopy(stats) for name, stats in self._stats_cache.items()}
 
     def _update_stats_cache(self):
         """從 ExperimentRecorder 更新統計快取"""

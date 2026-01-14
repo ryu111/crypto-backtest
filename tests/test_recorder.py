@@ -1,18 +1,16 @@
 """
 ExperimentRecorder 測試
 
-測試實驗記錄器的核心功能。
+測試實驗記錄器的核心功能（DuckDB 版本）。
 """
 
 import pytest
-import json
-import tempfile
 from pathlib import Path
 from datetime import datetime
 import pandas as pd
 import numpy as np
 
-from src.learning import ExperimentRecorder, Experiment
+from src.learning import ExperimentRecorder
 from src.validator.stages import ValidationGrade
 
 
@@ -56,7 +54,7 @@ class MockBacktestResult:
 
 @pytest.fixture
 def temp_recorder():
-    """建立臨時記錄器"""
+    """建立臨時記錄器（使用 DuckDB）"""
     # 使用專案內的臨時目錄（符合安全路徑驗證）
     import shutil
     from pathlib import Path
@@ -67,16 +65,18 @@ def temp_recorder():
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        exp_file = temp_dir / 'experiments.json'
+        db_path = temp_dir / 'test.duckdb'
         insights_file = temp_dir / 'insights.md'
 
         recorder = ExperimentRecorder(
-            experiments_file=exp_file,
+            db_path=db_path,
             insights_file=insights_file
         )
 
         yield recorder
     finally:
+        # 關閉資料庫連接
+        recorder.close()
         # 清理臨時目錄
         if temp_dir.exists():
             shutil.rmtree(temp_dir)
@@ -84,13 +84,15 @@ def temp_recorder():
 
 def test_init_files(temp_recorder):
     """測試檔案初始化"""
-    assert temp_recorder.experiments_file.exists()
+    # 檢查 DuckDB 已建立
+    assert temp_recorder.db_path.exists()
     assert temp_recorder.insights_manager.insights_file.exists()
 
-    # 檢查初始內容
-    data = json.loads(temp_recorder.experiments_file.read_text())
-    assert data['metadata']['total_experiments'] == 0
-    assert len(data['experiments']) == 0
+    # 檢查表已建立且為空
+    count = temp_recorder.repo.conn.execute(
+        "SELECT COUNT(*) FROM experiments"
+    ).fetchone()[0]
+    assert count == 0
 
 
 def test_log_experiment(temp_recorder):
@@ -116,16 +118,18 @@ def test_log_experiment(temp_recorder):
     # 驗證實驗 ID 格式
     assert exp_id.startswith('exp_')
 
-    # 驗證記錄已保存
-    data = json.loads(temp_recorder.experiments_file.read_text())
-    assert data['metadata']['total_experiments'] == 1
-    assert len(data['experiments']) == 1
+    # 驗證記錄已保存到 DuckDB
+    count = temp_recorder.repo.conn.execute(
+        "SELECT COUNT(*) FROM experiments"
+    ).fetchone()[0]
+    assert count == 1
 
-    # 驗證實驗內容
-    exp = data['experiments'][0]
-    assert exp['id'] == exp_id
-    assert exp['strategy']['name'] == 'test_strategy'
-    assert exp['results']['sharpe_ratio'] == 1.85
+    # 驗證實驗內容（使用 get_experiment）
+    exp = temp_recorder.get_experiment(exp_id)
+    assert exp is not None
+    assert exp.id == exp_id
+    assert exp.strategy_name == 'test_strategy'
+    assert exp.sharpe_ratio == 1.85
 
 
 def test_get_experiment(temp_recorder):
@@ -141,8 +145,8 @@ def test_get_experiment(temp_recorder):
 
     assert exp is not None
     assert exp.id == exp_id
-    assert exp.strategy['name'] == 'test'
-    assert exp.results['sharpe_ratio'] == 1.85
+    assert exp.strategy_name == 'test'
+    assert exp.sharpe_ratio == 1.85
 
 
 def test_query_experiments_empty(temp_recorder):
@@ -174,7 +178,7 @@ def test_query_experiments_with_filters(temp_recorder):
         'strategy_type': 'trend'
     })
     assert len(trend_exps) == 1
-    assert trend_exps[0].strategy['name'] == 'strategy1'
+    assert trend_exps[0].strategy_name == 'strategy1'
 
     # 過濾 BTC 標的
     btc_exps = temp_recorder.query_experiments({
@@ -208,9 +212,9 @@ def test_get_best_experiments(temp_recorder):
     best = temp_recorder.get_best_experiments('sharpe_ratio', n=3)
 
     assert len(best) == 3
-    assert best[0].results['sharpe_ratio'] == 2.0
-    assert best[1].results['sharpe_ratio'] == 1.8
-    assert best[2].results['sharpe_ratio'] == 1.5
+    assert best[0].sharpe_ratio == 2.0
+    assert best[1].sharpe_ratio == 1.8
+    assert best[2].sharpe_ratio == 1.5
 
 
 def test_generate_tags(temp_recorder):
@@ -253,10 +257,11 @@ def test_strategy_evolution(temp_recorder):
             {'symbol': 'BTCUSDT', 'timeframe': '1h'}
         )
 
-    # 追蹤演進
-    evolution = temp_recorder.get_strategy_evolution('ma_cross')
+    # 追蹤演進（使用策略名稱前綴 'ma_cross_v'）
+    evolution = temp_recorder.get_strategy_evolution('ma_cross_v')
 
     assert len(evolution) == 3
+    # 按時間排序，檢查 version 和 sharpe
     assert evolution[0]['version'] == '1.0'
     assert evolution[1]['version'] == '1.1'
     assert evolution[2]['version'] == '2.0'
@@ -268,15 +273,17 @@ def test_strategy_evolution(temp_recorder):
 
 
 def test_experiment_to_dict():
-    """測試 Experiment 序列化"""
-    exp = Experiment(
+    """測試 ExperimentRecord 序列化"""
+    from src.types import ExperimentRecord
+
+    exp = ExperimentRecord(
         id='exp_test',
         timestamp=datetime.now(),
-        strategy={'name': 'test', 'type': 'trend'},
-        config={'symbol': 'BTCUSDT'},
-        parameters={'period': 14},
-        results={'sharpe_ratio': 1.5},
-        validation={'grade': 'A'},
+        strategy={'name': 'test', 'type': 'trend', 'version': '1.0', 'params': {'period': 14}},
+        config={'symbol': 'BTCUSDT', 'timeframe': '1h'},
+        results={'sharpe_ratio': 1.5, 'total_return': 0.5, 'max_drawdown': -0.1},
+        validation={'grade': 'A', 'stages_passed': [1, 2, 3]},
+        status='completed',
         insights=['Test insight'],
         tags=['crypto', 'btc']
     )
@@ -290,23 +297,25 @@ def test_experiment_to_dict():
 
 
 def test_experiment_from_dict():
-    """測試 Experiment 反序列化"""
+    """測試 ExperimentRecord 反序列化"""
+    from src.types import ExperimentRecord
+
     exp_dict = {
         'id': 'exp_test',
         'timestamp': '2026-01-11T10:00:00',
-        'strategy': {'name': 'test', 'type': 'trend'},
-        'config': {'symbol': 'BTCUSDT'},
-        'parameters': {'period': 14},
-        'results': {'sharpe_ratio': 1.5},
-        'validation': {'grade': 'A'},
+        'strategy': {'name': 'test', 'type': 'trend', 'version': '1.0', 'params': {'period': 14}},
+        'config': {'symbol': 'BTCUSDT', 'timeframe': '1h'},
+        'results': {'sharpe_ratio': 1.5, 'total_return': 0.5, 'max_drawdown': -0.1},
+        'validation': {'grade': 'A', 'stages_passed': [1, 2, 3]},
+        'status': 'completed',
         'insights': ['Test insight'],
         'tags': ['crypto', 'btc']
     }
 
-    exp = Experiment.from_dict(exp_dict)
+    exp = ExperimentRecord.from_dict(exp_dict)
 
     assert exp.id == 'exp_test'
-    assert exp.strategy['name'] == 'test'
+    assert exp.strategy_name == 'test'
     assert isinstance(exp.timestamp, datetime)
 
 

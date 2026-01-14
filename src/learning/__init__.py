@@ -6,10 +6,10 @@ AI Learning System
 """
 
 # 先 import recorder（無依賴）
-from .recorder import (
-    ExperimentRecorder,
-    Experiment
-)
+from .recorder import ExperimentRecorder
+
+# 向後相容：Experiment 已移到 src.types.ExperimentRecord
+from src.types import ExperimentRecord as Experiment
 
 # 可選：import memory（有外部依賴）
 try:

@@ -33,6 +33,7 @@ import numpy as np
 import pandas as pd
 
 from .ultimate_config import UltimateLoopConfig
+from ..types.enums import Grade
 
 # 條件性導入（後續 Phase 會使用）
 # HyperLoop - Phase 12.1.3 整合
@@ -441,13 +442,22 @@ class UltimateLoopController:
                 logger.warning("Validation enabled but module not available")
 
     def _init_learning(self):
-        """初始化學習系統"""
+        """初始化學習系統
+
+        Note:
+            ExperimentRecorder 現在使用 DuckDB（data/experiments.duckdb）儲存實驗記錄。
+            資源管理由 _cleanup() 方法處理，會自動呼叫 recorder.close() 釋放連線。
+
+            也可以使用 context manager:
+                with ExperimentRecorder() as recorder:
+                    recorder.log_experiment(...)
+        """
         if self.config.learning_enabled and RECORDER_AVAILABLE and ExperimentRecorder is not None:
-            # ExperimentRecorder 使用 experiments_file 和 insights_file 參數
-            # 而不是 data_dir。使用預設值即可（會自動使用 learning/ 目錄）
+            # ExperimentRecorder 使用 DuckDB 儲存（data/experiments.duckdb）
+            # insights 自動更新到 learning/insights.md
             self.recorder = ExperimentRecorder()
             if self.verbose:
-                logger.info("Learning system initialized")
+                logger.info("Learning system initialized (DuckDB storage)")
         else:
             self.recorder = None
             if self.config.learning_enabled:
@@ -1437,12 +1447,14 @@ class UltimateLoopController:
                 insights.append(f"在 {regime_value} 狀態下表現優異")
 
         # 驗證洞察
-        if grade in ['A', 'B']:
-            insights.append(f"通過嚴格驗證 (grade={grade})，策略穩健性高")
-        elif grade == 'C':
-            insights.append(f"驗證評級 {grade}，需進一步測試")
-        elif grade in ['D', 'F']:
-            insights.append(f"未通過驗證 (grade={grade})，參數可能過擬合")
+        # 正規化 grade 為 Enum（支援字串或 Enum 輸入）
+        grade_enum = grade if isinstance(grade, Grade) else Grade(grade) if grade else None
+        if grade_enum in [Grade.A, Grade.B]:
+            insights.append(f"通過嚴格驗證 (grade={grade_enum.value if grade_enum else grade})，策略穩健性高")
+        elif grade_enum == Grade.C:
+            insights.append(f"驗證評級 {grade_enum.value if grade_enum else grade}，需進一步測試")
+        elif grade_enum in [Grade.D, Grade.F]:
+            insights.append(f"未通過驗證 (grade={grade_enum.value if grade_enum else grade})，參數可能過擬合")
 
         # 如果沒有洞察，提供默認洞察
         if not insights:
@@ -1743,10 +1755,15 @@ class UltimateLoopController:
             except Exception as e:
                 logger.warning(f"Validator cleanup failed: {e}")
 
-        # 清理 recorder
-        if self.recorder and hasattr(self.recorder, 'cleanup'):
+        # 清理 recorder (使用新的 DuckDB 版本的 close() 方法)
+        if self.recorder:
             try:
-                self.recorder.cleanup()
+                # 優先使用 close()（DuckDB 版本）
+                if hasattr(self.recorder, 'close'):
+                    self.recorder.close()
+                # 向後相容舊的 cleanup()
+                elif hasattr(self.recorder, 'cleanup'):
+                    self.recorder.cleanup()
                 if self.verbose:
                     logger.debug("Recorder cleaned up")
             except Exception as e:

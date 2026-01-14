@@ -597,8 +597,15 @@ class MultiObjectiveResult:
 
         elif method == 'uniform':
             # 均勻選擇（基於擁擠度排序後的索引）
-            step = len(self.pareto_front) / n_select
-            indices = [int(i * step) for i in range(n_select)]
+            # 若 n_select > 可用解數，返回所有可用解
+            if n_select >= len(self.pareto_front):
+                return self.pareto_front.copy()
+
+            # 使用 numpy linspace 確保均勻分佈且無重複
+            import numpy as np
+            indices = np.linspace(0, len(self.pareto_front) - 1, n_select).astype(int)
+            # 去除可能的重複索引（當 pareto_front 很小時）
+            indices = sorted(set(indices))
             return [self.pareto_front[idx] for idx in indices]
 
         else:

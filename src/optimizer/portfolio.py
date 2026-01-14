@@ -119,33 +119,60 @@ class PortfolioOptimizer:
         self.returns = returns
         self.risk_free_rate = risk_free_rate
         self.frequency = frequency
-        self.strategy_names = list(returns.columns)
+        # 明確標註型別，避免 list[Unknown]
+        self.strategy_names: List[str] = [str(col) for col in returns.columns]
         self.n_assets = len(self.strategy_names)
 
-        # 計算預期報酬（年化）
-        self.mean_returns = returns.mean() * frequency
+        # 先驗證和清理資料（必須在計算協方差矩陣之前）
+        self._validate_and_clean_data()
 
-        # 計算協方差矩陣（年化）
+        # 計算預期報酬（年化）- 明確標註為 pd.Series
+        self.mean_returns: pd.Series = self.returns.mean() * frequency  # type: ignore
+
+        # 計算協方差矩陣（年化）- 明確標註為 pd.DataFrame
         if use_ledoit_wolf:
-            self.cov_matrix = self._ledoit_wolf_cov()
+            self.cov_matrix: pd.DataFrame = self._ledoit_wolf_cov()
         else:
-            self.cov_matrix = returns.cov() * frequency
+            self.cov_matrix = self.returns.cov() * frequency
 
-        # 驗證資料
-        self._validate_data()
+        # 檢查協方差矩陣品質
+        self._validate_covariance()
 
-    def _validate_data(self):
-        """驗證輸入資料"""
+    def _validate_and_clean_data(self):
+        """驗證和清理輸入資料（在計算協方差矩陣之前執行）"""
         if self.n_assets < 2:
             raise ValueError("至少需要 2 個策略進行組合優化")
 
-        if self.returns.isnull().any().any():
-            warnings.warn("回報資料包含 NaN，將自動填補為 0")
+        # 檢查並處理 NaN（必須在計算協方差矩陣前完成）
+        self._data_quality_warning = False
+        # 拆分鏈式調用，避免型別推導錯誤
+        has_nan_per_column: pd.Series = self.returns.isnull().any()  # type: ignore
+        has_any_nan: bool = bool(has_nan_per_column.any())
+        if has_any_nan:
+            # 計算 NaN 比例
+            nan_ratio = self.returns.isnull().sum().sum() / (
+                self.returns.shape[0] * self.returns.shape[1]
+            )
+
+            # 如果所有資料都是 NaN 或大部分是 NaN，標記為低品質
+            if nan_ratio >= 0.9:  # 90% 以上是 NaN
+                self._data_quality_warning = True
+                warnings.warn(
+                    f"回報資料品質極差 ({nan_ratio:.1%} 為 NaN)，"
+                    "優化結果可能不可靠"
+                )
+            else:
+                warnings.warn("回報資料包含 NaN，將自動填補為 0")
+
             self.returns = self.returns.fillna(0)
 
+    def _validate_covariance(self):
+        """驗證協方差矩陣品質（在計算協方差矩陣之後執行）"""
         # 檢查協方差矩陣是否正定
+        self._cov_quality_warning = False
         eigenvalues = np.linalg.eigvals(self.cov_matrix.values)
         if not np.all(eigenvalues > 0):
+            self._cov_quality_warning = True
             warnings.warn(
                 "協方差矩陣不是正定矩陣，可能導致優化問題。"
                 "建議啟用 Ledoit-Wolf 收縮估計。"
@@ -164,8 +191,8 @@ class PortfolioOptimizer:
             lw.fit(self.returns)
             cov_matrix = pd.DataFrame(
                 lw.covariance_ * self.frequency,
-                index=self.strategy_names,
-                columns=self.strategy_names
+                index=pd.Index(self.strategy_names),  # type: ignore[arg-type]
+                columns=pd.Index(self.strategy_names)  # type: ignore[arg-type]
             )
             return cov_matrix
         except ImportError:
@@ -189,7 +216,7 @@ class PortfolioOptimizer:
             (expected_return, volatility, sharpe_ratio)
         """
         # 預期報酬
-        portfolio_return = np.dot(weights, self.mean_returns.values)
+        portfolio_return = np.dot(weights, self.mean_returns.values)  # type: ignore[arg-type]
 
         # 波動率（標準差）
         portfolio_volatility = np.sqrt(
@@ -266,17 +293,17 @@ class PortfolioOptimizer:
         # 初始權重：等權重
         initial_weights = np.array([1.0 / self.n_assets] * self.n_assets)
 
-        # 權重約束
+        # 權重約束 - 轉換為 np.ndarray
+        # Scipy Bounds 支援陣列，但型別定義不完整，需要忽略型別檢查
         if allow_short:
-            bounds = Bounds(
-                lb=[-max_weight if min_weight < 0 else min_weight] * self.n_assets,
-                ub=[max_weight] * self.n_assets
-            )
+            lb_value = -max_weight if min_weight < 0 else min_weight
+            lb_arr = np.full(self.n_assets, lb_value)
+            ub_arr = np.full(self.n_assets, max_weight)
+            bounds = Bounds(lb=lb_arr, ub=ub_arr)  # type: ignore[arg-type]
         else:
-            bounds = Bounds(
-                lb=[max(0.0, min_weight)] * self.n_assets,
-                ub=[max_weight] * self.n_assets
-            )
+            lb_arr = np.full(self.n_assets, max(0.0, min_weight))
+            ub_arr = np.full(self.n_assets, max_weight)
+            bounds = Bounds(lb=lb_arr, ub=ub_arr)  # type: ignore[arg-type]
 
         # 線性約束：權重總和為 1
         constraints = [
@@ -287,7 +314,7 @@ class PortfolioOptimizer:
         if target_return is not None:
             constraints.append({
                 'type': 'eq',
-                'fun': lambda w: np.dot(w, self.mean_returns.values) - target_return
+                'fun': lambda w: np.dot(w, self.mean_returns.values) - target_return  # type: ignore[arg-type]
             })
             objective = self._portfolio_variance  # 最小化風險
 
@@ -298,7 +325,7 @@ class PortfolioOptimizer:
                 'fun': lambda w: np.sqrt(self._portfolio_variance(w)) - target_risk
             })
             # 最大化報酬 = 最小化負報酬
-            objective = lambda w: -np.dot(w, self.mean_returns.values)
+            objective = lambda w: -np.dot(w, self.mean_returns.values)  # type: ignore[arg-type]
 
         # 無約束：最小化風險
         else:
@@ -314,13 +341,25 @@ class PortfolioOptimizer:
             options={'maxiter': 1000, 'ftol': 1e-9}
         )
 
-        if not result.success:
-            logger.warning(f"Mean-Variance 優化失敗: {result.message}")
+        # 判斷優化是否真正成功
+        optimization_success = result.success
+        message = result.message
+
+        # 資料品質極差時，即使優化器返回成功，也標記為失敗
+        if self._data_quality_warning or self._cov_quality_warning:
+            optimization_success = False
+            if self._data_quality_warning:
+                message = "資料品質極差，優化結果不可靠（降級到等權重）"
+            elif self._cov_quality_warning:
+                message = "協方差矩陣不正定，優化結果不可靠（降級到等權重）"
+
+        if not optimization_success:
+            logger.warning(f"Mean-Variance 優化失敗: {message}")
 
         return self._create_portfolio_weights(
             result.x,
-            result.success,
-            result.message
+            optimization_success,
+            message
         )
 
     def max_sharpe_optimize(
@@ -345,17 +384,17 @@ class PortfolioOptimizer:
         # 初始權重
         initial_weights = np.array([1.0 / self.n_assets] * self.n_assets)
 
-        # 權重約束
+        # 權重約束 - 轉換為 np.ndarray
+        # Scipy Bounds 支援陣列，但型別定義不完整，需要忽略型別檢查
         if allow_short:
-            bounds = Bounds(
-                lb=[-max_weight if min_weight < 0 else min_weight] * self.n_assets,
-                ub=[max_weight] * self.n_assets
-            )
+            lb_value = -max_weight if min_weight < 0 else min_weight
+            lb_arr = np.full(self.n_assets, lb_value)
+            ub_arr = np.full(self.n_assets, max_weight)
+            bounds = Bounds(lb=lb_arr, ub=ub_arr)  # type: ignore[arg-type]
         else:
-            bounds = Bounds(
-                lb=[max(0.0, min_weight)] * self.n_assets,
-                ub=[max_weight] * self.n_assets
-            )
+            lb_arr = np.full(self.n_assets, max(0.0, min_weight))
+            ub_arr = np.full(self.n_assets, max_weight)
+            bounds = Bounds(lb=lb_arr, ub=ub_arr)  # type: ignore[arg-type]
 
         # 線性約束：權重總和為 1
         constraints = [
@@ -372,13 +411,25 @@ class PortfolioOptimizer:
             options={'maxiter': 1000, 'ftol': 1e-9}
         )
 
-        if not result.success:
-            logger.warning(f"Sharpe Ratio 優化失敗: {result.message}")
+        # 判斷優化是否真正成功
+        optimization_success = result.success
+        message = result.message
+
+        # 資料品質極差時，即使優化器返回成功，也標記為失敗
+        if self._data_quality_warning or self._cov_quality_warning:
+            optimization_success = False
+            if self._data_quality_warning:
+                message = "資料品質極差，優化結果不可靠（降級到等權重）"
+            elif self._cov_quality_warning:
+                message = "協方差矩陣不正定，優化結果不可靠（降級到等權重）"
+
+        if not optimization_success:
+            logger.warning(f"Sharpe Ratio 優化失敗: {message}")
 
         return self._create_portfolio_weights(
             result.x,
-            result.success,
-            result.message
+            optimization_success,
+            message
         )
 
     def risk_parity_optimize(
@@ -420,16 +471,16 @@ class PortfolioOptimizer:
             risk_contrib = weights * marginal_contrib / np.sqrt(portfolio_variance)
 
             # 目標：最小化風險貢獻的標準差
-            return np.std(risk_contrib)
+            return float(np.std(risk_contrib))
 
         # 初始權重：等權重
         initial_weights = np.array([1.0 / self.n_assets] * self.n_assets)
 
-        # 權重約束（不允許空頭）
-        bounds = Bounds(
-            lb=[max(0.0, min_weight)] * self.n_assets,
-            ub=[max_weight] * self.n_assets
-        )
+        # 權重約束（不允許空頭）- 轉換為 np.ndarray
+        # Scipy Bounds 支援陣列，但型別定義不完整，需要忽略型別檢查
+        lb_arr = np.full(self.n_assets, max(0.0, min_weight))
+        ub_arr = np.full(self.n_assets, max_weight)
+        bounds = Bounds(lb=lb_arr, ub=ub_arr)  # type: ignore[arg-type]
 
         # 線性約束：權重總和為 1
         constraints = [
@@ -600,7 +651,7 @@ class PortfolioOptimizer:
                 asset_vols = np.sqrt(np.diag(self.cov_matrix.values))
                 asset_rets = self.mean_returns.values
                 ax.scatter(
-                    asset_vols, asset_rets,
+                    asset_vols, asset_rets,  # type: ignore[arg-type]
                     marker='x', s=100, c='red', label='Individual Strategies'
                 )
 

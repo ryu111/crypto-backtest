@@ -32,7 +32,13 @@ class TestOrchestratorConfig:
         assert config.min_stages == 3
         assert config.max_overfit == 0.5
         assert config.symbols == ['BTCUSDT', 'ETHUSDT']
-        assert config.timeframes == ['4h']
+        # 預設包含多個時間框架
+        expected_timeframes = [
+            '1m', '3m', '5m', '15m', '30m',      # 短線
+            '1h', '2h', '4h', '6h', '8h',        # 中線（8h 對齊資金費率）
+            '12h', '1d', '3d', '1w'              # 長線
+        ]
+        assert config.timeframes == expected_timeframes
         assert config.leverage == 5
         assert config.initial_capital == 10000.0
         assert config.maker_fee == 0.0002
@@ -55,7 +61,13 @@ class TestOrchestratorConfig:
 
         # 其他參數使用預設值
         assert config.min_stages == 3
-        assert config.timeframes == ['4h']
+        # timeframes 使用預設的多時間框架列表
+        expected_timeframes = [
+            '1m', '3m', '5m', '15m', '30m',      # 短線
+            '1h', '2h', '4h', '6h', '8h',        # 中線（8h 對齊資金費率）
+            '12h', '1d', '3d', '1w'              # 長線
+        ]
+        assert config.timeframes == expected_timeframes
 
     def test_config_is_dataclass(self):
         """測試是否為 dataclass"""

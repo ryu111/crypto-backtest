@@ -257,9 +257,8 @@ def test_insights_update_header(temp_dir):
     exp = Experiment(
         id='exp_test',
         timestamp=datetime.now(),
-        strategy={'name': 'test_strategy', 'type': 'trend'},
+        strategy={'name': 'test_strategy', 'type': 'trend', 'params': {}},
         config={'symbol': 'BTCUSDT'},
-        parameters={},
         results={'sharpe_ratio': 1.5, 'total_return': 0.45},
         validation={'grade': 'A'},
         insights=['Test insight']
@@ -282,9 +281,8 @@ def test_insights_update_strategy_section_trend(temp_dir):
     exp = Experiment(
         id='exp_trend',
         timestamp=datetime.now(),
-        strategy={'name': 'ma_cross', 'type': 'trend'},
+        strategy={'name': 'ma_cross', 'type': 'trend', 'params': {'fast': 10, 'slow': 30}},
         config={'symbol': 'BTCUSDT'},
-        parameters={'fast': 10, 'slow': 30},
         results={'sharpe_ratio': 2.0, 'total_return': 0.50},
         validation={'grade': 'A'},
         insights=['MA cross 效果良好']
@@ -309,9 +307,8 @@ def test_insights_update_strategy_section_momentum(temp_dir):
     exp = Experiment(
         id='exp_momentum',
         timestamp=datetime.now(),
-        strategy={'name': 'rsi_reversal', 'type': 'momentum'},
+        strategy={'name': 'rsi_reversal', 'type': 'momentum', 'params': {'period': 14}},
         config={'symbol': 'ETHUSDT'},
-        parameters={'period': 14},
         results={'sharpe_ratio': 1.8, 'total_return': 0.40},
         validation={'grade': 'B'},
         insights=['RSI 反轉策略表現穩定']
@@ -333,9 +330,8 @@ def test_insights_update_failure_section(temp_dir):
     exp = Experiment(
         id='exp_fail',
         timestamp=datetime.now(),
-        strategy={'name': 'bad_strategy', 'type': 'trend'},
+        strategy={'name': 'bad_strategy', 'type': 'trend', 'params': {}},
         config={'symbol': 'BTCUSDT'},
-        parameters={},
         results={'sharpe_ratio': 0.2, 'total_return': -0.10},
         validation={'grade': 'F', 'passed_stages': 0}
     )
@@ -353,14 +349,21 @@ def test_insights_update_failure_section(temp_dir):
 
 @pytest.fixture
 def recorder(temp_dir):
-    """建立 ExperimentRecorder"""
-    exp_file = temp_dir / 'experiments.json'
+    """建立 ExperimentRecorder（使用 DuckDB）"""
+    import shutil
+
+    db_path = temp_dir / 'test.duckdb'
     insights_file = temp_dir / 'insights.md'
 
-    return ExperimentRecorder(
-        experiments_file=exp_file,
+    recorder = ExperimentRecorder(
+        db_path=db_path,
         insights_file=insights_file
     )
+
+    yield recorder
+
+    # 清理：關閉資料庫連接
+    recorder.close()
 
 
 def test_recorder_init_components(recorder):
@@ -394,11 +397,17 @@ def test_recorder_log_experiment_integration(recorder):
         insights=['Integration test insight']
     )
 
-    # 驗證 experiments.json 已更新
-    data = json.loads(recorder.experiments_file.read_text())
-    assert data['metadata']['total_experiments'] == 1
-    assert len(data['experiments']) == 1
-    assert data['experiments'][0]['id'] == exp_id
+    # 驗證實驗已保存到 DuckDB（使用 Repository API）
+    count = recorder.repo.conn.execute(
+        "SELECT COUNT(*) FROM experiments"
+    ).fetchone()[0]
+    assert count == 1
+
+    # 驗證實驗內容
+    exp = recorder.get_experiment(exp_id)
+    assert exp is not None
+    assert exp.id == exp_id
+    assert exp.strategy_name == 'integration_test'
 
     # 驗證時間序列已儲存（storage 被呼叫）
     equity_curve = recorder.load_equity_curve(exp_id)
@@ -555,9 +564,8 @@ def test_insights_handle_empty_strategy_type(temp_dir):
     exp = Experiment(
         id='exp_empty_type',
         timestamp=datetime.now(),
-        strategy={'name': 'unknown_strategy', 'type': ''},  # 空類型
+        strategy={'name': 'unknown_strategy', 'type': '', 'params': {}},  # 空類型
         config={'symbol': 'BTCUSDT'},
-        parameters={},
         results={'sharpe_ratio': 1.0, 'total_return': 0.1},
         validation={}
     )

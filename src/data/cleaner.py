@@ -404,6 +404,10 @@ class DataCleaner:
         - Gap 數量（權重 30%）
         - 問題數量（權重 30%）
         """
+        # 極端情況：幾乎全部缺失或沒有資料
+        if missing_rate >= 0.99 or total == 0:
+            return 0.0
+
         # 缺失率分數（缺失率越低越好）
         missing_score = max(0, 100 - missing_rate * 10000) * 0.4
 

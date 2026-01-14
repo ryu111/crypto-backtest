@@ -369,6 +369,13 @@ class BacktestEngine:
             short_entry_pd = pd.Series(short_entry.to_list(), index=data_pandas.index)
             short_exit_pd = pd.Series(short_exit.to_list(), index=data_pandas.index)
 
+        # 確保布林型別並填充 NA（Polars to_pandas 可能產生 None/object dtype）
+        # 使用 where 避免 fillna 的 FutureWarning
+        long_entry_pd = long_entry_pd.where(long_entry_pd.notna(), False).astype(bool)
+        long_exit_pd = long_exit_pd.where(long_exit_pd.notna(), False).astype(bool)
+        short_entry_pd = short_entry_pd.where(short_entry_pd.notna(), False).astype(bool)
+        short_exit_pd = short_exit_pd.where(short_exit_pd.notna(), False).astype(bool)
+
         # 向量化計算部位
         signal_combined = pd.Series(0, index=data_pandas.index)
         signal_combined[long_entry_pd] = 1

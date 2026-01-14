@@ -14,6 +14,7 @@ from src.backtester.metal_engine import (
     MLX_AVAILABLE,
     TORCH_MPS_AVAILABLE,
 )
+from src.types.enums import BackendType
 
 
 @pytest.fixture
@@ -187,7 +188,7 @@ class TestMetalBacktestEngine:
 
         # 手動覆蓋 backend（模擬測試）
         original_backend = engine.backend
-        engine.backend = "cpu"
+        engine.backend = BackendType.CPU
 
         results = engine.batch_backtest(
             sample_price_data,
@@ -276,7 +277,7 @@ class TestPerformance:
 
         # CPU 執行（強制）
         original_backend = engine.backend
-        engine.backend = "cpu"
+        engine.backend = BackendType.CPU
 
         start = time.perf_counter()
         cpu_results = engine.batch_backtest(

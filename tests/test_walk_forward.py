@@ -56,15 +56,16 @@ def simple_strategy():
     class SimpleStrategy(BaseStrategy):
         name = "simple_test"
         strategy_type = "trend"
-        params = {'threshold': 0.01}
+        params = {'threshold': 0.002}
 
         def calculate_indicators(self, data):
             return {'sma': data['close'].rolling(20).mean()}
 
         def generate_signals(self, data):
             sma = data['close'].rolling(20).mean()
-            long_entry = data['close'] > sma * 1.01
-            long_exit = data['close'] < sma * 0.99
+            threshold = self.params.get('threshold', 0.01)
+            long_entry = data['close'] > sma * (1 + threshold)
+            long_exit = data['close'] < sma * (1 - threshold)
             short_entry = pd.Series(False, index=data.index)
             short_exit = pd.Series(False, index=data.index)
             return long_entry, long_exit, short_entry, short_exit
@@ -199,7 +200,7 @@ def test_full_analysis(backtest_config, sample_data, simple_strategy):
         optimize_metric='sharpe_ratio'
     )
 
-    param_grid = {'threshold': [0.005, 0.01, 0.02]}
+    param_grid = {'threshold': [0.001, 0.002, 0.005]}
 
     result = analyzer.analyze(
         strategy=simple_strategy,
@@ -383,7 +384,7 @@ def test_single_param_combination(backtest_config, sample_data, simple_strategy)
     """測試單一參數組合"""
     analyzer = WalkForwardAnalyzer(config=backtest_config)
 
-    param_grid = {'threshold': [0.01]}  # 只有一種組合
+    param_grid = {'threshold': [0.002]}  # 只有一種組合
 
     result = analyzer.analyze(
         strategy=simple_strategy,
@@ -405,7 +406,7 @@ def test_single_param_combination(backtest_config, sample_data, simple_strategy)
 def test_multiple_modes_comparison(backtest_config, sample_data, simple_strategy):
     """測試比較不同窗口模式"""
     modes = ['rolling', 'expanding', 'anchored']
-    param_grid = {'threshold': [0.01, 0.02]}
+    param_grid = {'threshold': [0.001, 0.002]}
 
     results = {}
 

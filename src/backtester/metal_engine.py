@@ -11,6 +11,8 @@ import numpy as np
 import logging
 import time
 
+from src.types.enums import BackendType
+
 logger = logging.getLogger(__name__)
 
 # MLX 是可選依賴
@@ -54,22 +56,22 @@ class MetalBacktestEngine:
             prefer_mlx: 優先使用 MLX（否則使用 PyTorch MPS）
         """
         self.prefer_mlx = prefer_mlx
-        self.backend = self._select_backend()
-        logger.info(f"MetalBacktestEngine initialized with backend: {self.backend}")
+        self.backend: BackendType = self._select_backend()
+        logger.info(f"MetalBacktestEngine initialized with backend: {self.backend.value}")
 
-    def _select_backend(self) -> str:
+    def _select_backend(self) -> BackendType:
         """選擇最佳可用後端"""
         if self.prefer_mlx and MLX_AVAILABLE:
-            return "mlx"
+            return BackendType.MLX
         elif TORCH_MPS_AVAILABLE:
-            return "mps"
+            return BackendType.MPS
         else:
             logger.warning("No GPU backend available, using CPU")
-            return "cpu"
+            return BackendType.CPU
 
     def is_gpu_available(self) -> bool:
         """檢查 GPU 是否可用"""
-        return self.backend in ("mlx", "mps")
+        return self.backend in (BackendType.MLX, BackendType.MPS)
 
     def batch_backtest(
         self,
@@ -90,9 +92,9 @@ class MetalBacktestEngine:
         """
         start_time = time.perf_counter()
 
-        if self.backend == "mlx":
+        if self.backend == BackendType.MLX:
             results_array = self._mlx_backtest(price_data, param_grid, strategy_fn)
-        elif self.backend == "mps":
+        elif self.backend == BackendType.MPS:
             results_array = self._torch_backtest(price_data, param_grid, strategy_fn)
         else:
             results_array = self._cpu_backtest(price_data, param_grid, strategy_fn)
@@ -112,7 +114,7 @@ class MetalBacktestEngine:
 
         logger.info(
             f"Batch backtest completed: {len(param_grid)} combinations "
-            f"in {execution_time:.2f}ms ({self.backend})"
+            f"in {execution_time:.2f}ms ({self.backend.value})"
         )
 
         return results
@@ -356,9 +358,9 @@ class MetalBacktestEngine:
         Returns:
             SMA 陣列 (T,)
         """
-        if self.backend == "mlx":
+        if self.backend == BackendType.MLX:
             return self._mlx_sma(prices, period)
-        elif self.backend == "mps":
+        elif self.backend == BackendType.MPS:
             return self._torch_sma(prices, period)
         else:
             return self._cpu_sma(prices, period)
@@ -374,9 +376,9 @@ class MetalBacktestEngine:
         Returns:
             EMA 陣列 (T,)
         """
-        if self.backend == "mlx":
+        if self.backend == BackendType.MLX:
             return self._mlx_ema(prices, period)
-        elif self.backend == "mps":
+        elif self.backend == BackendType.MPS:
             return self._torch_ema(prices, period)
         else:
             return self._cpu_ema(prices, period)
