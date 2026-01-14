@@ -1,7 +1,7 @@
 """
 風險管理模組
 
-提供部位管理、相關性分析等風險控制功能。
+提供部位管理、相關性分析、自適應槓桿等風險控制功能。
 """
 
 from .correlation import (
@@ -15,6 +15,10 @@ from .position_sizing import (
     KellyPositionSizer,
     PositionSizeResult,
 )
+from .adaptive_leverage import (
+    AdaptiveLeverageConfig,
+    AdaptiveLeverageController,
+)
 
 __all__ = [
     "CorrelationAnalyzer",
@@ -24,4 +28,6 @@ __all__ = [
     "kelly_criterion",
     "KellyPositionSizer",
     "PositionSizeResult",
+    "AdaptiveLeverageConfig",
+    "AdaptiveLeverageController",
 ]

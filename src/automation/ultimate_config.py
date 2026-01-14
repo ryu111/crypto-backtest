@@ -144,7 +144,7 @@ class UltimateLoopConfig:
 
     # ===== 驗證設定 =====
     validation_enabled: bool = True
-    min_stages: int = 3  # 最少通過幾個驗證階段
+    min_stages: int = 5  # 最少通過幾個驗證階段（全 5 階段）
     min_sharpe: float = 1.0
     max_overfit: float = 0.5
 
@@ -171,6 +171,21 @@ class UltimateLoopConfig:
     checkpoint_enabled: bool = True
     checkpoint_interval: int = 10  # 每 10 次迭代存一次
     checkpoint_dir: str = "checkpoints"
+
+    # ===== 高效能並行設定（Phase 12.12） =====
+    batch_size: int = 50                      # 每批回測數量
+    use_shared_memory: bool = True            # 使用共享記憶體
+    data_pool_max_gb: float = 20.0            # 資料池最大 GB
+
+    # ===== 交易優化功能（Phase 12.12） =====
+    signal_amplification_enabled: bool = False   # 信號放大器
+    signal_filter_enabled: bool = False          # 信號過濾管道
+    dynamic_risk_enabled: bool = False           # 動態風控
+    adaptive_leverage_enabled: bool = False      # 自適應槓桿
+
+    # ===== 迭代設定（Phase 12.12） =====
+    n_iterations: int = 50                       # 總迭代次數
+    trials_per_iteration: int = 20               # 每輪迭代的 trials 數
 
     def validate(self) -> bool:
         """
@@ -284,7 +299,20 @@ class UltimateLoopConfig:
         if self.checkpoint_interval < 1:
             errors.append("checkpoint_interval 必須 >= 1")
 
-        # 10. 路徑安全驗證
+        # 10. 高效能並行設定驗證（Phase 12.12）
+        if self.batch_size < 1:
+            errors.append("batch_size 必須 >= 1")
+
+        if self.data_pool_max_gb <= 0:
+            errors.append("data_pool_max_gb 必須 > 0")
+
+        if self.n_iterations < 1:
+            errors.append("n_iterations 必須 >= 1")
+
+        if self.trials_per_iteration < 1:
+            errors.append("trials_per_iteration 必須 >= 1")
+
+        # 11. 路徑安全驗證
         for path_name, path_value in [
             ('data_dir', self.data_dir),
             ('experiment_dir', self.experiment_dir),
@@ -497,6 +525,90 @@ class UltimateLoopConfig:
             checkpoint_interval=100
         )
 
+    @classmethod
+    def create_high_performance_config(cls) -> 'UltimateLoopConfig':
+        """
+        建立高效能配置（M4 Max 優化）
+
+        專為 Apple M4 Max（16 核心、64GB RAM）設計：
+        - 使用 70-80% 系統資源
+        - 12 核心並行處理
+        - 最大 40GB 資料池
+        - 啟用所有交易優化功能
+
+        預估效能：
+        - 100 iterations：約 5-10 分鐘
+        - 5000 total trials
+        - 11x 並行加速
+
+        Returns:
+            UltimateLoopConfig: 高效能配置
+        """
+        return cls(
+            # ===== 高效能並行設定 =====
+            max_workers=12,                # 12 核心並行（70-80% of 16 cores）
+            use_gpu=True,
+            gpu_batch_size=100,            # 大批次 GPU 處理
+            batch_size=100,                # 每批 100 個回測
+            use_shared_memory=True,        # 共享記憶體零拷貝
+            data_pool_max_gb=40.0,         # 最大 40GB 資料池
+
+            # ===== 迭代設定 =====
+            n_iterations=100,              # 100 輪迭代
+            trials_per_iteration=50,       # 每輪 50 trials
+            n_trials=50,                   # Optuna trials per iteration
+
+            # ===== 完整標的和時間框架 =====
+            symbols=['BTCUSDT', 'ETHUSDT'],
+            timeframes=[
+                '1h', '2h', '4h', '6h', '8h',   # 中線為主
+                '12h', '1d'                     # 配合長線
+            ],
+
+            # ===== 啟用所有交易優化功能 =====
+            signal_amplification_enabled=True,   # 信號放大器
+            signal_filter_enabled=True,          # 信號過濾管道
+            dynamic_risk_enabled=True,           # 動態風控
+            adaptive_leverage_enabled=True,      # 自適應槓桿
+
+            # ===== 完整 Regime Detection =====
+            regime_detection=True,
+            strategy_selection_mode='regime_aware',
+            exploit_ratio=0.8,
+
+            # ===== 多目標優化 =====
+            objectives=[
+                ('sharpe_ratio', 'maximize'),
+                ('max_drawdown', 'minimize'),
+                ('win_rate', 'maximize')
+            ],
+            pareto_select_method='knee',
+            pareto_top_n=5,
+
+            # ===== 全 5 階段驗證 =====
+            validation_enabled=True,
+            min_stages=5,
+            min_sharpe=1.0,
+            max_overfit=0.5,
+
+            # ===== 啟用學習系統 =====
+            learning_enabled=True,
+            memory_mcp_enabled=True,
+            auto_insights=True,
+            memory_min_sharpe=1.0,
+            memory_store_failures=True,
+
+            # ===== 交易設定 =====
+            leverage=5,
+            initial_capital=10000.0,
+
+            # ===== 執行設定 =====
+            timeout_per_iteration=600,     # 10 分鐘超時
+            max_retries=3,
+            checkpoint_enabled=True,
+            checkpoint_interval=10         # 每 10 次迭代存檢查點
+        )
+
     def to_dict(self) -> dict:
         """
         轉換為字典格式
@@ -559,7 +671,22 @@ class UltimateLoopConfig:
             'max_retries': self.max_retries,
             'checkpoint_enabled': self.checkpoint_enabled,
             'checkpoint_interval': self.checkpoint_interval,
-            'checkpoint_dir': self.checkpoint_dir
+            'checkpoint_dir': self.checkpoint_dir,
+
+            # 高效能並行設定（Phase 12.12）
+            'batch_size': self.batch_size,
+            'use_shared_memory': self.use_shared_memory,
+            'data_pool_max_gb': self.data_pool_max_gb,
+
+            # 交易優化功能（Phase 12.12）
+            'signal_amplification_enabled': self.signal_amplification_enabled,
+            'signal_filter_enabled': self.signal_filter_enabled,
+            'dynamic_risk_enabled': self.dynamic_risk_enabled,
+            'adaptive_leverage_enabled': self.adaptive_leverage_enabled,
+
+            # 迭代設定（Phase 12.12）
+            'n_iterations': self.n_iterations,
+            'trials_per_iteration': self.trials_per_iteration
         }
 
     def __repr__(self) -> str:
@@ -613,8 +740,23 @@ if __name__ == "__main__":
     print(f"   Objectives: {quick_config.objectives}")
     print(f"   Min Stages: {quick_config.min_stages}")
 
+    # 測試高效能配置（Phase 12.12）
+    print("\n4. 高效能配置 (M4 Max):")
+    hp_config = UltimateLoopConfig.create_high_performance_config()
+    hp_config.validate()
+    print(f"   ✓ {hp_config}")
+    print(f"   Workers: {hp_config.max_workers}")
+    print(f"   Batch Size: {hp_config.batch_size}")
+    print(f"   Data Pool: {hp_config.data_pool_max_gb} GB")
+    print(f"   Iterations: {hp_config.n_iterations}")
+    print(f"   Trials/Iteration: {hp_config.trials_per_iteration}")
+    print(f"   Signal Amplification: {hp_config.signal_amplification_enabled}")
+    print(f"   Signal Filter: {hp_config.signal_filter_enabled}")
+    print(f"   Dynamic Risk: {hp_config.dynamic_risk_enabled}")
+    print(f"   Adaptive Leverage: {hp_config.adaptive_leverage_enabled}")
+
     # 測試無效配置
-    print("\n4. 測試無效配置:")
+    print("\n5. 測試無效配置:")
     try:
         invalid_config = UltimateLoopConfig(
             max_workers=-1,  # 無效
@@ -627,7 +769,7 @@ if __name__ == "__main__":
         print(f"   {e}")
 
     # 測試 to_dict
-    print("\n5. 測試 to_dict:")
+    print("\n6. 測試 to_dict:")
     config_dict = dev_config.to_dict()
     print(f"   ✓ 轉換為字典：{len(config_dict)} 個鍵")
     print(f"   鍵: {list(config_dict.keys())[:5]}...")
