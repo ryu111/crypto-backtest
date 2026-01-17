@@ -69,6 +69,12 @@ from .backtest_loop import (
     validate_strategy
 )
 
+from .gp_loop import (
+    GPLoop,
+    GPLoopConfig,
+    run_gp_evolution
+)
+
 __all__ = [
     # Loop 控制
     'LoopController',
@@ -126,4 +132,9 @@ __all__ = [
     'run_backtest_loop',
     'quick_optimize',
     'validate_strategy',
+
+    # GP 演化循環
+    'GPLoop',
+    'GPLoopConfig',
+    'run_gp_evolution',
 ]

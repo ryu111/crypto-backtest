@@ -4,7 +4,7 @@
 提供策略的註冊、查詢、實例化功能。
 """
 
-from typing import Dict, Type, List, Optional
+from typing import Dict, Type, List, Optional, Any
 from .base import BaseStrategy
 
 
@@ -46,23 +46,8 @@ class StrategyRegistry:
                 ...
         """
         def decorator(strategy_class: Type[BaseStrategy]):
-            if not issubclass(strategy_class, BaseStrategy):
-                raise TypeError(
-                    f"{strategy_class.__name__} must inherit from BaseStrategy"
-                )
-
-            if name in cls._strategies:
-                raise ValueError(
-                    f"Strategy '{name}' is already registered. "
-                    f"Use a different name or unregister first."
-                )
-
-            cls._strategies[name] = strategy_class
-
-            # 設定策略名稱
-            if not hasattr(strategy_class, 'name') or strategy_class.name == "base_strategy":
-                strategy_class.name = name
-
+            # 使用共用方法註冊
+            cls._validate_and_register(name, strategy_class)
             return strategy_class
 
         return decorator
@@ -290,6 +275,151 @@ class StrategyRegistry:
             strategy_type = strategy_class.strategy_type
             type_counts[strategy_type] = type_counts.get(strategy_type, 0) + 1
         return type_counts
+
+    # ========== GP 策略支援 ==========
+
+    @classmethod
+    def _validate_and_register(
+        cls,
+        name: str,
+        strategy_class: Type[BaseStrategy]
+    ) -> None:
+        """
+        驗證並註冊策略（共用方法）
+
+        Args:
+            name: 策略名稱
+            strategy_class: 策略類別
+
+        Raises:
+            TypeError: 如果不是 BaseStrategy 子類別
+            ValueError: 如果策略名稱已存在
+        """
+        if not issubclass(strategy_class, BaseStrategy):
+            raise TypeError(
+                f"{strategy_class.__name__} must inherit from BaseStrategy"
+            )
+
+        if name in cls._strategies:
+            raise ValueError(
+                f"Strategy '{name}' is already registered. "
+                f"Use a different name or unregister first."
+            )
+
+        cls._strategies[name] = strategy_class
+
+        # 設定策略名稱
+        if not hasattr(strategy_class, 'name') or strategy_class.name == "base_strategy":
+            strategy_class.name = name
+
+    @classmethod
+    def register_gp_strategy(
+        cls,
+        name: str,
+        strategy_class: Type[BaseStrategy],
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """
+        註冊 GP 演化的策略
+
+        Args:
+            name: 策略名稱
+            strategy_class: 策略類別
+            metadata: 演化元資料（適應度、代數等）
+                - fitness: 適應度分數
+                - generation: 演化代數
+                - expression: GP 表達式
+                - evolved_at: 演化時間
+
+        Raises:
+            TypeError: 如果不是 BaseStrategy 子類別
+            ValueError: 如果策略名稱已存在
+
+        Example:
+            >>> StrategyRegistry.register_gp_strategy(
+            ...     'gp_evolved_001',
+            ...     EvolvedStrategy001,
+            ...     metadata={'fitness': 1.85, 'generation': 30}
+            ... )
+        """
+        # 使用共用方法註冊
+        cls._validate_and_register(name, strategy_class)
+
+        # 儲存 GP 元資料（使用私有屬性）
+        if metadata:
+            cls._store_gp_metadata(name, metadata)
+
+    @classmethod
+    def _store_gp_metadata(cls, name: str, metadata: Dict[str, Any]) -> None:
+        """
+        儲存 GP 策略元資料
+
+        Args:
+            name: 策略名稱
+            metadata: 元資料字典
+        """
+        if not hasattr(cls, '_gp_metadata'):
+            cls._gp_metadata: Dict[str, Dict[str, Any]] = {}
+
+        cls._gp_metadata[name] = metadata
+
+    @classmethod
+    def list_gp_strategies(cls) -> List[str]:
+        """
+        列出所有 GP 演化的策略
+
+        Returns:
+            List[str]: GP 策略名稱列表
+
+        Note:
+            識別方式：
+            1. 檢查是否有 GP 元資料
+            2. 策略類型為 'gp_evolved'
+            3. 策略名稱前綴為 'gp_' 或 'evolved_'
+        """
+        gp_strategies = []
+
+        for name, strategy_class in cls._strategies.items():
+            # 方法 1: 檢查元資料
+            if hasattr(cls, '_gp_metadata') and name in cls._gp_metadata:
+                gp_strategies.append(name)
+                continue
+
+            # 方法 2: 檢查策略類型
+            if hasattr(strategy_class, 'strategy_type') and \
+               strategy_class.strategy_type == 'gp_evolved':
+                gp_strategies.append(name)
+                continue
+
+            # 方法 3: 檢查名稱前綴
+            if name.startswith('gp_') or name.startswith('evolved_'):
+                gp_strategies.append(name)
+
+        return gp_strategies
+
+    @classmethod
+    def get_strategy_metadata(cls, name: str) -> Optional[Dict[str, Any]]:
+        """
+        取得策略元資料
+
+        Args:
+            name: 策略名稱
+
+        Returns:
+            Optional[Dict]: 元資料，如果無則返回 None
+                - fitness: 適應度分數
+                - generation: 演化代數
+                - expression: GP 表達式
+                - evolved_at: 演化時間
+
+        Example:
+            >>> metadata = StrategyRegistry.get_strategy_metadata('gp_evolved_001')
+            >>> print(metadata['fitness'])  # 1.85
+        """
+        if not hasattr(cls, '_gp_metadata'):
+            return None
+
+        return cls._gp_metadata.get(name)
 
 
 # 便利函數
