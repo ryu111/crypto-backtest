@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-01-18T03:54:47.511318",
+  "statistics": {
+    "total": 1,
+    "by_status": {
+      "UNTESTED": 0,
+      "FAILED": 0,
+      "OPTIMIZABLE": 0,
+      "PASSED": 1,
+      "DEPRECATED": 0
+    },
+    "by_strategy": {
+      "ma_cross": {
+        "total": 1,
+        "untested": 0,
+        "passed": 1,
+        "optimizable": 0,
+        "failed": 0
+      }
+    }
+  },
+  "variations": [
+    {
+      "variation_hash": "var_d02ee8415919eb2c",
+      "strategy_name": "ma_cross",
+      "strategy_type": 

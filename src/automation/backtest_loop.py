@@ -78,6 +78,7 @@ class BacktestLoop:
         self._engine: Optional[BacktestEngine] = None
         self._selector: Optional[StrategySelector] = None
         self._recorder: Optional[ExperimentRecorder] = None
+        self._variation_tracker = None  # VariationTracker（延遲初始化）
 
         # 執行狀態
         self._is_running = False
@@ -105,6 +106,15 @@ class BacktestLoop:
 
         # 🆕 啟動時驗證回測引擎正確性
         self._validate_engine_on_startup()
+
+        # 初始化 VariationTracker（追蹤策略變化，避免重複測試）
+        try:
+            from .variation_tracker import VariationTracker
+            self._variation_tracker = VariationTracker()
+        except Exception as e:
+            logger.warning(f"VariationTracker 初始化失敗: {e}")
+            logger.warning("變化追蹤功能已禁用，將使用隨機採樣")
+            self._variation_tracker = None
 
         # 初始化 ExperimentRecorder
         self._recorder = ExperimentRecorder()
@@ -280,12 +290,19 @@ class BacktestLoop:
         symbol = random.choice(self.config.symbols)
         timeframe = random.choice(self.config.timeframes)
 
-        # 3. 生成參數（使用隨機採樣，未來可整合 Bayesian 優化）
+        # 3. 生成參數（使用 VariationTracker 避免重複測試）
         strategy_class = StrategyRegistry.get(strategy_name)
         if not hasattr(strategy_class, 'param_space'):
             raise AttributeError(f"Strategy {strategy_name} missing param_space attribute")
         param_space = strategy_class.param_space
-        params = self._sample_params(param_space)
+        strategy_type = getattr(strategy_class, 'strategy_type', 'unknown')
+
+        # 使用 _sample_unique_params 確保不重複測試
+        params, variation_hash = self._sample_unique_params(
+            strategy_name=strategy_name,
+            strategy_type=strategy_type,
+            param_space=param_space
+        )
 
         # 4. 獲取市場資料
         data = self._data_fetcher.fetch_ohlcv(symbol, timeframe, limit=5000)
@@ -352,6 +369,24 @@ class BacktestLoop:
             passed=passed,
         )
 
+        # 更新變化追蹤器狀態
+        if self._variation_tracker is not None:
+            self._variation_tracker.update_from_experiment(
+                variation_hash=variation_hash,
+                experiment_id=f"iter_{iteration}_{strategy_name}_{symbol}",
+                grade=grade,
+                metrics={
+                    'sharpe_ratio': sharpe_ratio,
+                    'total_return': total_return,
+                    'max_drawdown': max_drawdown,
+                },
+                validation={
+                    'passed': passed,
+                    'wf_sharpe': wf_sharpe,
+                    'mc_p5_sharpe': mc_p5,
+                }
+            )
+
         # 更新選擇器統計
         self._selector.update_stats(strategy_name, {
             'passed': passed,
@@ -385,6 +420,96 @@ class BacktestLoop:
                 params[param_name] = random.choice(param_config['choices'])
 
         return params
+
+    def _sample_unique_params(
+        self,
+        strategy_name: str,
+        strategy_type: str,
+        param_space: Dict[str, Dict[str, Any]],
+        max_retries: int = 10
+    ) -> tuple:
+        """
+        採樣未測試的參數組合
+
+        策略:
+        1. 優先使用未測試的登記變化
+        2. 否則隨機生成，並檢查是否已測試
+        3. 超過重試次數則強制使用（可能重複）
+
+        Args:
+            strategy_name: 策略名稱
+            strategy_type: 策略類型
+            param_space: 參數空間
+            max_retries: 最大重試次數
+
+        Returns:
+            tuple: (params, variation_hash)
+        """
+        if self._variation_tracker is None:
+            # 沒有追蹤器，直接隨機採樣（仍生成臨時 hash 保持一致性）
+            params = self._sample_params(param_space)
+            import hashlib
+            temp_hash = hashlib.sha256(
+                f"{strategy_name}:{sorted(params.items())}".encode()
+            ).hexdigest()[:16]
+            return params, f"var_{temp_hash}"
+
+        # 1. 檢查是否有未測試的登記變化
+        untested = self._variation_tracker.get_untested_variations(strategy_name=strategy_name)
+        if untested:
+            # 優先使用未測試變化（按註冊時間）
+            variation = untested[0]
+            logger.info(f"使用未測試變化: {variation.variation_hash[:12]}...")
+            return variation.params, variation.variation_hash
+
+        # 2. 隨機生成參數，檢查重複
+        for attempt in range(max_retries):
+            params = self._sample_params(param_space)
+            variation_hash = self._variation_tracker.compute_hash(strategy_name, params)
+
+            # 檢查是否已測試
+            if not self._variation_tracker.is_tested(variation_hash):
+                # 註冊新變化
+                self._variation_tracker.register_variation(
+                    strategy_name=strategy_name,
+                    strategy_type=strategy_type,
+                    params=params,
+                    tags=['auto_generated']
+                )
+                logger.debug(f"生成新變化: {variation_hash[:12]}... (嘗試 {attempt + 1})")
+                return params, variation_hash
+
+            # 檢查相似變化
+            similar = self._variation_tracker.find_similar_variations(
+                params=params,
+                strategy_name=strategy_name
+            )
+            if similar:
+                logger.debug(
+                    f"變化 {variation_hash[:12]}... 與已測試變化相似，重新採樣 "
+                    f"(嘗試 {attempt + 1})"
+                )
+            else:
+                logger.debug(
+                    f"變化 {variation_hash[:12]}... 已測試，重新採樣 "
+                    f"(嘗試 {attempt + 1})"
+                )
+
+        # 3. 超過重試次數，強制使用（記錄警告）
+        logger.warning(
+            f"超過 {max_retries} 次重試仍重複，強制使用 "
+            f"(變化: {variation_hash[:12]}...)"
+        )
+
+        # 仍需註冊（避免狀態不一致）
+        self._variation_tracker.register_variation(
+            strategy_name=strategy_name,
+            strategy_type=strategy_type,
+            params=params,
+            tags=['auto_generated', 'forced_retry']
+        )
+
+        return params, variation_hash
 
     def _create_loop_result(self) -> LoopResult:
         """建立最終結果"""
@@ -567,6 +692,9 @@ def validate_strategy(
     """
     驗證策略（不優化，使用給定參數）
 
+    ⚠️ 警告：此函數目前是佔位符，使用隨機假數據。
+    正式驗證邏輯在 BacktestLoop._run_iteration() 中使用 ValidationRunner 實現。
+
     Args:
         strategy: 策略名稱
         params: 策略參數
@@ -591,8 +719,12 @@ def validate_strategy(
         )
         print(f"驗證{'通過' if result['passed'] else '失敗'}")
     """
-    # TODO: 實作驗證邏輯（使用 ValidationStages）
-    # 這裡使用佔位符
+    # ⚠️ 佔位符實作 - 正式邏輯使用 ValidationRunner
+    import warnings
+    warnings.warn(
+        "validate_strategy() 使用假數據。請使用 BacktestLoop + ValidationRunner。",
+        DeprecationWarning
+    )
     import numpy as np
 
     sharpe = np.random.uniform(0.5, 2.5)
