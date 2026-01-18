@@ -76,17 +76,18 @@ class TestConfigValidation:
     def test_invalid_direction_method(self):
         """測試無效 direction_method"""
         config = UltimateLoopConfig()
-        config.direction_method = 'invalid'
+        # 現在 direction_method 是 Enum，設定為非 Enum 類型會導致型別錯誤
+        config.direction_method = 'invalid'  # type: ignore
 
-        with pytest.raises(ValueError, match="direction_method 必須是"):
+        with pytest.raises(ValueError, match="direction_method 必須是 DirectionMethod 類型"):
             config.validate()
 
     def test_invalid_strategy_selection_mode(self):
         """測試無效 strategy_selection_mode"""
         config = UltimateLoopConfig()
-        config.strategy_selection_mode = 'invalid'
+        config.strategy_selection_mode = 'invalid'  # type: ignore
 
-        with pytest.raises(ValueError, match="strategy_selection_mode 必須是"):
+        with pytest.raises(ValueError, match="strategy_selection_mode 必須是 StrategySelectionMode 類型"):
             config.validate()
 
     def test_invalid_exploit_ratio(self):
@@ -100,11 +101,12 @@ class TestConfigValidation:
     def test_invalid_objectives(self):
         """測試無效 objectives"""
         config = UltimateLoopConfig()
+        # 設定非 Enum 類型的 metric
         config.objectives = [
-            ('invalid_metric', 'maximize')
+            ('invalid_metric', 'maximize')  # type: ignore
         ]
 
-        with pytest.raises(ValueError, match="不支援的指標"):
+        with pytest.raises(ValueError, match="metric 必須是 ObjectiveMetric 類型"):
             config.validate()
 
     def test_unsafe_path(self):

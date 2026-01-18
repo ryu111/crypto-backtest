@@ -10,6 +10,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+from src.types.enums import DirectionMethod
+
 
 class MarketRegime(Enum):
     """市場狀態枚舉"""
@@ -370,7 +372,7 @@ class MarketStateAnalyzer:
         direction_threshold_strong: float = 5.0,
         direction_threshold_weak: float = 2.0,
         volatility_threshold: float = 5.0,
-        direction_method: str = 'composite'  # 'composite', 'adx', 'elder'
+        direction_method: Union[DirectionMethod, str] = DirectionMethod.COMPOSITE
     ):
         """
         初始化市場狀態分析器
@@ -379,12 +381,17 @@ class MarketStateAnalyzer:
             direction_threshold_strong: 強方向閾值
             direction_threshold_weak: 弱方向閾值
             volatility_threshold: 波動閾值
-            direction_method: 方向計算方法
+            direction_method: 方向計算方法（DirectionMethod 或字串，向後相容）
         """
         self.dir_strong = direction_threshold_strong
         self.dir_weak = direction_threshold_weak
         self.vol_threshold = volatility_threshold
-        self.direction_method = direction_method
+
+        # 支援字串向後相容，但轉換為 Enum
+        if isinstance(direction_method, str):
+            self.direction_method = DirectionMethod(direction_method)
+        else:
+            self.direction_method = direction_method
 
     def calculate_state(self, data: pd.DataFrame) -> MarketState:
         """
@@ -428,11 +435,11 @@ class MarketStateAnalyzer:
 
     def _calculate_direction(self, data: pd.DataFrame) -> float:
         """計算方向分數"""
-        if self.direction_method == 'composite':
+        if self.direction_method == DirectionMethod.COMPOSITE:
             score = calculate_direction_score(data)
-        elif self.direction_method == 'adx':
+        elif self.direction_method == DirectionMethod.ADX:
             score = adx_direction_score(data)
-        elif self.direction_method == 'elder':
+        elif self.direction_method == DirectionMethod.ELDER:
             score = elder_power_score(data)
         else:
             score = calculate_direction_score(data)

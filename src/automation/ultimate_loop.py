@@ -166,6 +166,20 @@ except ImportError:
     MemoryIntegration = None
     StrategyInsight = None
 
+# GPExplorer - Phase 13 (GP 整合)
+try:
+    from .gp_integration import (
+        GPExplorer,
+        GPExplorationRequest,
+        DynamicStrategyInfo
+    )
+    GP_EXPLORER_AVAILABLE = True
+except ImportError:
+    GP_EXPLORER_AVAILABLE = False
+    GPExplorer = None
+    GPExplorationRequest = None
+    DynamicStrategyInfo = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -201,6 +215,10 @@ class UltimateLoopSummary:
     new_insights: int = 0
     memory_entries: int = 0
     experiments_recorded: int = 0
+
+    # GP 策略統計 (Phase 13)
+    gp_strategies_generated: int = 0
+    gp_strategies_validated: int = 0
 
     def summary_text(self) -> str:
         """生成摘要報告"""
@@ -251,8 +269,19 @@ class UltimateLoopSummary:
             f"新洞察: {self.new_insights}",
             f"Memory 條目: {self.memory_entries}",
             "",
-            "=" * 70,
         ])
+
+        # GP 策略統計 (Phase 13)
+        if self.gp_strategies_generated > 0 or self.gp_strategies_validated > 0:
+            lines.extend([
+                "GP 策略統計:",
+                f"  生成數量: {self.gp_strategies_generated}",
+                f"  通過驗證: {self.gp_strategies_validated}",
+                f"  驗證率: {self.gp_strategies_validated/self.gp_strategies_generated*100:.1f}%" if self.gp_strategies_generated > 0 else "  驗證率: N/A",
+                "",
+            ])
+
+        lines.append("=" * 70)
 
         return "\n".join(lines)
 
@@ -308,6 +337,7 @@ class UltimateLoopController:
         self._init_hyperloop()  # 新增：初始化 HyperLoop
         self._init_data_cache()  # Phase 12.7: 預載 OHLCV 資料
         self._init_validation_runner()  # Phase 12.11: 初始化 ValidationRunner
+        self._init_gp_explorer()  # Phase 13: 初始化 GP Explorer
 
         # 執行統計
         self.summary = UltimateLoopSummary()
@@ -339,13 +369,21 @@ class UltimateLoopController:
             'Experiment Recorder': RECORDER_AVAILABLE,
             'Validator': VALIDATOR_AVAILABLE,
             'ValidationRunner': VALIDATION_RUNNER_AVAILABLE,
-            'Memory Integration': MEMORY_AVAILABLE
+            'Memory Integration': MEMORY_AVAILABLE,
+            'GP Explorer': GP_EXPLORER_AVAILABLE
         }
 
         logger.info("Module availability:")
         for name, available in modules.items():
             status = "✓" if available else "✗"
             logger.info(f"  {status} {name}")
+
+        # 顯示 GP 狀態
+        if self.config.gp_explore_enabled:
+            if self.gp_explorer:
+                logger.info(f"  → GP Explorer initialized (ratio={self.config.gp_explore_ratio:.0%})")
+            else:
+                logger.warning("  → GP Explorer enabled but not available")
 
     def _init_regime_analyzer(self):
         """初始化 Regime 分析器"""
@@ -641,6 +679,41 @@ class UltimateLoopController:
         if self.verbose:
             logger.info(f"Data cache initialized: {len(self._data_cache)} datasets loaded")
 
+    def _init_gp_explorer(self):
+        """初始化 GP Explorer（Phase 13）
+
+        根據 config.gp_explore_enabled 決定是否啟用 GP 探索。
+        GP Explorer 用於演化新策略，補充現有策略庫。
+        """
+        self.gp_explorer: Optional[Any] = None
+
+        if not self.config.gp_explore_enabled:
+            if self.verbose:
+                logger.info("GP exploration disabled by config")
+            return
+
+        if not GP_EXPLORER_AVAILABLE or GPExplorer is None:
+            logger.warning("GP Explorer enabled but module not available")
+            return
+
+        try:
+            self.gp_explorer = GPExplorer(
+                converter=None,  # 自動建立
+                timeout=self.config.timeout_per_iteration
+            )
+
+            if self.verbose:
+                logger.info(
+                    f"GP Explorer initialized "
+                    f"(pop={self.config.gp_population_size}, "
+                    f"gen={self.config.gp_generations}, "
+                    f"ratio={self.config.gp_explore_ratio:.0%})"
+                )
+
+        except Exception as e:
+            logger.warning(f"Failed to initialize GP Explorer: {e}")
+            self.gp_explorer = None
+
     def _get_data(self, symbol: Optional[str] = None, timeframe: Optional[str] = None) -> Optional[pd.DataFrame]:
         """取得 OHLCV 資料
 
@@ -665,6 +738,83 @@ class UltimateLoopController:
 
         key = f"{symbol}_{timeframe}"
         return self._data_cache.get(key)
+
+    def _is_gp_strategy(self, strategy_name: str) -> bool:
+        """判斷策略是否為 GP 生成策略
+
+        Phase 13: GP 策略識別邏輯
+
+        Args:
+            strategy_name: 策略名稱
+
+        Returns:
+            bool: True 表示是 GP 策略
+        """
+        # 方法 1: 檢查名稱前綴（GP 策略通常以 "GP_" 或 "gp_" 開頭）
+        if strategy_name.startswith('GP_') or strategy_name.startswith('gp_'):
+            return True
+
+        # 方法 2: 從 StrategyRegistry 查詢策略來源
+        if StrategyRegistry and hasattr(StrategyRegistry, '_dynamic_strategies'):
+            if strategy_name in StrategyRegistry._dynamic_strategies:
+                return True
+
+        return False
+
+    def _get_gp_metadata_batch(self, gp_strategy_names: List[str]) -> Dict[str, Any]:
+        """獲取 GP 策略的元資料（批次）
+
+        Phase 13: 從 StrategyRegistry 提取 GP 策略元資料
+
+        Args:
+            gp_strategy_names: GP 策略名稱列表
+
+        Returns:
+            Dict: GP 元資料，包含 expressions, generations, fitnesses
+        """
+        if not gp_strategy_names or not StrategyRegistry:
+            return {}
+
+        metadata = {
+            'strategies': [],
+            'avg_generation': 0,
+            'avg_fitness': 0.0
+        }
+
+        total_gen = 0
+        total_fitness = 0.0
+        count = 0
+
+        for name in gp_strategy_names:
+            try:
+                # 從 StrategyRegistry 獲取 DynamicStrategyInfo
+                if hasattr(StrategyRegistry, '_dynamic_strategies'):
+                    strategy_info = StrategyRegistry._dynamic_strategies.get(name)
+
+                    if strategy_info and DynamicStrategyInfo:
+                        # 提取元資料
+                        strategy_meta = {
+                            'name': name,
+                            'expression': getattr(strategy_info, 'expression', ''),
+                            'generation': getattr(strategy_info, 'generation', 0),
+                            'fitness': getattr(strategy_info, 'fitness', 0.0)
+                        }
+
+                        metadata['strategies'].append(strategy_meta)
+
+                        total_gen += strategy_meta['generation']
+                        total_fitness += strategy_meta['fitness']
+                        count += 1
+
+            except Exception as e:
+                logger.warning(f"Failed to get GP metadata for {name}: {e}")
+
+        # 計算平均值
+        if count > 0:
+            metadata['avg_generation'] = total_gen / count
+            metadata['avg_fitness'] = total_fitness / count
+
+        return metadata if metadata['strategies'] else {}
 
     async def run_loop(
         self,
@@ -877,6 +1027,10 @@ class UltimateLoopController:
     def _select_exploit_strategies(self) -> List[str]:
         """選擇歷史表現最好的策略
 
+        實作二層隨機機制：
+        1. 第一層：exploit_ratio (80% exploit / 20% explore)
+        2. 第二層（在 explore 中）：gp_explore_ratio (20% GP / 80% random)
+
         Returns:
             List[str]: 策略名稱列表
         """
@@ -896,7 +1050,7 @@ class UltimateLoopController:
             reverse=True
         )
 
-        # 80% exploit / 20% explore
+        # 第一層：80% exploit / 20% explore
         n_total = 3
         n_exploit = int(n_total * self.config.exploit_ratio)
         n_explore = n_total - n_exploit
@@ -904,18 +1058,143 @@ class UltimateLoopController:
         # Exploit: 取前 n_exploit 個最佳策略
         exploit = [s[0] for s in sorted_strategies[:n_exploit]]
 
-        # Explore: 從剩餘策略隨機選
-        remaining = [s for s in self.available_strategies if s not in exploit]
-        if remaining and n_explore > 0:
-            explore = list(np.random.choice(
-                remaining,
-                size=min(n_explore, len(remaining)),
-                replace=False
-            ))
-        else:
-            explore = []
+        # Explore 部分：決定是否使用 GP
+        explore = []
+        if n_explore > 0:
+            # 第二層隨機：決定是 GP 探索還是 Random 探索
+            use_gp = (
+                self.config.gp_explore_enabled and
+                self.gp_explorer is not None and
+                random.random() < self.config.gp_explore_ratio
+            )
+
+            if use_gp:
+                # GP 探索：執行演化生成新策略
+                gp_strategies = self._explore_with_gp()
+                if gp_strategies:
+                    explore = gp_strategies[:n_explore]
+                    if self.verbose:
+                        logger.info(f"GP exploration generated {len(explore)} strategies")
+                else:
+                    # GP 失敗，fallback 到隨機探索
+                    if self.verbose:
+                        logger.warning("GP exploration failed, falling back to random")
+                    use_gp = False
+
+            if not use_gp:
+                # Random 探索：從現有策略中隨機選
+                remaining = [s for s in self.available_strategies if s not in exploit]
+                if remaining:
+                    explore = list(np.random.choice(
+                        remaining,
+                        size=min(n_explore, len(remaining)),
+                        replace=False
+                    ))
 
         return exploit + explore
+
+    def _explore_with_gp(self) -> List[str]:
+        """使用 GP 演化探索新策略
+
+        執行 GP 演化，生成新策略並註冊到 Registry。
+
+        Returns:
+            List[str]: 新生成的策略名稱列表（空列表表示失敗）
+        """
+        if not self.gp_explorer or not GPExplorationRequest:
+            logger.warning("GP Explorer not available")
+            return []
+
+        # 獲取資料（使用第一個 symbol 和 timeframe）
+        symbol = self.config.symbols[0] if self.config.symbols else 'BTCUSDT'
+        timeframe = self.config.timeframes[0] if self.config.timeframes else '4h'
+        data = self._get_data(symbol, timeframe)
+
+        if data is None or data.empty:
+            logger.warning(f"No data available for GP exploration ({symbol}_{timeframe})")
+            return []
+
+        # 建立 GP 探索請求
+        request = GPExplorationRequest(
+            symbol=symbol,
+            timeframe=timeframe,
+            population_size=self.config.gp_population_size,
+            generations=self.config.gp_generations,
+            top_n=self.config.gp_top_n
+        )
+
+        if self.verbose:
+            logger.info(
+                f"Starting GP exploration: {symbol} {timeframe} "
+                f"(pop={request.population_size}, gen={request.generations})"
+            )
+
+        # 執行 GP 演化
+        result = self.gp_explorer.explore(request, data)
+
+        if not result.success:
+            logger.error(f"GP exploration failed: {result.error}")
+            return []
+
+        if not result.strategies:
+            logger.warning("GP exploration returned no strategies")
+            return []
+
+        # 註冊生成的策略
+        registered_names = self._register_gp_strategies(result.strategies)
+
+        if self.verbose:
+            logger.info(
+                f"GP exploration completed: {len(registered_names)} strategies registered "
+                f"(best fitness: {result.strategies[0].fitness:.4f})"
+            )
+
+        return registered_names
+
+    def _register_gp_strategies(self, strategies: List['DynamicStrategyInfo']) -> List[str]:
+        """註冊 GP 生成的策略到 Registry
+
+        Args:
+            strategies: GP 生成的策略資訊列表
+
+        Returns:
+            List[str]: 成功註冊的策略名稱列表
+        """
+        if not StrategyRegistry:
+            logger.warning("StrategyRegistry not available")
+            return []
+
+        registered_names = []
+
+        for strategy_info in strategies:
+            try:
+                # 使用 Registry 的 register_dynamic 方法註冊
+                success = StrategyRegistry.register_dynamic(
+                    info=strategy_info,
+                    replace_if_exists=True  # 允許覆蓋同名策略
+                )
+
+                if success:
+                    registered_names.append(strategy_info.name)
+
+                    # 更新 available_strategies 列表
+                    if strategy_info.name not in self.available_strategies:
+                        self.available_strategies.append(strategy_info.name)
+
+                    if self.verbose:
+                        logger.debug(
+                            f"Registered GP strategy: {strategy_info.name} "
+                            f"(fitness={strategy_info.fitness:.4f}, "
+                            f"gen={strategy_info.generation})"
+                        )
+
+            except Exception as e:
+                logger.error(f"Failed to register strategy {strategy_info.name}: {e}")
+
+        if self.verbose and registered_names:
+            logger.info(f"Successfully registered {len(registered_names)} GP strategies")
+
+        return registered_names
 
     def _select_by_regime(self, market_state: Any) -> List[str]:
         """根據 Regime 選擇策略
@@ -1255,6 +1534,10 @@ class UltimateLoopController:
         2. 生成洞察並更新 insights.md
         3. 嘗試存入 Memory MCP（可選）
 
+        Phase 13 擴展：
+        4. 識別 GP 策略並記錄元資料（expression, generation, fitness）
+        5. 統計 GP 策略生成和驗證數量
+
         Args:
             solutions: 驗證通過的解（ParetoSolution 列表）
             market_state: 市場狀態（MarketState 物件，可選）
@@ -1278,6 +1561,13 @@ class UltimateLoopController:
             '+'.join(strategy_names) if strategy_names and len(strategy_names) > 0
             else 'multi_objective_pareto'
         )
+
+        # Phase 13: 檢查是否包含 GP 策略
+        gp_strategies_in_batch = [name for name in (strategy_names or []) if self._is_gp_strategy(name)]
+        has_gp_strategies = len(gp_strategies_in_batch) > 0
+
+        if has_gp_strategies and self.verbose:
+            logger.info(f"Batch contains {len(gp_strategies_in_batch)} GP strategies: {gp_strategies_in_batch}")
 
         if self.verbose:
             logger.info(f"Recording {len(solutions)} validated solutions for: {combined_strategy_name}")
@@ -1304,15 +1594,25 @@ class UltimateLoopController:
                 # 從 objectives 創建 BacktestResult（mock）
                 mock_result = self._create_result_from_objectives(objectives, params)
 
+                # Phase 13: 準備策略資訊，包含 GP 元資料（如果是 GP 策略）
+                strategy_info_dict = {
+                    'name': combined_strategy_name,
+                    'type': 'multi_objective',
+                    'version': '1.0',
+                    'params': params  # 包含策略參數
+                }
+
+                # 如果是 GP 策略，添加 GP 元資料和來源標記
+                if has_gp_strategies:
+                    strategy_info_dict['source'] = 'gp_explorer'
+                    gp_metadata = self._get_gp_metadata_batch(gp_strategies_in_batch)
+                    if gp_metadata:
+                        strategy_info_dict['gp_metadata'] = gp_metadata
+
                 # 記錄實驗
                 exp_id = self.recorder.log_experiment(
                     result=mock_result,
-                    strategy_info={
-                        'name': combined_strategy_name,
-                        'type': 'multi_objective',
-                        'version': '1.0',
-                        'params': params  # 包含策略參數
-                    },
+                    strategy_info=strategy_info_dict,
                     config={
                         'iteration': self.summary.total_iterations,
                         'validation_grade': grade
@@ -1387,6 +1687,19 @@ class UltimateLoopController:
         # 更新統計
         self.summary.experiments_recorded += recorded_count
         self.summary.new_insights += recorded_count  # 每個記錄都算一個洞察
+
+        # Phase 13: 更新 GP 策略統計
+        if has_gp_strategies:
+            # 每個批次中的 GP 策略算一次生成（避免重複計數）
+            self.summary.gp_strategies_generated += len(gp_strategies_in_batch)
+            # 通過驗證的 solution 數量
+            self.summary.gp_strategies_validated += recorded_count
+
+            if self.verbose:
+                logger.info(
+                    f"GP strategies in batch: {len(gp_strategies_in_batch)}, "
+                    f"validated solutions: {recorded_count}"
+                )
 
         if self.verbose:
             logger.info(f"Successfully recorded {recorded_count} experiments")

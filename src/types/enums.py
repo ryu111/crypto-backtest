@@ -76,6 +76,10 @@ class ObjectiveMetric(str, Enum):
     SHARPE_RATIO = "sharpe_ratio"
     SORTINO_RATIO = "sortino_ratio"
     CALMAR_RATIO = "calmar_ratio"
+    MAX_DRAWDOWN = "max_drawdown"
+    WIN_RATE = "win_rate"
+    PROFIT_FACTOR = "profit_factor"
+    RETURN_PCT = "return_pct"
 
 
 class BackendType(str, Enum):
@@ -112,6 +116,47 @@ class ParamType(str, Enum):
     LOG = "log"
 
 
+class DirectionMethod(str, Enum):
+    """方向性計算方法
+
+    用於 Regime Detection 的方向性計算。
+    """
+    COMPOSITE = "composite"
+    ADX = "adx"
+    ELDER = "elder"
+
+
+class StrategySelectionMode(str, Enum):
+    """策略選擇模式
+
+    用於決定如何選擇策略組合。
+    """
+    REGIME_AWARE = "regime_aware"
+    RANDOM = "random"
+    EXPLOIT = "exploit"
+
+
+class AggregationMode(str, Enum):
+    """信號聚合模式
+
+    多個策略信號的聚合方法。
+    """
+    WEIGHTED = "weighted"
+    VOTING = "voting"
+    RANKED = "ranked"
+    UNANIMOUS = "unanimous"
+
+
+class ParetoSelectMethod(str, Enum):
+    """Pareto 解選擇方法
+
+    多目標優化中選擇 Pareto 前緣解的方法。
+    """
+    KNEE = "knee"
+    CROWDING = "crowding"
+    RANDOM = "random"
+
+
 __all__ = [
     "ExperimentStatus",
     "Grade",
@@ -121,4 +166,8 @@ __all__ = [
     "BackendType",
     "LessonType",
     "ParamType",
+    "DirectionMethod",
+    "StrategySelectionMode",
+    "AggregationMode",
+    "ParetoSelectMethod",
 ]

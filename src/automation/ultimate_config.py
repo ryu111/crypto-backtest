@@ -35,6 +35,14 @@ import logging
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional
 
+from src.types.enums import (
+    DirectionMethod,
+    StrategySelectionMode,
+    AggregationMode,
+    ObjectiveMetric,
+    ParetoSelectMethod,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -101,6 +109,13 @@ class UltimateLoopConfig:
         checkpoint_enabled (bool): 是否啟用檢查點
         checkpoint_interval (int): 檢查點間隔
         checkpoint_dir (str): 檢查點目錄
+
+        # GP 探索設定（Phase 13.x）
+        gp_explore_enabled (bool): 是否啟用 GP 探索
+        gp_explore_ratio (float): explore 中使用 GP 的比例（0-1）
+        gp_population_size (int): GP 族群大小
+        gp_generations (int): GP 演化代數
+        gp_top_n (int): 每次 GP 探索產生的策略數
     """
 
     # ===== 基礎設定 =====
@@ -121,25 +136,25 @@ class UltimateLoopConfig:
 
     # ===== Regime Detection 設定 =====
     regime_detection: bool = True
-    direction_method: str = 'composite'  # 'composite', 'adx', 'elder'
+    direction_method: DirectionMethod = DirectionMethod.COMPOSITE
     direction_threshold_strong: float = 5.0
     direction_threshold_weak: float = 2.0
     volatility_threshold: float = 5.0
 
     # ===== 策略組合設定 =====
-    strategy_selection_mode: str = 'regime_aware'  # 'regime_aware', 'random', 'exploit'
+    strategy_selection_mode: StrategySelectionMode = StrategySelectionMode.REGIME_AWARE
     exploit_ratio: float = 0.8  # 80% exploit / 20% explore
-    aggregation_mode: str = 'weighted'  # 'weighted', 'voting', 'ranked', 'unanimous'
+    aggregation_mode: AggregationMode = AggregationMode.WEIGHTED
     enabled_strategies: Optional[List[str]] = None  # None = 使用所有註冊策略
 
     # ===== 多目標優化設定 =====
-    objectives: List[Tuple[str, str]] = field(default_factory=lambda: [
-        ('sharpe_ratio', 'maximize'),
-        ('max_drawdown', 'minimize'),
-        ('win_rate', 'maximize')
+    objectives: List[Tuple[ObjectiveMetric, str]] = field(default_factory=lambda: [
+        (ObjectiveMetric.SHARPE_RATIO, 'maximize'),
+        (ObjectiveMetric.MAX_DRAWDOWN, 'minimize'),
+        (ObjectiveMetric.WIN_RATE, 'maximize')
     ])
     n_trials: int = 100
-    pareto_select_method: str = 'knee'  # 'knee', 'crowding', 'random'
+    pareto_select_method: ParetoSelectMethod = ParetoSelectMethod.KNEE
     pareto_top_n: int = 3  # 選擇 top N 個 Pareto 解進行驗證
 
     # ===== 驗證設定 =====
@@ -187,6 +202,13 @@ class UltimateLoopConfig:
     n_iterations: int = 50                       # 總迭代次數
     trials_per_iteration: int = 20               # 每輪迭代的 trials 數
 
+    # ===== GP 探索設定（Phase 13.x） =====
+    gp_explore_enabled: bool = True              # 是否啟用 GP 探索
+    gp_explore_ratio: float = 0.2                # explore 中使用 GP 的比例（0-1）
+    gp_population_size: int = 50                 # GP 族群大小
+    gp_generations: int = 30                     # GP 演化代數
+    gp_top_n: int = 3                            # 每次 GP 探索產生的策略數
+
     def validate(self) -> bool:
         """
         驗證配置有效性
@@ -213,8 +235,8 @@ class UltimateLoopConfig:
             errors.append("timeframes 不能為空")
 
         # 2. Regime Detection 設定驗證
-        if self.direction_method not in ['composite', 'adx', 'elder']:
-            errors.append(f"direction_method 必須是 'composite', 'adx' 或 'elder'，收到: {self.direction_method}")
+        if not isinstance(self.direction_method, DirectionMethod):
+            errors.append(f"direction_method 必須是 DirectionMethod 類型，收到: {type(self.direction_method)}")
 
         if not (0 <= self.direction_threshold_strong <= 10):
             errors.append("direction_threshold_strong 必須在 0-10 之間")
@@ -226,29 +248,23 @@ class UltimateLoopConfig:
             errors.append("volatility_threshold 必須在 0-10 之間")
 
         # 3. 策略組合設定驗證
-        if self.strategy_selection_mode not in ['regime_aware', 'random', 'exploit']:
-            errors.append(f"strategy_selection_mode 必須是 'regime_aware', 'random' 或 'exploit'，收到: {self.strategy_selection_mode}")
+        if not isinstance(self.strategy_selection_mode, StrategySelectionMode):
+            errors.append(f"strategy_selection_mode 必須是 StrategySelectionMode 類型，收到: {type(self.strategy_selection_mode)}")
 
         if not (0 <= self.exploit_ratio <= 1):
             errors.append("exploit_ratio 必須在 0-1 之間")
 
-        if self.aggregation_mode not in ['weighted', 'voting', 'ranked', 'unanimous']:
-            errors.append(f"aggregation_mode 必須是 'weighted', 'voting', 'ranked' 或 'unanimous'，收到: {self.aggregation_mode}")
+        if not isinstance(self.aggregation_mode, AggregationMode):
+            errors.append(f"aggregation_mode 必須是 AggregationMode 類型，收到: {type(self.aggregation_mode)}")
 
         # 4. 多目標優化設定驗證
         if not self.objectives:
             errors.append("objectives 不能為空")
 
-        # 定義有效指標
-        VALID_METRICS = {
-            'sharpe_ratio', 'sortino_ratio', 'max_drawdown',
-            'win_rate', 'profit_factor', 'calmar_ratio', 'return_pct'
-        }
-
         for i, (metric, direction) in enumerate(self.objectives):
-            # 驗證 metric 是否支援
-            if metric not in VALID_METRICS:
-                errors.append(f"objectives[{i}] 不支援的指標: {metric}，支援的指標: {', '.join(sorted(VALID_METRICS))}")
+            # 驗證 metric 是否為 ObjectiveMetric 類型
+            if not isinstance(metric, ObjectiveMetric):
+                errors.append(f"objectives[{i}] metric 必須是 ObjectiveMetric 類型，收到: {type(metric)}")
             # 驗證 direction
             if direction not in ['maximize', 'minimize']:
                 errors.append(f"objectives[{i}] 方向必須是 'maximize' 或 'minimize'，收到: {direction}")
@@ -256,8 +272,8 @@ class UltimateLoopConfig:
         if self.n_trials < 1:
             errors.append("n_trials 必須 >= 1")
 
-        if self.pareto_select_method not in ['knee', 'crowding', 'random']:
-            errors.append(f"pareto_select_method 必須是 'knee', 'crowding' 或 'random'，收到: {self.pareto_select_method}")
+        if not isinstance(self.pareto_select_method, ParetoSelectMethod):
+            errors.append(f"pareto_select_method 必須是 ParetoSelectMethod 類型，收到: {type(self.pareto_select_method)}")
 
         if self.pareto_top_n < 1:
             errors.append("pareto_top_n 必須 >= 1")
@@ -312,7 +328,20 @@ class UltimateLoopConfig:
         if self.trials_per_iteration < 1:
             errors.append("trials_per_iteration 必須 >= 1")
 
-        # 11. 路徑安全驗證
+        # 11. GP 探索設定驗證（Phase 13.x）
+        if not (0 <= self.gp_explore_ratio <= 1):
+            errors.append("gp_explore_ratio 必須在 0-1 之間")
+
+        if self.gp_population_size < 1:
+            errors.append("gp_population_size 必須 >= 1")
+
+        if self.gp_generations < 1:
+            errors.append("gp_generations 必須 >= 1")
+
+        if self.gp_top_n < 1:
+            errors.append("gp_top_n 必須 >= 1")
+
+        # 12. 路徑安全驗證
         for path_name, path_value in [
             ('data_dir', self.data_dir),
             ('experiment_dir', self.experiment_dir),
@@ -359,15 +388,15 @@ class UltimateLoopConfig:
 
             # 啟用所有進階功能
             regime_detection=True,
-            strategy_selection_mode='regime_aware',
+            strategy_selection_mode=StrategySelectionMode.REGIME_AWARE,
             exploit_ratio=0.9,  # 90% exploit（生產環境更保守）
 
             # 多目標優化
             objectives=[
-                ('sharpe_ratio', 'maximize'),
-                ('max_drawdown', 'minimize'),
-                ('win_rate', 'maximize'),
-                ('profit_factor', 'maximize')
+                (ObjectiveMetric.SHARPE_RATIO, 'maximize'),
+                (ObjectiveMetric.MAX_DRAWDOWN, 'minimize'),
+                (ObjectiveMetric.WIN_RATE, 'maximize'),
+                (ObjectiveMetric.PROFIT_FACTOR, 'maximize')
             ],
             n_trials=200,  # 更多試驗
             pareto_top_n=5,
@@ -395,7 +424,14 @@ class UltimateLoopConfig:
             timeout_per_iteration=900,  # 15 分鐘
             max_retries=3,
             checkpoint_enabled=True,
-            checkpoint_interval=5  # 更頻繁的檢查點
+            checkpoint_interval=5,  # 更頻繁的檢查點
+
+            # GP 探索設定（Phase 13.x）
+            gp_explore_enabled=True,
+            gp_explore_ratio=0.15,  # 生產環境保守（15% GP）
+            gp_population_size=100,  # 大族群
+            gp_generations=50,       # 更多演化代數
+            gp_top_n=5               # 產生 5 個優質策略
         )
 
     @classmethod
@@ -425,13 +461,13 @@ class UltimateLoopConfig:
 
             # 啟用主要功能
             regime_detection=True,
-            strategy_selection_mode='regime_aware',
+            strategy_selection_mode=StrategySelectionMode.REGIME_AWARE,
             exploit_ratio=0.8,
 
             # 多目標優化
             objectives=[
-                ('sharpe_ratio', 'maximize'),
-                ('max_drawdown', 'minimize')
+                (ObjectiveMetric.SHARPE_RATIO, 'maximize'),
+                (ObjectiveMetric.MAX_DRAWDOWN, 'minimize')
             ],
             n_trials=100,
             pareto_top_n=3,
@@ -459,7 +495,14 @@ class UltimateLoopConfig:
             timeout_per_iteration=600,  # 10 分鐘
             max_retries=3,
             checkpoint_enabled=True,
-            checkpoint_interval=10
+            checkpoint_interval=10,
+
+            # GP 探索設定（Phase 13.x）
+            gp_explore_enabled=True,
+            gp_explore_ratio=0.2,    # 標準 20% GP
+            gp_population_size=50,   # 中等族群
+            gp_generations=30,       # 標準演化代數
+            gp_top_n=3               # 產生 3 個策略
         )
 
     @classmethod
@@ -489,12 +532,12 @@ class UltimateLoopConfig:
 
             # 簡化功能
             regime_detection=False,
-            strategy_selection_mode='random',
+            strategy_selection_mode=StrategySelectionMode.RANDOM,
             exploit_ratio=0.5,
 
             # 單目標優化
             objectives=[
-                ('sharpe_ratio', 'maximize')
+                (ObjectiveMetric.SHARPE_RATIO, 'maximize')
             ],
             n_trials=20,  # 快速試驗
             pareto_top_n=1,
@@ -522,7 +565,14 @@ class UltimateLoopConfig:
             timeout_per_iteration=300,  # 5 分鐘
             max_retries=1,
             checkpoint_enabled=False,
-            checkpoint_interval=100
+            checkpoint_interval=100,
+
+            # GP 探索設定（Phase 13.x）
+            gp_explore_enabled=False,  # 快速測試關閉 GP
+            gp_explore_ratio=0.1,      # 小比例
+            gp_population_size=20,     # 小族群
+            gp_generations=10,         # 少代數
+            gp_top_n=1                 # 只產生 1 個策略
         )
 
     @classmethod
@@ -574,16 +624,16 @@ class UltimateLoopConfig:
 
             # ===== 完整 Regime Detection =====
             regime_detection=True,
-            strategy_selection_mode='regime_aware',
+            strategy_selection_mode=StrategySelectionMode.REGIME_AWARE,
             exploit_ratio=0.8,
 
             # ===== 多目標優化 =====
             objectives=[
-                ('sharpe_ratio', 'maximize'),
-                ('max_drawdown', 'minimize'),
-                ('win_rate', 'maximize')
+                (ObjectiveMetric.SHARPE_RATIO, 'maximize'),
+                (ObjectiveMetric.MAX_DRAWDOWN, 'minimize'),
+                (ObjectiveMetric.WIN_RATE, 'maximize')
             ],
-            pareto_select_method='knee',
+            pareto_select_method=ParetoSelectMethod.KNEE,
             pareto_top_n=5,
 
             # ===== 全 5 階段驗證 =====
@@ -607,7 +657,14 @@ class UltimateLoopConfig:
             timeout_per_iteration=600,     # 10 分鐘超時
             max_retries=3,
             checkpoint_enabled=True,
-            checkpoint_interval=10         # 每 10 次迭代存檢查點
+            checkpoint_interval=10,        # 每 10 次迭代存檢查點
+
+            # ===== GP 探索設定（Phase 13.x） =====
+            gp_explore_enabled=True,
+            gp_explore_ratio=0.25,         # 高效能模式可以多嘗試（25% GP）
+            gp_population_size=100,        # 大族群
+            gp_generations=50,             # 充分演化
+            gp_top_n=5                     # 產生 5 個優質策略
         )
 
     def to_dict(self) -> dict:
@@ -628,21 +685,21 @@ class UltimateLoopConfig:
 
             # Regime Detection 設定
             'regime_detection': self.regime_detection,
-            'direction_method': self.direction_method,
+            'direction_method': self.direction_method.value,
             'direction_threshold_strong': self.direction_threshold_strong,
             'direction_threshold_weak': self.direction_threshold_weak,
             'volatility_threshold': self.volatility_threshold,
 
             # 策略組合設定
-            'strategy_selection_mode': self.strategy_selection_mode,
+            'strategy_selection_mode': self.strategy_selection_mode.value,
             'exploit_ratio': self.exploit_ratio,
-            'aggregation_mode': self.aggregation_mode,
+            'aggregation_mode': self.aggregation_mode.value,
             'enabled_strategies': self.enabled_strategies,
 
             # 多目標優化設定
-            'objectives': self.objectives,
+            'objectives': [(metric.value, direction) for metric, direction in self.objectives],
             'n_trials': self.n_trials,
-            'pareto_select_method': self.pareto_select_method,
+            'pareto_select_method': self.pareto_select_method.value,
             'pareto_top_n': self.pareto_top_n,
 
             # 驗證設定
@@ -687,7 +744,14 @@ class UltimateLoopConfig:
 
             # 迭代設定（Phase 12.12）
             'n_iterations': self.n_iterations,
-            'trials_per_iteration': self.trials_per_iteration
+            'trials_per_iteration': self.trials_per_iteration,
+
+            # GP 探索設定（Phase 13.x）
+            'gp_explore_enabled': self.gp_explore_enabled,
+            'gp_explore_ratio': self.gp_explore_ratio,
+            'gp_population_size': self.gp_population_size,
+            'gp_generations': self.gp_generations,
+            'gp_top_n': self.gp_top_n
         }
 
     def __repr__(self) -> str:

@@ -31,6 +31,7 @@ from src.regime.switch import (
     StrategySwitch,
     setup_default_switch,
 )
+from src.types.enums import DirectionMethod
 
 
 # ============================================================================
@@ -311,7 +312,7 @@ class TestMarketStateAnalyzer:
         assert analyzer.dir_strong == 5.0
         assert analyzer.dir_weak == 2.0
         assert analyzer.vol_threshold == 5.0
-        assert analyzer.direction_method == 'composite'
+        assert analyzer.direction_method == DirectionMethod.COMPOSITE
 
     def test_analyzer_init_custom(self):
         """初始化：自定義參數"""
@@ -319,13 +320,14 @@ class TestMarketStateAnalyzer:
             direction_threshold_strong=6.0,
             direction_threshold_weak=3.0,
             volatility_threshold=7.0,
-            direction_method='adx'
+            direction_method='adx'  # 向後相容：接受字串
         )
 
         assert analyzer.dir_strong == 6.0
         assert analyzer.dir_weak == 3.0
         assert analyzer.vol_threshold == 7.0
-        assert analyzer.direction_method == 'adx'
+        # 字串會被轉換為 Enum
+        assert analyzer.direction_method == DirectionMethod.ADX
 
     def test_calculate_state_normal(self, sample_ohlcv):
         """計算市場狀態：正常情況"""

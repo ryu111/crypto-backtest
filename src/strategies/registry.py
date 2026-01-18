@@ -4,8 +4,11 @@
 提供策略的註冊、查詢、實例化功能。
 """
 
-from typing import Dict, Type, List, Optional, Any
+from typing import Dict, Type, List, Optional, Any, TYPE_CHECKING, ClassVar
 from .base import BaseStrategy
+
+if TYPE_CHECKING:
+    from ..automation.gp_integration import DynamicStrategyInfo
 
 
 class StrategyRegistry:
@@ -27,7 +30,8 @@ class StrategyRegistry:
         all_strategies = StrategyRegistry.list_all()
     """
 
-    _strategies: Dict[str, Type[BaseStrategy]] = {}
+    _strategies: ClassVar[Dict[str, Type[BaseStrategy]]] = {}
+    _dynamic_strategies: ClassVar[Dict[str, 'DynamicStrategyInfo']] = {}
 
     @classmethod
     def register(cls, name: str):
@@ -66,22 +70,36 @@ class StrategyRegistry:
         Raises:
             KeyError: 策略不存在
         """
-        if name not in cls._strategies:
-            raise KeyError(
-                f"Strategy '{name}' not found. "
-                f"Available: {list(cls._strategies.keys())}"
-            )
-        return cls._strategies[name]
+        # 先查找靜態註冊
+        if name in cls._strategies:
+            return cls._strategies[name]
+
+        # 再查找動態註冊
+        if name in cls._dynamic_strategies:
+            return cls._dynamic_strategies[name].strategy_class
+
+        # 策略不存在
+        all_strategies = list(cls._strategies.keys()) + list(cls._dynamic_strategies.keys())
+        raise KeyError(
+            f"Strategy '{name}' not found. "
+            f"Available: {all_strategies}"
+        )
 
     @classmethod
-    def list_all(cls) -> List[str]:
+    def list_all(cls, include_dynamic: bool = True) -> List[str]:
         """
         列出所有已註冊策略名稱
+
+        Args:
+            include_dynamic: 是否包含動態註冊的策略（預設 True）
 
         Returns:
             List[str]: 策略名稱列表
         """
-        return list(cls._strategies.keys())
+        strategies = list(cls._strategies.keys())
+        if include_dynamic:
+            strategies.extend(cls._dynamic_strategies.keys())
+        return strategies
 
     @classmethod
     def list_by_type(cls, strategy_type: str) -> List[str]:
@@ -420,6 +438,157 @@ class StrategyRegistry:
             return None
 
         return cls._gp_metadata.get(name)
+
+    # ========== 動態策略註冊 ==========
+
+    @classmethod
+    def register_dynamic(
+        cls,
+        info: 'DynamicStrategyInfo',
+        replace_if_exists: bool = False
+    ) -> bool:
+        """
+        動態註冊策略
+
+        Args:
+            info: 動態策略資訊
+            replace_if_exists: 是否覆蓋已存在的同名策略（預設 False）
+
+        Returns:
+            bool: 是否成功註冊
+
+        Raises:
+            ValueError: 策略名稱已存在且不允許覆蓋
+            TypeError: strategy_class 不是 BaseStrategy 子類
+
+        Example:
+            >>> from automation.gp_integration import DynamicStrategyInfo
+            >>> info = DynamicStrategyInfo(
+            ...     name='gp_evolved_001',
+            ...     strategy_class=GPEvolvedStrategy,
+            ...     expression='...',
+            ...     fitness=2.35,
+            ...     generation=10,
+            ...     created_at=datetime.utcnow()
+            ... )
+            >>> StrategyRegistry.register_dynamic(info)
+            True
+        """
+        # 驗證 strategy_class
+        if not issubclass(info.strategy_class, BaseStrategy):
+            raise TypeError(
+                f"{info.strategy_class.__name__} must inherit from BaseStrategy"
+            )
+
+        # 檢查名稱衝突
+        if not replace_if_exists:
+            if info.name in cls._strategies:
+                raise ValueError(
+                    f"Strategy '{info.name}' already exists in static registry. "
+                    f"Use replace_if_exists=True to override."
+                )
+            if info.name in cls._dynamic_strategies:
+                raise ValueError(
+                    f"Dynamic strategy '{info.name}' already exists. "
+                    f"Use replace_if_exists=True to override."
+                )
+
+        # 註冊動態策略
+        cls._dynamic_strategies[info.name] = info
+
+        # 設定策略名稱
+        if not hasattr(info.strategy_class, 'name') or info.strategy_class.name == "base_strategy":
+            info.strategy_class.name = info.name
+
+        return True
+
+    @classmethod
+    def unregister_dynamic(cls, name: str) -> bool:
+        """
+        移除動態註冊的策略
+
+        Args:
+            name: 策略名稱
+
+        Returns:
+            bool: 是否成功移除（True 表示成功，False 表示策略不存在）
+
+        Example:
+            >>> StrategyRegistry.unregister_dynamic('gp_evolved_001')
+            True
+        """
+        if name in cls._dynamic_strategies:
+            del cls._dynamic_strategies[name]
+            return True
+        return False
+
+    @classmethod
+    def list_dynamic(cls) -> List['DynamicStrategyInfo']:
+        """
+        列出所有動態註冊的策略
+
+        Returns:
+            List[DynamicStrategyInfo]: 動態策略資訊列表
+
+        Example:
+            >>> strategies = StrategyRegistry.list_dynamic()
+            >>> for info in strategies:
+            ...     print(f"{info.name}: fitness={info.fitness}")
+        """
+        return list(cls._dynamic_strategies.values())
+
+    @classmethod
+    def clear_dynamic(cls) -> int:
+        """
+        清除所有動態註冊的策略
+
+        Returns:
+            int: 清除的策略數量
+
+        Example:
+            >>> count = StrategyRegistry.clear_dynamic()
+            >>> print(f"Cleared {count} dynamic strategies")
+        """
+        count = len(cls._dynamic_strategies)
+        cls._dynamic_strategies.clear()
+        return count
+
+    @classmethod
+    def is_dynamic(cls, name: str) -> bool:
+        """
+        檢查策略是否為動態註冊
+
+        Args:
+            name: 策略名稱
+
+        Returns:
+            bool: 是否為動態策略
+
+        Example:
+            >>> StrategyRegistry.is_dynamic('gp_evolved_001')
+            True
+            >>> StrategyRegistry.is_dynamic('ma_cross')
+            False
+        """
+        return name in cls._dynamic_strategies
+
+    @classmethod
+    def get_dynamic_info(cls, name: str) -> Optional['DynamicStrategyInfo']:
+        """
+        取得動態策略的完整資訊
+
+        Args:
+            name: 策略名稱
+
+        Returns:
+            Optional[DynamicStrategyInfo]: 動態策略資訊，如果不是動態策略則返回 None
+
+        Example:
+            >>> info = StrategyRegistry.get_dynamic_info('gp_evolved_001')
+            >>> if info:
+            ...     print(f"Fitness: {info.fitness}, Generation: {info.generation}")
+        """
+        return cls._dynamic_strategies.get(name)
 
 
 # 便利函數
