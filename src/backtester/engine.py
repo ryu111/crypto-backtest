@@ -6,7 +6,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, Dict, Any, Tuple, Union
+from typing import Optional, Dict, Any, Tuple, Union, List
 import pandas as pd
 import numpy as np
 import logging
@@ -64,6 +64,11 @@ class BacktestConfig:
     # 風險控制
     max_leverage: int = 10
     position_mode: str = "one-way"  # "one-way" or "hedge"
+
+    # 強平設定（新增）
+    enable_liquidation: bool = True  # 啟用強平模擬
+    maintenance_margin_rate: float = 0.005  # 維持保證金率 0.5%
+    liquidation_penalty_rate: float = 0.0075  # 強平罰金率 0.75%
 
     # 效能設定
     use_polars: bool = True  # 使用 Polars 後端（更快）
@@ -131,6 +136,11 @@ class BacktestResult:
     total_funding_fees: float = 0.0
     avg_leverage_used: float = 1.0
 
+    # 強平統計（新增）
+    liquidation_count: int = 0
+    liquidation_loss: float = 0.0
+    liquidation_events: List[Dict] = field(default_factory=list)
+
     # 額外資訊
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -156,11 +166,22 @@ class BacktestResult:
             'ulcer_index': self.ulcer_index,
             'total_funding_fees': self.total_funding_fees,
             'avg_leverage_used': self.avg_leverage_used,
+            'liquidation_count': self.liquidation_count,
+            'liquidation_loss': self.liquidation_loss,
             **self.metadata
         }
 
     def summary(self) -> str:
         """產生摘要報告"""
+        # 強平資訊區塊
+        liq_section = ""
+        if self.liquidation_count > 0:
+            liq_section = f"""
+強平統計
+{'-'*50}
+強平次數: {self.liquidation_count}
+強平損失: {self.liquidation_loss:.2f}
+"""
         return f"""
 回測結果摘要
 {'='*50}
@@ -190,7 +211,7 @@ class BacktestResult:
 {'-'*50}
 總資金費用: {self.total_funding_fees:.2f}
 平均槓桿: {self.avg_leverage_used:.2f}x
-"""
+{liq_section}"""
 
 
 class BacktestEngine:

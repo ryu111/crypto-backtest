@@ -4,20 +4,75 @@
 提供永續合約特有的計算功能：
 - 資金費率計算（每 8 小時結算）
 - 強平價格計算
+- 強平模擬執行
 - 保證金追蹤
 - Mark Price 計算
 - 未實現盈虧計算
 
 參考：
 - .claude/skills/永續合約/SKILL.md
+- .claude/skills/風險管理/SKILL.md
 - .claude/skills/回測核心/references/perpetual-mechanics.md
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, Tuple, List
+from enum import Enum
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class LiquidationType(Enum):
+    """強平類型"""
+    NONE = "none"
+    MARGIN_CALL = "margin_call"      # 追保通知
+    PARTIAL = "partial"               # 部分強平
+    FULL = "full"                     # 完全強平
+
+
+@dataclass
+class LiquidationEvent:
+    """
+    強平事件記錄
+
+    記錄強平發生時的所有相關資訊，用於：
+    - 回測績效分析
+    - 風險報告生成
+    - 策略改進參考
+    """
+    timestamp: datetime
+    liquidation_type: LiquidationType
+    entry_price: float
+    liquidation_price: float
+    position_size: float
+    direction: int  # 1=多, -1=空
+    leverage: int
+    margin_lost: float
+    penalty_fee: float
+
+    @property
+    def total_loss(self) -> float:
+        """總損失（保證金 + 罰金）"""
+        return self.margin_lost + self.penalty_fee
+
+    def to_dict(self) -> dict:
+        """轉為字典"""
+        return {
+            'timestamp': self.timestamp,
+            'type': self.liquidation_type.value,
+            'entry_price': self.entry_price,
+            'liquidation_price': self.liquidation_price,
+            'position_size': self.position_size,
+            'direction': self.direction,
+            'leverage': self.leverage,
+            'margin_lost': self.margin_lost,
+            'penalty_fee': self.penalty_fee,
+            'total_loss': self.total_loss
+        }
 
 
 @dataclass
@@ -709,3 +764,653 @@ class PerpetualRiskMonitor:
             'current_price': current_price,
             'entry_price': position.entry_price
         }
+
+
+class LiquidationSimulator:
+    """
+    強平模擬器
+
+    在回測中模擬交易所的強平機制，提供更真實的績效評估。
+
+    功能：
+    - 每根 K 線檢查強平條件
+    - 計算強平罰金（通常為維持保證金）
+    - 記錄強平事件
+    - 修正權益曲線
+
+    參考：
+    - .claude/skills/風險管理/SKILL.md
+    - .claude/skills/永續合約/SKILL.md
+
+    使用範例：
+        simulator = LiquidationSimulator()
+
+        for bar in data.itertuples():
+            if position is not None:
+                event = simulator.check_and_execute(
+                    position, bar.low, bar.high, bar.Index
+                )
+                if event:
+                    # 處理強平事件
+                    equity -= event.total_loss
+                    position = None
+    """
+
+    def __init__(
+        self,
+        maintenance_margin_rate: float = 0.005,
+        liquidation_penalty_rate: float = 0.0075,  # 0.75% 強平罰金
+        enable_partial_liquidation: bool = False
+    ):
+        """
+        初始化強平模擬器
+
+        Args:
+            maintenance_margin_rate: 維持保證金率（預設 0.5%）
+            liquidation_penalty_rate: 強平罰金率（預設 0.75%）
+            enable_partial_liquidation: 是否啟用部分強平（預設否）
+        """
+        self.calculator = PerpetualCalculator(
+            maintenance_margin_rate=maintenance_margin_rate
+        )
+        self.liquidation_penalty_rate = liquidation_penalty_rate
+        self.enable_partial_liquidation = enable_partial_liquidation
+        self.events: List[LiquidationEvent] = []
+
+    def check_and_execute(
+        self,
+        position: PerpetualPosition,
+        bar_low: float,
+        bar_high: float,
+        timestamp: datetime
+    ) -> Optional[LiquidationEvent]:
+        """
+        檢查並執行強平
+
+        在每根 K 線中檢查價格是否觸及強平價格。
+        對於做多，檢查最低價；對於做空，檢查最高價。
+
+        Args:
+            position: 當前持倉
+            bar_low: K 線最低價
+            bar_high: K 線最高價
+            timestamp: K 線時間戳
+
+        Returns:
+            LiquidationEvent: 如果觸發強平則回傳事件，否則 None
+
+        範例：
+            >>> pos = PerpetualPosition(50000, 1, 10, datetime.now(), 5000)
+            >>> sim = LiquidationSimulator()
+            >>> event = sim.check_and_execute(pos, 44000, 51000, datetime.now())
+            >>> event is not None  # 做多 10x，價格跌破 45250 會強平
+            True
+        """
+        if position.direction == 0:
+            return None
+
+        # 計算強平價格
+        liq_price = self.calculator.calculate_liquidation_price(
+            position.entry_price,
+            position.leverage,
+            position.direction
+        )
+
+        # 檢查是否觸發強平
+        is_liquidated = False
+        actual_liq_price = liq_price
+
+        if position.direction == 1:  # 做多
+            if bar_low <= liq_price:
+                is_liquidated = True
+                # 實際強平價格可能比強平線更差（跳空或滑點）
+                actual_liq_price = min(liq_price, bar_low)
+        else:  # 做空
+            if bar_high >= liq_price:
+                is_liquidated = True
+                actual_liq_price = max(liq_price, bar_high)
+
+        if not is_liquidated:
+            return None
+
+        # 執行強平
+        event = self._execute_liquidation(
+            position, actual_liq_price, timestamp
+        )
+
+        self.events.append(event)
+        logger.warning(
+            f"強平觸發: {timestamp}, "
+            f"方向={'做多' if position.direction == 1 else '做空'}, "
+            f"入場價={position.entry_price:.2f}, "
+            f"強平價={actual_liq_price:.2f}, "
+            f"損失={event.total_loss:.2f}"
+        )
+
+        return event
+
+    def _execute_liquidation(
+        self,
+        position: PerpetualPosition,
+        liquidation_price: float,
+        timestamp: datetime
+    ) -> LiquidationEvent:
+        """
+        執行強平並計算損失
+
+        Args:
+            position: 被強平的倉位
+            liquidation_price: 強平執行價格
+            timestamp: 強平時間
+
+        Returns:
+            LiquidationEvent: 強平事件
+        """
+        # 計算保證金損失
+        # 強平時通常會損失大部分保證金
+        unrealized_pnl = self.calculator.calculate_unrealized_pnl(
+            position.entry_price,
+            liquidation_price,
+            abs(position.size),
+            position.direction
+        )
+
+        # 保證金損失 = 初始保證金 + 未實現虧損（已經是負數）
+        margin_lost = position.margin + unrealized_pnl
+        margin_lost = max(margin_lost, 0)  # 保證金損失不能為負
+
+        # 強平罰金
+        notional_value = abs(position.size) * liquidation_price
+        penalty_fee = notional_value * self.liquidation_penalty_rate
+
+        return LiquidationEvent(
+            timestamp=timestamp,
+            liquidation_type=LiquidationType.FULL,
+            entry_price=position.entry_price,
+            liquidation_price=liquidation_price,
+            position_size=abs(position.size),
+            direction=position.direction,
+            leverage=position.leverage,
+            margin_lost=margin_lost,
+            penalty_fee=penalty_fee
+        )
+
+    def simulate_liquidations(
+        self,
+        data: pd.DataFrame,
+        positions: pd.Series,
+        entry_prices: pd.Series,
+        leverage: int
+    ) -> Tuple[pd.Series, List[LiquidationEvent]]:
+        """
+        對整個回測資料模擬強平
+
+        Args:
+            data: OHLCV DataFrame
+            positions: 持倉方向序列（1=多, -1=空, 0=無）
+            entry_prices: 入場價格序列
+            leverage: 槓桿倍數
+
+        Returns:
+            (adjusted_positions, events): 調整後的持倉和強平事件列表
+        """
+        adjusted_positions = positions.copy()
+        events = []
+
+        current_entry_price = None
+        position_start_idx = None
+
+        for i, idx in enumerate(data.index):
+            pos = positions.iloc[i]
+
+            # 新開倉
+            if pos != 0 and (i == 0 or positions.iloc[i-1] == 0):
+                current_entry_price = entry_prices.iloc[i]
+                position_start_idx = i
+
+            # 有持倉，檢查強平
+            if pos != 0 and current_entry_price is not None:
+                liq_price = self.calculator.calculate_liquidation_price(
+                    current_entry_price, leverage, int(pos)
+                )
+
+                bar_low = data['low'].iloc[i]
+                bar_high = data['high'].iloc[i]
+
+                is_liquidated = False
+                if pos == 1 and bar_low <= liq_price:
+                    is_liquidated = True
+                    actual_liq_price = min(liq_price, bar_low)
+                elif pos == -1 and bar_high >= liq_price:
+                    is_liquidated = True
+                    actual_liq_price = max(liq_price, bar_high)
+
+                if is_liquidated:
+                    # 從強平點開始清除持倉
+                    adjusted_positions.iloc[i:] = 0
+
+                    # 記錄事件
+                    margin = abs(current_entry_price) / leverage
+                    timestamp = idx if isinstance(idx, datetime) else data.index[i]
+
+                    event = LiquidationEvent(
+                        timestamp=timestamp,
+                        liquidation_type=LiquidationType.FULL,
+                        entry_price=current_entry_price,
+                        liquidation_price=actual_liq_price,
+                        position_size=1.0,  # 標準化為 1
+                        direction=int(pos),
+                        leverage=leverage,
+                        margin_lost=margin,
+                        penalty_fee=margin * self.liquidation_penalty_rate * leverage
+                    )
+                    events.append(event)
+
+                    # 重置狀態
+                    current_entry_price = None
+                    position_start_idx = None
+
+            # 平倉
+            if pos == 0 and i > 0 and positions.iloc[i-1] != 0:
+                current_entry_price = None
+                position_start_idx = None
+
+        return adjusted_positions, events
+
+    def get_statistics(self) -> dict:
+        """
+        獲取強平統計
+
+        Returns:
+            強平統計字典
+        """
+        if not self.events:
+            return {
+                'total_liquidations': 0,
+                'total_loss': 0.0,
+                'total_penalty': 0.0,
+                'avg_loss_per_liquidation': 0.0,
+                'liquidation_by_direction': {'long': 0, 'short': 0}
+            }
+
+        total_loss = sum(e.total_loss for e in self.events)
+        total_penalty = sum(e.penalty_fee for e in self.events)
+
+        by_direction = {
+            'long': sum(1 for e in self.events if e.direction == 1),
+            'short': sum(1 for e in self.events if e.direction == -1)
+        }
+
+        return {
+            'total_liquidations': len(self.events),
+            'total_loss': total_loss,
+            'total_penalty': total_penalty,
+            'avg_loss_per_liquidation': total_loss / len(self.events),
+            'liquidation_by_direction': by_direction
+        }
+
+    def clear_events(self):
+        """清除強平事件記錄"""
+        self.events = []
+
+    def to_dataframe(self) -> pd.DataFrame:
+        """將強平事件轉為 DataFrame"""
+        if not self.events:
+            return pd.DataFrame()
+
+        return pd.DataFrame([e.to_dict() for e in self.events])
+
+
+# ===== 資金費率處理 =====
+
+
+@dataclass
+class FundingSettlement:
+    """資金費率結算記錄"""
+    timestamp: datetime
+    rate: float
+    position_value: float
+    direction: int  # 1=多, -1=空
+    cost: float  # 正=支付, 負=收取
+
+    def to_dict(self) -> dict:
+        """轉為字典"""
+        return {
+            'timestamp': self.timestamp,
+            'rate': self.rate,
+            'position_value': self.position_value,
+            'direction': self.direction,
+            'cost': self.cost
+        }
+
+
+class FundingRateHandler:
+    """
+    資金費率處理器
+
+    負責載入、查詢資金費率數據，並計算持倉期間的資金費率成本。
+
+    結算時機（UTC）：
+    - 00:00
+    - 08:00
+    - 16:00
+
+    使用範例：
+        handler = FundingRateHandler()
+
+        # 載入費率數據
+        handler.load_funding_rates('BTCUSDT', start_date, end_date)
+
+        # 檢查是否為結算時間
+        if handler.is_settlement_time(current_time):
+            cost = handler.calculate_cost(position_value, direction, current_time)
+
+        # 統計
+        print(handler.get_statistics())
+    """
+
+    # 結算時間（UTC）
+    SETTLEMENT_HOURS = [0, 8, 16]
+
+    def __init__(
+        self,
+        default_rate: float = 0.0001,  # 預設費率 0.01%
+        funding_interval_hours: int = 8
+    ):
+        """初始化資金費率處理器
+
+        Args:
+            default_rate: 預設資金費率（無數據時使用）
+            funding_interval_hours: 結算間隔（小時）
+        """
+        self.default_rate = default_rate
+        self.funding_interval_hours = funding_interval_hours
+
+        # 費率數據
+        self._rates: Optional[pd.DataFrame] = None
+        self._symbol: Optional[str] = None
+
+        # 結算記錄
+        self.settlements: List[FundingSettlement] = []
+
+    def load_funding_rates(
+        self,
+        symbol: str,
+        start_date: datetime,
+        end_date: datetime,
+        data_source: Optional[str] = None
+    ) -> bool:
+        """載入資金費率數據
+
+        Args:
+            symbol: 交易對符號（如 'BTCUSDT'）
+            start_date: 開始日期
+            end_date: 結束日期
+            data_source: 數據來源（可選）
+
+        Returns:
+            bool: 是否載入成功
+        """
+        self._symbol = symbol
+
+        # 嘗試從本地檔案載入
+        rates_path = self._get_rates_path(symbol)
+
+        if rates_path and rates_path.exists():
+            try:
+                self._rates = pd.read_csv(rates_path)
+                self._rates['timestamp'] = pd.to_datetime(self._rates['timestamp'])
+
+                # 過濾日期範圍
+                mask = (
+                    (self._rates['timestamp'] >= start_date) &
+                    (self._rates['timestamp'] <= end_date)
+                )
+                self._rates = self._rates[mask].reset_index(drop=True)
+
+                logger.info(f"已載入 {symbol} 資金費率: {len(self._rates)} 筆")
+                return True
+
+            except Exception as e:
+                logger.warning(f"載入資金費率失敗: {e}")
+
+        # 無數據時生成模擬數據
+        logger.info(f"使用模擬資金費率數據: 預設費率 {self.default_rate:.4%}")
+        self._rates = self._generate_simulated_rates(start_date, end_date)
+        return True
+
+    def _get_rates_path(self, symbol: str) -> Optional['Path']:
+        """獲取費率數據檔案路徑"""
+        from pathlib import Path
+
+        # 嘗試多個可能的路徑
+        possible_paths = [
+            Path(f"data/funding_rates/{symbol}_funding.csv"),
+            Path(f"data/{symbol.lower()}_funding_rates.csv"),
+            Path(f"data/raw/{symbol}_funding.csv")
+        ]
+
+        for path in possible_paths:
+            if path.exists():
+                return path
+
+        return None
+
+    def _generate_simulated_rates(
+        self,
+        start_date: datetime,
+        end_date: datetime
+    ) -> pd.DataFrame:
+        """生成模擬資金費率數據
+
+        在缺乏真實數據時，使用預設費率生成結算時間點。
+        """
+        timestamps = []
+        current = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        while current <= end_date:
+            for hour in self.SETTLEMENT_HOURS:
+                ts = current.replace(hour=hour)
+                if start_date <= ts <= end_date:
+                    timestamps.append(ts)
+            current += timedelta(days=1)
+
+        # 生成帶有輕微波動的費率
+        np.random.seed(42)  # 確保可重現
+        rates = np.random.normal(self.default_rate, self.default_rate * 0.3, len(timestamps))
+
+        return pd.DataFrame({
+            'timestamp': timestamps,
+            'rate': rates
+        })
+
+    def get_rate_at(self, timestamp: datetime) -> float:
+        """獲取特定時間的費率
+
+        Args:
+            timestamp: 查詢時間
+
+        Returns:
+            float: 資金費率
+        """
+        if self._rates is None or self._rates.empty:
+            return self.default_rate
+
+        # 找最近的結算時間點
+        mask = self._rates['timestamp'] <= timestamp
+        if not mask.any():
+            return self.default_rate
+
+        nearest_idx = self._rates.loc[mask, 'timestamp'].idxmax()
+        return float(self._rates.loc[nearest_idx, 'rate'])
+
+    def is_settlement_time(self, timestamp: datetime) -> bool:
+        """檢查是否為結算時間
+
+        Args:
+            timestamp: 要檢查的時間
+
+        Returns:
+            bool: 是否為結算時間
+        """
+        return timestamp.hour in self.SETTLEMENT_HOURS and timestamp.minute == 0
+
+    def get_next_settlement(self, timestamp: datetime) -> datetime:
+        """獲取下一個結算時間
+
+        Args:
+            timestamp: 當前時間
+
+        Returns:
+            datetime: 下一個結算時間
+        """
+        current_hour = timestamp.hour
+
+        # 找下一個結算小時
+        for hour in sorted(self.SETTLEMENT_HOURS):
+            if hour > current_hour:
+                return timestamp.replace(hour=hour, minute=0, second=0, microsecond=0)
+
+        # 如果今天沒有更多結算時間，返回明天的第一個
+        next_day = timestamp + timedelta(days=1)
+        return next_day.replace(
+            hour=self.SETTLEMENT_HOURS[0],
+            minute=0,
+            second=0,
+            microsecond=0
+        )
+
+    def calculate_cost(
+        self,
+        position_value: float,
+        direction: int,
+        timestamp: datetime
+    ) -> float:
+        """計算資金費率成本
+
+        Args:
+            position_value: 持倉價值（USDT）
+            direction: 持倉方向（1=多, -1=空）
+            timestamp: 結算時間
+
+        Returns:
+            float: 資金費率成本（正=支付, 負=收取）
+        """
+        rate = self.get_rate_at(timestamp)
+        cost = position_value * rate * direction
+
+        # 記錄結算
+        settlement = FundingSettlement(
+            timestamp=timestamp,
+            rate=rate,
+            position_value=position_value,
+            direction=direction,
+            cost=cost
+        )
+        self.settlements.append(settlement)
+
+        return cost
+
+    def calculate_period_cost(
+        self,
+        position_value: float,
+        direction: int,
+        start_time: datetime,
+        end_time: datetime
+    ) -> float:
+        """計算持倉期間的總資金費率成本
+
+        Args:
+            position_value: 持倉價值
+            direction: 持倉方向
+            start_time: 持倉開始時間
+            end_time: 持倉結束時間
+
+        Returns:
+            float: 期間總成本
+        """
+        if self._rates is None:
+            return 0.0
+
+        # 找出期間內的所有結算時間點
+        mask = (
+            (self._rates['timestamp'] >= start_time) &
+            (self._rates['timestamp'] <= end_time)
+        )
+        period_rates = self._rates[mask]
+
+        total_cost = 0.0
+        for _, row in period_rates.iterrows():
+            cost = self.calculate_cost(
+                position_value,
+                direction,
+                row['timestamp']
+            )
+            total_cost += cost
+
+        return total_cost
+
+    def get_settlement_times_in_range(
+        self,
+        start_time: datetime,
+        end_time: datetime
+    ) -> List[datetime]:
+        """獲取時間範圍內的所有結算時間
+
+        Args:
+            start_time: 開始時間
+            end_time: 結束時間
+
+        Returns:
+            List[datetime]: 結算時間列表
+        """
+        if self._rates is None:
+            return []
+
+        mask = (
+            (self._rates['timestamp'] >= start_time) &
+            (self._rates['timestamp'] <= end_time)
+        )
+        return self._rates.loc[mask, 'timestamp'].tolist()
+
+    def get_statistics(self) -> dict:
+        """獲取資金費率統計
+
+        Returns:
+            dict: 統計資訊
+        """
+        if not self.settlements:
+            return {
+                'total_settlements': 0,
+                'total_cost': 0.0,
+                'total_paid': 0.0,
+                'total_received': 0.0,
+                'avg_rate': self.default_rate,
+                'net_cost': 0.0
+            }
+
+        costs = [s.cost for s in self.settlements]
+        rates = [s.rate for s in self.settlements]
+
+        total_paid = sum(c for c in costs if c > 0)
+        total_received = abs(sum(c for c in costs if c < 0))
+
+        return {
+            'total_settlements': len(self.settlements),
+            'total_cost': sum(costs),
+            'total_paid': total_paid,
+            'total_received': total_received,
+            'avg_rate': np.mean(rates),
+            'net_cost': total_paid - total_received
+        }
+
+    def clear_settlements(self):
+        """清除結算記錄"""
+        self.settlements = []
+
+    def to_dataframe(self) -> pd.DataFrame:
+        """將結算記錄轉為 DataFrame"""
+        if not self.settlements:
+            return pd.DataFrame()
+
+        return pd.DataFrame([s.to_dict() for s in self.settlements])
