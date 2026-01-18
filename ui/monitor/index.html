@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UltimateLoop Monitor</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 標題列 -->
+        <header class="header">
+            <h1>🔮 UltimateLoop Monitor</h1>
+            <div class="header-info">
+                <div class="timer" id="timer">00:00:00</div>
+                <div class="status-badge idle" id="status-badge">IDLE</div>
+            </div>
+        </header>
+
+        <!-- 進度條 -->
+        <section class="progress-section">
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="progress-text">
+                <span><span class="current" id="current-iteration">0</span> / <span id="total-iterations">0</span> 迭代</span>
+                <span id="progress-percent">0%</span>
+            </div>
+        </section>
+
+        <!-- 指標卡片 -->
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <div class="icon">📈</div>
+                <div class="value" id="best-sharpe">0.00</div>
+                <div class="label">最佳 Sharpe</div>
+            </div>
+            <div class="metric-card">
+                <div class="icon">💰</div>
+                <div class="value success" id="avg-return">0.0%</div>
+                <div class="label">平均報酬</div>
+            </div>
+            <div class="metric-card">
+                <div class="icon">📉</div>
+                <div class="value warning" id="max-drawdown">0.0%</div>
+                <div class="label">最大回撤</div>
+            </div>
+            <div class="metric-card">
+                <div class="icon">🎯</div>
+                <div class="value" id="success-rate">0.0%</div>
+                <div class="label">成功率</div>
+            </div>
+        </section>
+
+        <!-- 主要內容 -->
+        <div class="main-content">
+            <!-- 圖表區 -->
+            <section class="chart-section">
+                <h2 class="section-title">📊 Sharpe 趨勢</h2>
+                <div class="chart-container">
+                    <canvas id="sharpe-chart"></canvas>
+                </div>
+            </section>
+
+            <!-- 側邊欄 -->
+            <aside class="sidebar">
+                <!-- 策略分佈 -->
+                <div class="sidebar-card">
+                    <h3 class="section-title">🏆 策略分佈</h3>
+                    <div class="strategy-list" id="strategy-list">
+                        <div class="strategy-item">
+                            <div class="strategy-bar" style="width: 0%"></div>
+                            <span class="strategy-name">等待資料...</span>
+                            <span class="strategy-count">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系統狀態 -->
+                <div class="sidebar-card">
+                    <h3 class="section-title">⚡ 系統狀態</h3>
+                    <div class="system-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">CPU</span>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar cpu" id="cpu-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="stat-value" id="cpu-value">0%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">RAM</span>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar ram" id="ram-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="stat-value" id="ram-value">0%</span>
+                        </div>
+                        <div class="stat-row" id="gpu-row" style="display: none;">
+                            <span class="stat-label">GPU</span>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar gpu" id="gpu-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="stat-value" id="gpu-value">0%</span>
+                        </div>
+                    </div>
+                    <div class="status-indicator">
+                        <div class="status-dot" id="engine-status"></div>
+                        <span>回測引擎: <span id="engine-status-text">等待</span></span>
+                    </div>
+                    <div class="status-indicator">
+                        <div class="status-dot" id="ws-status"></div>
+                        <span>WebSocket: <span id="ws-status-text">連接中</span></span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- 最佳策略 -->
+        <section class="best-strategy-section">
+            <h2 class="section-title">🎯 當前最佳策略</h2>
+            <div class="best-strategy-card" id="best-strategy-card" style="display: none;">
+                <div class="best-strategy-header">
+                    <span class="best-strategy-name" id="best-strategy-name">-</span>
+                    <span class="best-strategy-iteration" id="best-strategy-iteration">#0</span>
+                </div>
+                <div class="best-strategy-metrics">
+                    <div class="best-metric">
+                        <span class="best-metric-value" id="best-strategy-sharpe">0.00</span>
+                        <span class="best-metric-label">Sharpe</span>
+                    </div>
+                    <div class="best-metric">
+                        <span class="best-metric-value" id="best-strategy-return">0.0%</span>
+                        <span class="best-metric-label">Return</span>
+                    </div>
+                    <div class="best-metric">
+                        <span class="best-metric-value" id="best-strategy-drawdown">0.0%</span>
+                        <span class="best-metric-label">MaxDD</span>
+                    </div>
+                </div>
+                <div class="best-strategy-params" id="best-strategy-params">-</div>
+            </div>
+            <div id="no-best-strategy" style="color: var(--text-secondary); text-align: center; padding: 20px;">
+                等待第一個迭代完成...
+            </div>
+        </section>
+
+        <!-- 事件日誌 -->
+        <section class="events-section">
+            <h2 class="section-title">📝 最近事件</h2>
+            <div class="events-list" id="events-list">
+                <div class="event-item">
+                    <span class="event-time">--:--:--</span>
+                    <span class="event-content">等待連接...</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 連接狀態 -->
+    <div class="connection-status disconnected" id="connection-status">
+        <div class="status-dot disconnected"></div>
+        <span>斷線</span>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

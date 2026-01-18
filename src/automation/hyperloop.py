@@ -16,14 +16,52 @@ HyperLoopController - 高效能並行回測 Loop 主控制器
 
 import time
 import logging
+import signal
+import atexit
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable
 from concurrent.futures import ProcessPoolExecutor, as_completed, TimeoutError
 from datetime import datetime
+import multiprocessing as mp
 
 import pandas as pd
 import numpy as np
+
+# 全域追蹤所有活躍的執行器，用於清理孤兒進程
+_active_executors: List['ProcessPoolExecutor'] = []
+
+
+def _cleanup_all_executors():
+    """清理所有活躍的執行器（atexit 回調）"""
+    global _active_executors
+    for executor in _active_executors[:]:
+        try:
+            executor.shutdown(wait=False, cancel_futures=True)
+        except Exception:
+            pass
+    _active_executors.clear()
+
+
+def _signal_handler(signum, frame):
+    """信號處理器：確保子進程被清理"""
+    _cleanup_all_executors()
+    # 重新拋出信號讓程式正常終止
+    signal.signal(signum, signal.SIG_DFL)
+    os.kill(os.getpid(), signum)
+
+
+# 註冊 atexit 清理
+atexit.register(_cleanup_all_executors)
+
+# 註冊信號處理（SIGTERM, SIGINT）
+try:
+    signal.signal(signal.SIGTERM, _signal_handler)
+    signal.signal(signal.SIGINT, _signal_handler)
+except ValueError:
+    # 在非主線程中無法設置信號處理
+    pass
 
 from ..data.shared_pool import (
     SharedDataPool,
@@ -433,8 +471,17 @@ class HyperLoopController:
 
         results = []
 
-        # 使用 ProcessPoolExecutor 並行執行
-        with ProcessPoolExecutor(max_workers=len(batch)) as executor:
+        # 使用 spawn 模式創建 ProcessPoolExecutor（更容易清理子進程）
+        mp_context = mp.get_context('spawn')
+        executor = ProcessPoolExecutor(
+            max_workers=len(batch),
+            mp_context=mp_context
+        )
+
+        # 加入全域追蹤列表
+        _active_executors.append(executor)
+
+        try:
             # 提交所有任務
             future_to_task = {
                 executor.submit(
@@ -495,6 +542,16 @@ class HyperLoopController:
 
                 finally:
                     self.summary.total_iterations += 1
+
+        finally:
+            # 確保執行器被正確關閉並從追蹤列表移除
+            try:
+                executor.shutdown(wait=True, cancel_futures=False)
+            except Exception:
+                pass
+            finally:
+                if executor in _active_executors:
+                    _active_executors.remove(executor)
 
         return results
 

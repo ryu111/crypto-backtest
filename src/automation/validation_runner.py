@@ -540,24 +540,63 @@ class ValidationRunner:
         """
         if self.wfa_analyzer is None:
             # 如果沒有提供 WFA，建立一個
-            from ..backtester.engine import BacktestConfig
             self.wfa_analyzer = WalkForwardAnalyzer(
-                config=self.engine.config,
-                mode='rolling'
-            )
-
-        # 建立參數網格（單一參數組合，因為已經優化過）
-        param_grid = {k: [v] for k, v in params.items()}
-
-        try:
-            wfa_result = self.wfa_analyzer.analyze(
-                strategy=strategy,
-                data=data,
-                param_grid=param_grid,
                 n_windows=5,
                 is_ratio=0.7,
-                verbose=False
+                overlap=0.5,
             )
+
+        # 取得策略名稱
+        strategy_name = getattr(strategy, 'name', strategy.__class__.__name__)
+
+        # 建立優化函數（使用已知的最佳參數）
+        def optimize_func(is_data: pd.DataFrame) -> tuple:
+            """返回已知的最佳參數和 IS Sharpe"""
+            # 在 IS 資料上執行回測以取得 Sharpe
+            try:
+                result = self.engine.run(strategy, params, is_data)
+                is_sharpe = result.sharpe_ratio if result.sharpe_ratio else 0.0
+            except Exception:
+                is_sharpe = 0.0
+            return params, is_sharpe
+
+        # 建立評估函數
+        def evaluate_func(eval_data: pd.DataFrame, eval_params: Dict[str, Any]) -> Dict[str, float]:
+            """評估策略在給定資料上的績效"""
+            try:
+                result = self.engine.run(strategy, eval_params, eval_data)
+                return {
+                    'sharpe': result.sharpe_ratio if result.sharpe_ratio else 0.0,
+                    'return': result.total_return if result.total_return else 0.0,
+                    'max_drawdown': result.max_drawdown if result.max_drawdown else 0.0,
+                    'win_rate': result.win_rate if result.win_rate else 0.0,
+                }
+            except Exception:
+                return {'sharpe': 0.0, 'return': 0.0, 'max_drawdown': 0.0, 'win_rate': 0.0}
+
+        try:
+            # 使用新的 API 呼叫 WFA
+            import asyncio
+
+            async def run_wfa():
+                return await self.wfa_analyzer.analyze(
+                    data=data,
+                    strategy_name=strategy_name,
+                    optimize_func=optimize_func,
+                    evaluate_func=evaluate_func,
+                )
+
+            # 檢查是否已有 event loop 在運行
+            try:
+                loop = asyncio.get_running_loop()
+                # 如果有 running loop，使用 nest_asyncio 或創建新線程
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(asyncio.run, run_wfa())
+                    wfa_result = future.result(timeout=60)
+            except RuntimeError:
+                # 沒有 running loop，可以直接使用 asyncio.run
+                wfa_result = asyncio.run(run_wfa())
 
             # 評估 WFA 結果
             efficiency = wfa_result.efficiency

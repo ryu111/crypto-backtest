@@ -209,6 +209,29 @@ class UltimateLoopConfig:
     gp_generations: int = 30                     # GP 演化代數
     gp_top_n: int = 3                            # 每次 GP 探索產生的策略數
 
+    # ===== Walk-Forward 設定（Skills 對齊） =====
+    use_walk_forward: bool = True                # 是否啟用 Walk-Forward 分析
+    wfa_is_ratio: float = 0.7                    # In-Sample 比例
+    wfa_n_windows: int = 5                       # 滾動窗口數量
+    wfa_overlap: float = 0.5                     # 窗口重疊比例
+    wfa_min_efficiency: float = 0.5              # 最低可接受效率
+
+    # ===== 過擬合偵測設定（Skills 對齊） =====
+    min_trades: int = 30                         # 最低交易筆數（統計有效性）
+    max_pbo: float = 0.5                         # 最大可接受 PBO
+    max_is_oos_ratio: float = 2.0                # 最大可接受 IS/OOS 比
+    max_param_sensitivity: float = 0.3           # 最大可接受參數敏感度
+
+    # ===== 兩階段參數搜索設定（Skills 對齊） =====
+    two_stage_search: bool = True                # 是否啟用兩階段搜索
+    coarse_trials: int = 20                      # 粗搜索試驗數
+    coarse_step_multiplier: float = 3.0          # 粗搜索步長倍數
+    fine_trials: int = 50                        # 細搜索試驗數
+
+    # ===== 參數預生成設定（Skills 對齊） =====
+    use_param_pregeneration: bool = True         # 是否基於歷史最佳參數預生成搜索範圍
+    param_pregeneration_ratio: float = 0.3       # 預生成範圍比例（±30%）
+
     def validate(self) -> bool:
         """
         驗證配置有效性
@@ -340,6 +363,42 @@ class UltimateLoopConfig:
 
         if self.gp_top_n < 1:
             errors.append("gp_top_n 必須 >= 1")
+
+        # 12. Walk-Forward 設定驗證（Skills 對齊）
+        if not (0.5 <= self.wfa_is_ratio <= 0.9):
+            errors.append("wfa_is_ratio 必須在 0.5-0.9 之間")
+
+        if self.wfa_n_windows < 2:
+            errors.append("wfa_n_windows 必須 >= 2")
+
+        if not (0 <= self.wfa_overlap < 1):
+            errors.append("wfa_overlap 必須在 0-1 之間")
+
+        if not (0 <= self.wfa_min_efficiency <= 1):
+            errors.append("wfa_min_efficiency 必須在 0-1 之間")
+
+        # 13. 過擬合偵測設定驗證（Skills 對齊）
+        if self.min_trades < 1:
+            errors.append("min_trades 必須 >= 1")
+
+        if not (0 <= self.max_pbo <= 1):
+            errors.append("max_pbo 必須在 0-1 之間")
+
+        if self.max_is_oos_ratio < 1:
+            errors.append("max_is_oos_ratio 必須 >= 1")
+
+        if not (0 <= self.max_param_sensitivity <= 1):
+            errors.append("max_param_sensitivity 必須在 0-1 之間")
+
+        # 14. 兩階段搜索設定驗證（Skills 對齊）
+        if self.coarse_trials < 1:
+            errors.append("coarse_trials 必須 >= 1")
+
+        if self.coarse_step_multiplier < 1:
+            errors.append("coarse_step_multiplier 必須 >= 1")
+
+        if self.fine_trials < 1:
+            errors.append("fine_trials 必須 >= 1")
 
         # 12. 路徑安全驗證
         for path_name, path_value in [
@@ -751,7 +810,26 @@ class UltimateLoopConfig:
             'gp_explore_ratio': self.gp_explore_ratio,
             'gp_population_size': self.gp_population_size,
             'gp_generations': self.gp_generations,
-            'gp_top_n': self.gp_top_n
+            'gp_top_n': self.gp_top_n,
+
+            # Walk-Forward 設定（Skills 對齊）
+            'use_walk_forward': self.use_walk_forward,
+            'wfa_is_ratio': self.wfa_is_ratio,
+            'wfa_n_windows': self.wfa_n_windows,
+            'wfa_overlap': self.wfa_overlap,
+            'wfa_min_efficiency': self.wfa_min_efficiency,
+
+            # 過擬合偵測設定（Skills 對齊）
+            'min_trades': self.min_trades,
+            'max_pbo': self.max_pbo,
+            'max_is_oos_ratio': self.max_is_oos_ratio,
+            'max_param_sensitivity': self.max_param_sensitivity,
+
+            # 兩階段搜索設定（Skills 對齊）
+            'two_stage_search': self.two_stage_search,
+            'coarse_trials': self.coarse_trials,
+            'coarse_step_multiplier': self.coarse_step_multiplier,
+            'fine_trials': self.fine_trials
         }
 
     def __repr__(self) -> str:

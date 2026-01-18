@@ -229,8 +229,9 @@ class MetalBacktestEngine:
         正確處理信號長度可能與價格長度不同的情況。
         """
         _mx = mx  # type: ignore[assignment]
-        # 價格變化：diff 後長度 N-1
-        price_changes = _mx.diff(prices[:, 0])  # 假設第一列是收盤價
+        # 價格變化：使用 slice 替代 diff（MLX 沒有 diff 函數）
+        close_prices = prices[:, 0]  # 假設第一列是收盤價
+        price_changes = (close_prices[1:] - close_prices[:-1]) / close_prices[:-1]
 
         # 信號對齊：信號長度可能是 N（與價格相同）或 N-1（已經 shift 過）
         # 我們使用 min_len 來確保正確對齊
@@ -265,10 +266,12 @@ class MetalBacktestEngine:
         """計算最大回撤（MLX）"""
         _mx = mx  # type: ignore[assignment]
         cumulative = _mx.cumsum(returns)
-        running_max = _mx.maximum.accumulate(cumulative)
-        drawdown = running_max - cumulative
-        max_dd = _mx.max(drawdown)
-        return max_dd
+        # MLX 沒有 maximum.accumulate，轉成 numpy 計算
+        cum_np = np.array(cumulative)
+        running_max_np = np.maximum.accumulate(cum_np)
+        drawdown_np = running_max_np - cum_np
+        max_dd = float(np.max(drawdown_np))
+        return _mx.array(max_dd)
 
     # ========== PyTorch 計算函數 ==========
     # 注意：這些函數只在 PyTorch MPS 可用時被調用，由 _torch_backtest 保證

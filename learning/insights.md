@@ -1,7 +1,7 @@
 # 交易策略洞察彙整
 
-> 最後更新：2026-01-14
-> 總實驗數：622（含 4 個 Bayesian 優化實驗）
+> 最後更新：2026-01-19
+> 總實驗數：541（含 4 個 Bayesian 優化實驗）
 > Phase 6 Backtest Loop：✅ 已完成
 
 ---
@@ -123,6 +123,866 @@ Stage 5: Monte Carlo → 1000 次模擬過擬合率 < 30%？
 ---
 
 ## 過擬合教訓
+
+### 失敗案例：exp_20260119_011541_mean_reversion_bollinger+trend_supertrend+momentum_macd
+- 策略：mean_reversion_bollinger+trend_supertrend+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_011528_funding_rate_arb+momentum_rsi+mean_reversion_rsi
+- 策略：funding_rate_arb+momentum_rsi+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_011516_momentum_rsi+funding_rate_arb+statistical_arb_basis
+- 策略：momentum_rsi+funding_rate_arb+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_011506_momentum_macd+funding_rate_settlement+mean_reversion_bollinger
+- 策略：momentum_macd+funding_rate_settlement+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_011456_mean_reversion_rsi+trend_supertrend+funding_rate_arb
+- 策略：mean_reversion_rsi+trend_supertrend+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_011446_momentum_macd+funding_rate_settlement+momentum_stochastic
+- 策略：momentum_macd+funding_rate_settlement+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_011435_trend_supertrend+mean_reversion_bollinger+momentum_stochastic
+- 策略：trend_supertrend+mean_reversion_bollinger+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_011425_statistical_arb_basis+trend_ma_cross+mean_reversion_rsi
+- 策略：statistical_arb_basis+trend_ma_cross+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_011415_funding_rate_settlement+statistical_arb_basis+trend_supertrend
+- 策略：funding_rate_settlement+statistical_arb_basis+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_011405_mean_reversion_rsi+trend_ma_cross+trend_supertrend
+- 策略：mean_reversion_rsi+trend_ma_cross+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215155_trend_ma_cross+statistical_arb_basis+funding_rate_arb
+- 策略：trend_ma_cross+statistical_arb_basis+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215144_momentum_macd+mean_reversion_bollinger+trend_ma_cross
+- 策略：momentum_macd+mean_reversion_bollinger+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215134_trend_supertrend+mean_reversion_bollinger+statistical_arb_eth_btc_pairs
+- 策略：trend_supertrend+mean_reversion_bollinger+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215123_statistical_arb_eth_btc_pairs+funding_rate_arb+statistical_arb_basis
+- 策略：statistical_arb_eth_btc_pairs+funding_rate_arb+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215113_statistical_arb_basis+statistical_arb_eth_btc_pairs+trend_donchian
+- 策略：statistical_arb_basis+statistical_arb_eth_btc_pairs+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215104_trend_ma_cross+momentum_macd+funding_rate_settlement
+- 策略：trend_ma_cross+momentum_macd+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215055_momentum_stochastic+funding_rate_arb+trend_supertrend
+- 策略：momentum_stochastic+funding_rate_arb+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215046_trend_supertrend+momentum_macd+mean_reversion_rsi
+- 策略：trend_supertrend+momentum_macd+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215037_momentum_stochastic+momentum_macd+mean_reversion_rsi
+- 策略：momentum_stochastic+momentum_macd+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_215030_statistical_arb_basis+momentum_stochastic+mean_reversion_rsi
+- 策略：statistical_arb_basis+momentum_stochastic+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214951_mean_reversion_rsi+mean_reversion_bollinger+statistical_arb_eth_btc_pairs
+- 策略：mean_reversion_rsi+mean_reversion_bollinger+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214940_funding_rate_arb+mean_reversion_rsi+trend_donchian
+- 策略：funding_rate_arb+mean_reversion_rsi+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214928_funding_rate_settlement+statistical_arb_basis+mean_reversion_rsi
+- 策略：funding_rate_settlement+statistical_arb_basis+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214917_statistical_arb_basis+funding_rate_settlement+mean_reversion_bollinger
+- 策略：statistical_arb_basis+funding_rate_settlement+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214905_momentum_stochastic+statistical_arb_basis+mean_reversion_rsi
+- 策略：momentum_stochastic+statistical_arb_basis+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214853_momentum_macd+trend_supertrend+trend_donchian
+- 策略：momentum_macd+trend_supertrend+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214842_statistical_arb_basis+statistical_arb_eth_btc_pairs+trend_supertrend
+- 策略：statistical_arb_basis+statistical_arb_eth_btc_pairs+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214830_statistical_arb_basis+mean_reversion_bollinger+funding_rate_settlement
+- 策略：statistical_arb_basis+mean_reversion_bollinger+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214821_trend_supertrend+trend_donchian+momentum_rsi
+- 策略：trend_supertrend+trend_donchian+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214812_mean_reversion_bollinger+trend_supertrend+funding_rate_arb
+- 策略：mean_reversion_bollinger+trend_supertrend+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214803_trend_donchian+momentum_macd+statistical_arb_eth_btc_pairs
+- 策略：trend_donchian+momentum_macd+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214754_statistical_arb_eth_btc_pairs+statistical_arb_basis+trend_ma_cross
+- 策略：statistical_arb_eth_btc_pairs+statistical_arb_basis+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214745_trend_donchian+mean_reversion_rsi+statistical_arb_basis
+- 策略：trend_donchian+mean_reversion_rsi+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214736_trend_ma_cross+statistical_arb_eth_btc_pairs+funding_rate_arb
+- 策略：trend_ma_cross+statistical_arb_eth_btc_pairs+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214727_momentum_macd+mean_reversion_rsi+trend_supertrend
+- 策略：momentum_macd+mean_reversion_rsi+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214726_momentum_macd+mean_reversion_rsi+trend_supertrend
+- 策略：momentum_macd+mean_reversion_rsi+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214717_mean_reversion_rsi+trend_ma_cross+trend_supertrend
+- 策略：mean_reversion_rsi+trend_ma_cross+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214708_momentum_stochastic+momentum_rsi+trend_ma_cross
+- 策略：momentum_stochastic+momentum_rsi+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214659_statistical_arb_eth_btc_pairs+statistical_arb_basis+funding_rate_settlement
+- 策略：statistical_arb_eth_btc_pairs+statistical_arb_basis+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214650_funding_rate_arb+trend_supertrend+statistical_arb_eth_btc_pairs
+- 策略：funding_rate_arb+trend_supertrend+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214641_statistical_arb_eth_btc_pairs+funding_rate_settlement+trend_ma_cross
+- 策略：statistical_arb_eth_btc_pairs+funding_rate_settlement+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214632_statistical_arb_basis+trend_supertrend+momentum_rsi
+- 策略：statistical_arb_basis+trend_supertrend+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214623_mean_reversion_rsi+momentum_rsi+trend_donchian
+- 策略：mean_reversion_rsi+momentum_rsi+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214614_mean_reversion_bollinger+mean_reversion_rsi+statistical_arb_basis
+- 策略：mean_reversion_bollinger+mean_reversion_rsi+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214604_statistical_arb_eth_btc_pairs+momentum_macd+trend_ma_cross
+- 策略：statistical_arb_eth_btc_pairs+momentum_macd+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214555_momentum_macd+trend_ma_cross+funding_rate_arb
+- 策略：momentum_macd+trend_ma_cross+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214546_mean_reversion_rsi+statistical_arb_basis+mean_reversion_bollinger
+- 策略：mean_reversion_rsi+statistical_arb_basis+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214537_trend_ma_cross+momentum_macd+mean_reversion_rsi
+- 策略：trend_ma_cross+momentum_macd+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214528_funding_rate_arb+momentum_macd+trend_supertrend
+- 策略：funding_rate_arb+momentum_macd+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214519_trend_supertrend+statistical_arb_basis+momentum_macd
+- 策略：trend_supertrend+statistical_arb_basis+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214509_statistical_arb_basis+mean_reversion_bollinger+momentum_stochastic
+- 策略：statistical_arb_basis+mean_reversion_bollinger+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214500_mean_reversion_rsi+momentum_macd+funding_rate_settlement
+- 策略：mean_reversion_rsi+momentum_macd+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214451_statistical_arb_eth_btc_pairs+momentum_stochastic+mean_reversion_rsi
+- 策略：statistical_arb_eth_btc_pairs+momentum_stochastic+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214442_trend_donchian+statistical_arb_eth_btc_pairs+trend_ma_cross
+- 策略：trend_donchian+statistical_arb_eth_btc_pairs+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214432_trend_supertrend+momentum_stochastic+funding_rate_settlement
+- 策略：trend_supertrend+momentum_stochastic+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214423_trend_donchian+trend_ma_cross+funding_rate_arb
+- 策略：trend_donchian+trend_ma_cross+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214414_mean_reversion_bollinger+statistical_arb_eth_btc_pairs+funding_rate_settlement
+- 策略：mean_reversion_bollinger+statistical_arb_eth_btc_pairs+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214404_statistical_arb_eth_btc_pairs+momentum_stochastic+trend_supertrend
+- 策略：statistical_arb_eth_btc_pairs+momentum_stochastic+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214355_funding_rate_settlement+mean_reversion_bollinger+momentum_macd
+- 策略：funding_rate_settlement+mean_reversion_bollinger+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214346_funding_rate_settlement+statistical_arb_eth_btc_pairs+momentum_macd
+- 策略：funding_rate_settlement+statistical_arb_eth_btc_pairs+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214337_momentum_macd+momentum_stochastic+funding_rate_arb
+- 策略：momentum_macd+momentum_stochastic+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214327_funding_rate_settlement+statistical_arb_eth_btc_pairs+momentum_rsi
+- 策略：funding_rate_settlement+statistical_arb_eth_btc_pairs+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214318_statistical_arb_eth_btc_pairs+mean_reversion_rsi+momentum_rsi
+- 策略：statistical_arb_eth_btc_pairs+mean_reversion_rsi+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214309_funding_rate_arb+momentum_rsi+momentum_stochastic
+- 策略：funding_rate_arb+momentum_rsi+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214300_trend_supertrend+momentum_rsi+statistical_arb_eth_btc_pairs
+- 策略：trend_supertrend+momentum_rsi+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214250_statistical_arb_eth_btc_pairs+funding_rate_arb+momentum_macd
+- 策略：statistical_arb_eth_btc_pairs+funding_rate_arb+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214241_trend_supertrend+mean_reversion_rsi+statistical_arb_basis
+- 策略：trend_supertrend+mean_reversion_rsi+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214232_mean_reversion_bollinger+trend_ma_cross+statistical_arb_basis
+- 策略：mean_reversion_bollinger+trend_ma_cross+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214223_momentum_macd+trend_donchian+statistical_arb_eth_btc_pairs
+- 策略：momentum_macd+trend_donchian+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214213_mean_reversion_rsi+mean_reversion_bollinger+trend_ma_cross
+- 策略：mean_reversion_rsi+mean_reversion_bollinger+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214204_trend_donchian+statistical_arb_basis+momentum_macd
+- 策略：trend_donchian+statistical_arb_basis+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214155_mean_reversion_rsi+statistical_arb_basis+momentum_macd
+- 策略：mean_reversion_rsi+statistical_arb_basis+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214146_trend_supertrend+trend_ma_cross+funding_rate_arb
+- 策略：trend_supertrend+trend_ma_cross+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214137_funding_rate_arb+statistical_arb_basis+trend_donchian
+- 策略：funding_rate_arb+statistical_arb_basis+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214127_trend_ma_cross+mean_reversion_rsi+funding_rate_arb
+- 策略：trend_ma_cross+mean_reversion_rsi+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214118_trend_ma_cross+statistical_arb_eth_btc_pairs+momentum_rsi
+- 策略：trend_ma_cross+statistical_arb_eth_btc_pairs+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214109_trend_donchian+statistical_arb_eth_btc_pairs+funding_rate_settlement
+- 策略：trend_donchian+statistical_arb_eth_btc_pairs+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214100_momentum_stochastic+statistical_arb_eth_btc_pairs+trend_ma_cross
+- 策略：momentum_stochastic+statistical_arb_eth_btc_pairs+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214051_trend_donchian+statistical_arb_eth_btc_pairs+statistical_arb_basis
+- 策略：trend_donchian+statistical_arb_eth_btc_pairs+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214042_funding_rate_arb+mean_reversion_rsi+mean_reversion_bollinger
+- 策略：funding_rate_arb+mean_reversion_rsi+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214032_statistical_arb_eth_btc_pairs+mean_reversion_rsi+trend_supertrend
+- 策略：statistical_arb_eth_btc_pairs+mean_reversion_rsi+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214023_mean_reversion_rsi+trend_supertrend+momentum_stochastic
+- 策略：mean_reversion_rsi+trend_supertrend+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214014_trend_donchian+trend_ma_cross+momentum_macd
+- 策略：trend_donchian+trend_ma_cross+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_214005_trend_ma_cross+mean_reversion_rsi+statistical_arb_basis
+- 策略：trend_ma_cross+mean_reversion_rsi+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213956_momentum_stochastic+momentum_rsi+trend_donchian
+- 策略：momentum_stochastic+momentum_rsi+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213947_trend_ma_cross+trend_supertrend+statistical_arb_eth_btc_pairs
+- 策略：trend_ma_cross+trend_supertrend+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213938_funding_rate_arb+mean_reversion_bollinger+momentum_stochastic
+- 策略：funding_rate_arb+mean_reversion_bollinger+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213929_momentum_rsi+momentum_macd+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213920_momentum_macd+funding_rate_settlement+trend_ma_cross
+- 策略：momentum_macd+funding_rate_settlement+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213911_funding_rate_settlement+statistical_arb_basis+trend_ma_cross
+- 策略：funding_rate_settlement+statistical_arb_basis+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213902_momentum_rsi+funding_rate_settlement+funding_rate_arb
+- 策略：momentum_rsi+funding_rate_settlement+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213853_statistical_arb_basis+trend_ma_cross+funding_rate_settlement
+- 策略：statistical_arb_basis+trend_ma_cross+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213844_momentum_macd+funding_rate_arb+mean_reversion_rsi
+- 策略：momentum_macd+funding_rate_arb+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213835_trend_ma_cross+statistical_arb_eth_btc_pairs+trend_supertrend
+- 策略：trend_ma_cross+statistical_arb_eth_btc_pairs+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213826_funding_rate_settlement+statistical_arb_basis+mean_reversion_rsi
+- 策略：funding_rate_settlement+statistical_arb_basis+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213817_funding_rate_arb+funding_rate_settlement+momentum_rsi
+- 策略：funding_rate_arb+funding_rate_settlement+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213808_momentum_stochastic+trend_supertrend+statistical_arb_eth_btc_pairs
+- 策略：momentum_stochastic+trend_supertrend+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213759_momentum_stochastic+statistical_arb_eth_btc_pairs+mean_reversion_bollinger
+- 策略：momentum_stochastic+statistical_arb_eth_btc_pairs+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213751_mean_reversion_rsi+statistical_arb_basis+momentum_rsi
+- 策略：mean_reversion_rsi+statistical_arb_basis+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213742_trend_ma_cross+statistical_arb_basis+momentum_rsi
+- 策略：trend_ma_cross+statistical_arb_basis+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213733_statistical_arb_eth_btc_pairs+statistical_arb_basis+trend_ma_cross
+- 策略：statistical_arb_eth_btc_pairs+statistical_arb_basis+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213724_trend_ma_cross+statistical_arb_basis+trend_supertrend
+- 策略：trend_ma_cross+statistical_arb_basis+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213715_momentum_stochastic+statistical_arb_basis+momentum_macd
+- 策略：momentum_stochastic+statistical_arb_basis+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213706_mean_reversion_rsi+momentum_macd+mean_reversion_bollinger
+- 策略：mean_reversion_rsi+momentum_macd+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213657_funding_rate_arb+mean_reversion_rsi+trend_ma_cross
+- 策略：funding_rate_arb+mean_reversion_rsi+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213648_funding_rate_arb+momentum_stochastic+mean_reversion_bollinger
+- 策略：funding_rate_arb+momentum_stochastic+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213639_momentum_macd+statistical_arb_eth_btc_pairs+trend_donchian
+- 策略：momentum_macd+statistical_arb_eth_btc_pairs+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213630_statistical_arb_eth_btc_pairs+statistical_arb_basis+mean_reversion_rsi
+- 策略：statistical_arb_eth_btc_pairs+statistical_arb_basis+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213621_statistical_arb_eth_btc_pairs+trend_supertrend+funding_rate_settlement
+- 策略：statistical_arb_eth_btc_pairs+trend_supertrend+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213612_trend_donchian+momentum_macd+trend_ma_cross
+- 策略：trend_donchian+momentum_macd+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213603_statistical_arb_basis+mean_reversion_bollinger+momentum_rsi
+- 策略：statistical_arb_basis+mean_reversion_bollinger+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213554_mean_reversion_rsi+trend_supertrend+statistical_arb_basis
+- 策略：mean_reversion_rsi+trend_supertrend+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213545_mean_reversion_bollinger+trend_ma_cross+mean_reversion_rsi
+- 策略：mean_reversion_bollinger+trend_ma_cross+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213536_trend_ma_cross+trend_donchian+trend_supertrend
+- 策略：trend_ma_cross+trend_donchian+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213527_mean_reversion_rsi+mean_reversion_bollinger+statistical_arb_eth_btc_pairs
+- 策略：mean_reversion_rsi+mean_reversion_bollinger+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213516_trend_donchian+momentum_stochastic+funding_rate_settlement
+- 策略：trend_donchian+momentum_stochastic+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213505_momentum_rsi+statistical_arb_basis+trend_ma_cross
+- 策略：momentum_rsi+statistical_arb_basis+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213453_momentum_rsi+mean_reversion_rsi+momentum_stochastic
+- 策略：momentum_rsi+mean_reversion_rsi+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213442_trend_ma_cross+momentum_stochastic+statistical_arb_basis
+- 策略：trend_ma_cross+momentum_stochastic+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213432_funding_rate_settlement+funding_rate_arb+momentum_macd
+- 策略：funding_rate_settlement+funding_rate_arb+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213425_momentum_stochastic+trend_supertrend+statistical_arb_eth_btc_pairs
+- 策略：momentum_stochastic+trend_supertrend+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213402_funding_rate_settlement+statistical_arb_basis+trend_donchian
+- 策略：funding_rate_settlement+statistical_arb_basis+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213345_statistical_arb_eth_btc_pairs+funding_rate_arb+trend_ma_cross
+- 策略：statistical_arb_eth_btc_pairs+funding_rate_arb+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213328_mean_reversion_rsi+trend_ma_cross+funding_rate_arb
+- 策略：mean_reversion_rsi+trend_ma_cross+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213311_trend_supertrend+momentum_macd+trend_donchian
+- 策略：trend_supertrend+momentum_macd+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213254_momentum_macd+mean_reversion_bollinger+momentum_rsi
+- 策略：momentum_macd+mean_reversion_bollinger+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213238_momentum_rsi+momentum_stochastic+trend_supertrend
+- 策略：momentum_rsi+momentum_stochastic+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213221_momentum_rsi+mean_reversion_rsi+trend_ma_cross
+- 策略：momentum_rsi+mean_reversion_rsi+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213204_funding_rate_settlement+funding_rate_arb+statistical_arb_basis
+- 策略：funding_rate_settlement+funding_rate_arb+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213147_funding_rate_arb+trend_donchian+funding_rate_settlement
+- 策略：funding_rate_arb+trend_donchian+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213130_statistical_arb_basis+statistical_arb_eth_btc_pairs+momentum_rsi
+- 策略：statistical_arb_basis+statistical_arb_eth_btc_pairs+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213114_funding_rate_arb+momentum_macd+trend_supertrend
+- 策略：funding_rate_arb+momentum_macd+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213057_mean_reversion_rsi+funding_rate_arb+funding_rate_settlement
+- 策略：mean_reversion_rsi+funding_rate_arb+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213040_trend_supertrend+funding_rate_arb+trend_donchian
+- 策略：trend_supertrend+funding_rate_arb+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213023_momentum_rsi+statistical_arb_eth_btc_pairs+statistical_arb_basis
+- 策略：momentum_rsi+statistical_arb_eth_btc_pairs+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_213007_trend_supertrend+statistical_arb_basis+mean_reversion_rsi
+- 策略：trend_supertrend+statistical_arb_basis+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212950_mean_reversion_bollinger+statistical_arb_eth_btc_pairs+momentum_stochastic
+- 策略：mean_reversion_bollinger+statistical_arb_eth_btc_pairs+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212933_statistical_arb_eth_btc_pairs+trend_donchian+funding_rate_settlement
+- 策略：statistical_arb_eth_btc_pairs+trend_donchian+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212917_trend_supertrend+trend_donchian+mean_reversion_rsi
+- 策略：trend_supertrend+trend_donchian+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212900_trend_ma_cross+funding_rate_arb+funding_rate_settlement
+- 策略：trend_ma_cross+funding_rate_arb+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212844_statistical_arb_basis+trend_donchian+trend_ma_cross
+- 策略：statistical_arb_basis+trend_donchian+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212827_mean_reversion_rsi+trend_supertrend+statistical_arb_eth_btc_pairs
+- 策略：mean_reversion_rsi+trend_supertrend+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212811_mean_reversion_bollinger+momentum_macd+funding_rate_arb
+- 策略：mean_reversion_bollinger+momentum_macd+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212754_mean_reversion_rsi+trend_supertrend+momentum_stochastic
+- 策略：mean_reversion_rsi+trend_supertrend+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212738_mean_reversion_bollinger+trend_donchian+trend_supertrend
+- 策略：mean_reversion_bollinger+trend_donchian+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212720_trend_donchian+trend_supertrend+momentum_macd
+- 策略：trend_donchian+trend_supertrend+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212702_trend_ma_cross+trend_donchian+funding_rate_arb
+- 策略：trend_ma_cross+trend_donchian+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212644_trend_donchian+funding_rate_settlement+statistical_arb_eth_btc_pairs
+- 策略：trend_donchian+funding_rate_settlement+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212625_momentum_macd+mean_reversion_rsi+mean_reversion_bollinger
+- 策略：momentum_macd+mean_reversion_rsi+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212607_statistical_arb_eth_btc_pairs+trend_donchian+trend_ma_cross
+- 策略：statistical_arb_eth_btc_pairs+trend_donchian+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212549_trend_donchian+statistical_arb_basis+momentum_macd
+- 策略：trend_donchian+statistical_arb_basis+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212531_trend_donchian+momentum_rsi+momentum_macd
+- 策略：trend_donchian+momentum_rsi+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212515_trend_supertrend+statistical_arb_eth_btc_pairs+funding_rate_settlement
+- 策略：trend_supertrend+statistical_arb_eth_btc_pairs+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212457_funding_rate_arb+momentum_stochastic+mean_reversion_rsi
+- 策略：funding_rate_arb+momentum_stochastic+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212439_mean_reversion_rsi+funding_rate_settlement+momentum_stochastic
+- 策略：mean_reversion_rsi+funding_rate_settlement+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212421_mean_reversion_bollinger+momentum_macd+trend_ma_cross
+- 策略：mean_reversion_bollinger+momentum_macd+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212402_statistical_arb_basis+trend_donchian+statistical_arb_eth_btc_pairs
+- 策略：statistical_arb_basis+trend_donchian+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212344_statistical_arb_eth_btc_pairs+funding_rate_settlement+momentum_rsi
+- 策略：statistical_arb_eth_btc_pairs+funding_rate_settlement+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212326_momentum_stochastic+statistical_arb_eth_btc_pairs+mean_reversion_bollinger
+- 策略：momentum_stochastic+statistical_arb_eth_btc_pairs+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212308_statistical_arb_basis+trend_donchian+funding_rate_arb
+- 策略：statistical_arb_basis+trend_donchian+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212250_momentum_stochastic+mean_reversion_rsi+trend_ma_cross
+- 策略：momentum_stochastic+mean_reversion_rsi+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212232_funding_rate_settlement+funding_rate_arb+momentum_stochastic
+- 策略：funding_rate_settlement+funding_rate_arb+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212213_momentum_stochastic+trend_ma_cross+momentum_rsi
+- 策略：momentum_stochastic+trend_ma_cross+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212155_trend_ma_cross+momentum_rsi+mean_reversion_bollinger
+- 策略：trend_ma_cross+momentum_rsi+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212138_mean_reversion_bollinger+statistical_arb_eth_btc_pairs+funding_rate_settlement
+- 策略：mean_reversion_bollinger+statistical_arb_eth_btc_pairs+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212121_statistical_arb_eth_btc_pairs+funding_rate_arb+statistical_arb_basis
+- 策略：statistical_arb_eth_btc_pairs+funding_rate_arb+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212105_statistical_arb_eth_btc_pairs+funding_rate_settlement+funding_rate_arb
+- 策略：statistical_arb_eth_btc_pairs+funding_rate_settlement+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212050_mean_reversion_rsi+trend_supertrend+funding_rate_settlement
+- 策略：mean_reversion_rsi+trend_supertrend+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212034_statistical_arb_eth_btc_pairs+statistical_arb_basis+trend_donchian
+- 策略：statistical_arb_eth_btc_pairs+statistical_arb_basis+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212019_statistical_arb_basis+momentum_rsi+funding_rate_arb
+- 策略：statistical_arb_basis+momentum_rsi+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_212004_statistical_arb_basis+momentum_macd+mean_reversion_rsi
+- 策略：statistical_arb_basis+momentum_macd+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211949_statistical_arb_basis+funding_rate_arb+funding_rate_settlement
+- 策略：statistical_arb_basis+funding_rate_arb+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211936_trend_donchian+funding_rate_arb+mean_reversion_rsi
+- 策略：trend_donchian+funding_rate_arb+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211923_trend_supertrend+funding_rate_settlement+mean_reversion_rsi
+- 策略：trend_supertrend+funding_rate_settlement+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211910_mean_reversion_rsi+funding_rate_settlement+momentum_macd
+- 策略：mean_reversion_rsi+funding_rate_settlement+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211857_funding_rate_settlement+momentum_macd+statistical_arb_eth_btc_pairs
+- 策略：funding_rate_settlement+momentum_macd+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211844_funding_rate_arb+mean_reversion_bollinger+funding_rate_settlement
+- 策略：funding_rate_arb+mean_reversion_bollinger+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211831_statistical_arb_basis+momentum_stochastic+mean_reversion_bollinger
+- 策略：statistical_arb_basis+momentum_stochastic+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211818_funding_rate_settlement+momentum_rsi+trend_supertrend
+- 策略：funding_rate_settlement+momentum_rsi+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211805_statistical_arb_basis+momentum_stochastic+momentum_macd
+- 策略：statistical_arb_basis+momentum_stochastic+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211754_trend_ma_cross+trend_supertrend+mean_reversion_rsi
+- 策略：trend_ma_cross+trend_supertrend+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211742_mean_reversion_rsi+trend_donchian+momentum_rsi
+- 策略：mean_reversion_rsi+trend_donchian+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211732_trend_donchian+momentum_stochastic+momentum_rsi
+- 策略：trend_donchian+momentum_stochastic+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211722_trend_ma_cross+trend_supertrend+statistical_arb_eth_btc_pairs
+- 策略：trend_ma_cross+trend_supertrend+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211712_statistical_arb_eth_btc_pairs+mean_reversion_bollinger+trend_donchian
+- 策略：statistical_arb_eth_btc_pairs+mean_reversion_bollinger+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211702_statistical_arb_eth_btc_pairs+momentum_rsi+momentum_stochastic
+- 策略：statistical_arb_eth_btc_pairs+momentum_rsi+momentum_stochastic
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211652_trend_ma_cross+mean_reversion_bollinger+statistical_arb_eth_btc_pairs
+- 策略：trend_ma_cross+mean_reversion_bollinger+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211642_statistical_arb_eth_btc_pairs+trend_donchian+mean_reversion_rsi
+- 策略：statistical_arb_eth_btc_pairs+trend_donchian+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211632_statistical_arb_eth_btc_pairs+momentum_macd+mean_reversion_rsi
+- 策略：statistical_arb_eth_btc_pairs+momentum_macd+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211622_momentum_rsi+funding_rate_settlement+trend_donchian
+- 策略：momentum_rsi+funding_rate_settlement+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211612_momentum_stochastic+trend_supertrend+funding_rate_arb
+- 策略：momentum_stochastic+trend_supertrend+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211602_mean_reversion_rsi+funding_rate_settlement+trend_ma_cross
+- 策略：mean_reversion_rsi+funding_rate_settlement+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211552_trend_donchian+momentum_stochastic+statistical_arb_eth_btc_pairs
+- 策略：trend_donchian+momentum_stochastic+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211542_statistical_arb_basis+momentum_stochastic+trend_donchian
+- 策略：statistical_arb_basis+momentum_stochastic+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211532_statistical_arb_eth_btc_pairs+momentum_stochastic+momentum_macd
+- 策略：statistical_arb_eth_btc_pairs+momentum_stochastic+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211522_mean_reversion_rsi+momentum_stochastic+momentum_macd
+- 策略：mean_reversion_rsi+momentum_stochastic+momentum_macd
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211514_trend_donchian+mean_reversion_rsi+statistical_arb_eth_btc_pairs
+- 策略：trend_donchian+mean_reversion_rsi+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211507_statistical_arb_eth_btc_pairs+mean_reversion_rsi+trend_ma_cross
+- 策略：statistical_arb_eth_btc_pairs+mean_reversion_rsi+trend_ma_cross
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211459_momentum_macd+mean_reversion_rsi+statistical_arb_eth_btc_pairs
+- 策略：momentum_macd+mean_reversion_rsi+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211451_mean_reversion_bollinger+trend_supertrend+statistical_arb_basis
+- 策略：mean_reversion_bollinger+trend_supertrend+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211444_trend_ma_cross+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：trend_ma_cross+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211435_momentum_macd+trend_ma_cross+momentum_rsi
+- 策略：momentum_macd+trend_ma_cross+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211425_funding_rate_settlement+momentum_macd+trend_donchian
+- 策略：funding_rate_settlement+momentum_macd+trend_donchian
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211403_trend_supertrend+trend_donchian+mean_reversion_rsi
+- 策略：trend_supertrend+trend_donchian+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211355_momentum_stochastic+trend_ma_cross+funding_rate_settlement
+- 策略：momentum_stochastic+trend_ma_cross+funding_rate_settlement
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211348_momentum_rsi+funding_rate_settlement+trend_supertrend
+- 策略：momentum_rsi+funding_rate_settlement+trend_supertrend
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211340_momentum_rsi+trend_supertrend+statistical_arb_basis
+- 策略：momentum_rsi+trend_supertrend+statistical_arb_basis
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211333_trend_ma_cross+momentum_rsi+statistical_arb_eth_btc_pairs
+- 策略：trend_ma_cross+momentum_rsi+statistical_arb_eth_btc_pairs
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211150_momentum_macd+mean_reversion_rsi+mean_reversion_bollinger
+- 策略：momentum_macd+mean_reversion_rsi+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211143_mean_reversion_rsi+statistical_arb_eth_btc_pairs+funding_rate_arb
+- 策略：mean_reversion_rsi+statistical_arb_eth_btc_pairs+funding_rate_arb
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211116_trend_supertrend+statistical_arb_basis+mean_reversion_bollinger
+- 策略：trend_supertrend+statistical_arb_basis+mean_reversion_bollinger
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211105_momentum_macd+funding_rate_arb+momentum_rsi
+- 策略：momentum_macd+funding_rate_arb+momentum_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211054_funding_rate_settlement+trend_donchian+mean_reversion_rsi
+- 策略：funding_rate_settlement+trend_donchian+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211045_momentum_macd+statistical_arb_eth_btc_pairs+mean_reversion_rsi
+- 策略：momentum_macd+statistical_arb_eth_btc_pairs+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260118_211036_momentum_macd+trend_ma_cross+mean_reversion_bollinger
+- 策略：momentum_macd+trend_ma_cross+mean_reversion_bollinger
+- 問題：基礎績效不達標
 
 ### 教訓 1：參數過度優化
 - **現象**：回測 Sharpe 3.0+，實盤虧損

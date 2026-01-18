@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "updated_at": "2026-01-18T03:54:47.511318",
+  "updated_at": "2026-01-18T08:31:10.631145",
   "statistics": {
     "total": 1,
     "by_status": {
@@ -22,6 +22,6 @@
   },
   "variations": [
     {
-      "variation_hash": "var_d02ee8415919eb2c",
+      "variation_hash": "var_7212faedd1f77334",
       "strategy_name": "ma_cross",
       "strategy_type": 

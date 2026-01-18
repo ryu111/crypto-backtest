@@ -140,13 +140,23 @@ except ImportError:
     BACKTEST_CONFIG_AVAILABLE = False
     BacktestConfig = None  # type: ignore[misc,assignment]
 
-# WalkForwardAnalyzer - Phase 12.11 ValidationRunner 整合
+# WalkForwardAnalyzer - Skills 對齊（參數優化）
 try:
-    from ..optimizer.walk_forward import WalkForwardAnalyzer
+    from .walk_forward import WalkForwardAnalyzer, WalkForwardResult
     WALK_FORWARD_AVAILABLE = True
 except ImportError:
     WALK_FORWARD_AVAILABLE = False
     WalkForwardAnalyzer = None  # type: ignore[misc,assignment]
+    WalkForwardResult = None  # type: ignore[misc,assignment]
+
+# OverfitDetector - Skills 對齊（過擬合偵測）
+try:
+    from .overfitting_detector import OverfitDetector, OverfitMetrics
+    OVERFIT_DETECTOR_AVAILABLE = True
+except ImportError:
+    OVERFIT_DETECTOR_AVAILABLE = False
+    OverfitDetector = None  # type: ignore[misc,assignment]
+    OverfitMetrics = None  # type: ignore[misc,assignment]
 
 # GPUBatchOptimizer - Phase 12.3.3 GPU 批量優化
 try:
@@ -285,6 +295,11 @@ class UltimateLoopSummary:
 
         return "\n".join(lines)
 
+    def to_dict(self) -> Dict[str, Any]:
+        """轉換為字典格式"""
+        from dataclasses import asdict
+        return asdict(self)
+
 
 class UltimateLoopController:
     """最強回測 Loop 控制器
@@ -307,25 +322,31 @@ class UltimateLoopController:
         print(summary.summary_text())
     """
 
-    # Insight 生成閾值（常數）
-    INSIGHT_HIGH_SHARPE_THRESHOLD = 2.0      # 高 Sharpe 閾值
+    # Insight 生成閾值（常數，符合 CLAUDE.md 規定）
+    INSIGHT_HIGH_SHARPE_THRESHOLD = 2.0      # 高 Sharpe 閾值（記錄成功）
+    INSIGHT_LOW_SHARPE_THRESHOLD = 0.5       # 低 Sharpe 閾值（記錄失敗）
     INSIGHT_LOW_DRAWDOWN_THRESHOLD = 0.10    # 低回撤閾值 (10%)
+    INSIGHT_HIGH_DRAWDOWN_THRESHOLD = 0.25   # 高回撤閾值 (25%，記錄風險)
     INSIGHT_HIGH_WINRATE_THRESHOLD = 0.60    # 高勝率閾值 (60%)
+    INSIGHT_OVERFIT_THRESHOLD = 0.30         # 過擬合閾值 (30%，MC 失敗率)
 
     def __init__(
         self,
         config: Optional[UltimateLoopConfig] = None,
-        verbose: bool = True
+        verbose: bool = True,
+        monitor: Optional[Any] = None
     ):
         """初始化 UltimateLoop 控制器
 
         Args:
             config: 配置（None 則使用預設值）
             verbose: 是否顯示詳細資訊
+            monitor: 監控服務（MonitorService 實例，用於即時推送進度）
         """
         self.config = config or UltimateLoopConfig()
         self.config.validate()  # 驗證配置
         self.verbose = verbose
+        self.monitor = monitor  # Web Dashboard 監控服務
 
         # 初始化子模組
         self._init_regime_analyzer()
@@ -574,14 +595,37 @@ class UltimateLoopController:
             # 建立 BacktestEngine
             self._validation_engine = BacktestEngine(bt_config)
 
-            # 建立 WalkForwardAnalyzer（如果可用）
+            # 建立 WalkForwardAnalyzer（Skills 對齊版本）
             if WALK_FORWARD_AVAILABLE and WalkForwardAnalyzer is not None:
                 self._wfa_analyzer = WalkForwardAnalyzer(
-                    config=bt_config,
-                    mode='rolling'
+                    is_ratio=self.config.wfa_is_ratio,
+                    n_windows=self.config.wfa_n_windows,
+                    overlap=self.config.wfa_overlap,
+                    min_window_size=100
                 )
                 if self.verbose:
-                    logger.info("WalkForwardAnalyzer initialized")
+                    logger.info(
+                        f"WalkForwardAnalyzer initialized "
+                        f"(IS={self.config.wfa_is_ratio:.0%}, "
+                        f"windows={self.config.wfa_n_windows})"
+                    )
+
+            # 建立 OverfitDetector（Skills 對齊）
+            if OVERFIT_DETECTOR_AVAILABLE and OverfitDetector is not None:
+                self._overfit_detector = OverfitDetector(
+                    min_trades=self.config.min_trades,
+                    max_pbo=self.config.max_pbo,
+                    max_is_oos_ratio=self.config.max_is_oos_ratio,
+                    max_param_sensitivity=self.config.max_param_sensitivity
+                )
+                if self.verbose:
+                    logger.info(
+                        f"OverfitDetector initialized "
+                        f"(min_trades={self.config.min_trades}, "
+                        f"max_pbo={self.config.max_pbo:.0%})"
+                    )
+            else:
+                self._overfit_detector = None
 
             # 建立 ValidationRunner
             self._validation_runner = ValidationRunner(
@@ -845,6 +889,10 @@ class UltimateLoopController:
         if self.verbose:
             self._print_header(n_iterations)
 
+        # 通知監控服務 Loop 開始
+        if self.monitor:
+            await self.monitor.on_loop_start(n_iterations)
+
         try:
             # 0. 啟動時驗證回測引擎
             if self.config.validation_enabled and self.validator:
@@ -880,6 +928,10 @@ class UltimateLoopController:
                 except Exception as e:
                     self.summary.failed_iterations += 1
                     logger.error(f"迭代 {i+1} 失敗: {e}", exc_info=True)
+
+                    # 通知監控服務迭代錯誤
+                    if self.monitor:
+                        await self.monitor.on_iteration_error(i + 1, str(e))
 
                     # 重試機制
                     if self.config.max_retries > 0:
@@ -919,7 +971,17 @@ class UltimateLoopController:
             if self.verbose:
                 logger.info(self.summary.summary_text())
 
+            # 通知監控服務 Loop 完成
+            if self.monitor:
+                await self.monitor.on_loop_complete()
+
             return self.summary
+
+        except Exception as e:
+            # 通知監控服務 Loop 錯誤
+            if self.monitor:
+                await self.monitor.on_loop_error(str(e))
+            raise
 
         finally:
             # 清理資源
@@ -932,8 +994,14 @@ class UltimateLoopController:
             iteration: 當前迭代編號
             total: 總迭代次數
         """
+        iter_start = time.time()
+
         if self.verbose:
             logger.info(f"\n[{iteration+1}/{total}] 開始迭代...")
+
+        # 通知監控服務迭代開始
+        if self.monitor:
+            await self.monitor.on_iteration_start(iteration + 1)
 
         # Phase 1: Market Analysis
         market_state = await self._analyze_market_state()
@@ -950,11 +1018,30 @@ class UltimateLoopController:
         # Phase 5: Learning
         await self._record_and_learn(validated_solutions, market_state, selected_strategies)
 
+        # 計算迭代耗時
+        iter_duration = time.time() - iter_start
+
+        # 通知監控服務迭代完成
+        if self.monitor and validated_solutions:
+            best_solution = self._get_best_solution(validated_solutions)
+            if best_solution:
+                await self.monitor.on_iteration_complete(
+                    iteration=iteration + 1,
+                    strategy_name='+'.join(selected_strategies) if selected_strategies else 'unknown',
+                    sharpe=self._extract_sharpe(best_solution),
+                    total_return=self._extract_return(best_solution),
+                    max_drawdown=self._extract_drawdown(best_solution),
+                    params=getattr(best_solution, 'params', {}),
+                    duration_seconds=iter_duration,
+                )
+
         if self.verbose:
             logger.info(f"[{iteration+1}/{total}] 迭代完成")
 
     async def _analyze_market_state(self) -> Optional[Any]:
         """分析市場狀態
+
+        使用 regime_analyzer 計算當前市場狀態，影響策略選擇。
 
         Returns:
             Optional[MarketState]: 市場狀態（如果 regime detection 啟用）
@@ -962,12 +1049,29 @@ class UltimateLoopController:
         if not self.regime_analyzer:
             return None
 
-        # TODO: 獲取市場數據（這裡需要實際資料）
-        # 暫時返回 None，後續整合資料層
-        if self.verbose:
-            logger.debug("Market state analysis (not yet implemented)")
+        # 獲取市場數據
+        data = self._get_data()
+        if data is None or data.empty:
+            if self.verbose:
+                logger.warning("無法分析市場狀態：缺少 OHLCV 資料")
+            return None
 
-        return None
+        try:
+            # 計算市場狀態
+            market_state = self.regime_analyzer.calculate_state(data)
+
+            if self.verbose:
+                logger.info(
+                    f"市場狀態: {market_state.regime.value} "
+                    f"(direction={market_state.direction:.2f}, "
+                    f"volatility={market_state.volatility:.2f})"
+                )
+
+            return market_state
+
+        except Exception as e:
+            logger.warning(f"市場狀態分析失敗: {e}")
+            return None
 
     def _select_strategies(
         self,
@@ -1489,17 +1593,77 @@ class UltimateLoopController:
                 # 驗證失敗或跳過
                 failed_solutions.append(solution)
                 self.summary.validation_failed_count += 1
-            elif hasattr(result, 'grade') and result.grade in ['A', 'B', 'C']:
+                continue
+
+            # Skills 對齊：交易筆數和過擬合檢查
+            grade = getattr(result, 'grade', 'F')
+            warnings = getattr(solution, '_warnings', [])
+            if not warnings:
+                warnings = []
+                solution._warnings = warnings
+
+            # 1. 交易筆數檢查（Skills：min_trades >= 30）
+            trade_count = 0
+            if hasattr(result, 'metrics'):
+                trade_count = getattr(result.metrics, 'total_trades', 0)
+            elif hasattr(solution, 'metrics'):
+                metrics = solution.metrics
+                if isinstance(metrics, dict):
+                    trade_count = metrics.get('total_trades', 0)
+                else:
+                    trade_count = getattr(metrics, 'total_trades', 0)
+
+            if trade_count < self.config.min_trades:
+                warnings.append(
+                    f"交易筆數 {trade_count} < {self.config.min_trades}，統計無效"
+                )
+                # 降級：如果原本是 A/B/C，降為 D
+                if grade in ['A', 'B', 'C']:
+                    grade = 'D'
+                    if self.verbose:
+                        logger.debug(
+                            f"Solution {getattr(solution, 'trial_number', '?')} "
+                            f"downgraded to D: trade_count={trade_count}"
+                        )
+
+            # 2. 過擬合檢查（使用 OverfitDetector）
+            if hasattr(self, '_overfit_detector') and self._overfit_detector is not None:
+                is_sharpe = getattr(result, 'is_sharpe', 0) if result else 0
+                oos_sharpe = getattr(result, 'oos_sharpe', 0) if result else 0
+
+                # 如果有 IS/OOS 數據，計算風險
+                if is_sharpe > 0 and oos_sharpe > 0:
+                    overfit_metrics = self._overfit_detector.assess(
+                        is_sharpe=is_sharpe,
+                        oos_sharpe=oos_sharpe,
+                        trade_count=trade_count
+                    )
+
+                    if overfit_metrics.overall_risk == 'HIGH':
+                        warnings.extend(overfit_metrics.warnings)
+                        if grade in ['A', 'B', 'C']:
+                            grade = 'D'
+                            if self.verbose:
+                                logger.debug(
+                                    f"Solution {getattr(solution, 'trial_number', '?')} "
+                                    f"downgraded to D: high overfit risk"
+                                )
+                    elif overfit_metrics.overall_risk == 'MEDIUM':
+                        warnings.extend(overfit_metrics.warnings)
+
+                    # 記錄過擬合指標
+                    solution._overfit_metrics = overfit_metrics
+
+            # 更新 grade
+            solution._validation_grade = grade
+            solution._validation_result = result
+
+            if grade in ['A', 'B', 'C']:
                 # 驗證通過（grade A/B/C）
-                solution._validation_grade = result.grade
-                solution._validation_result = result  # 保存完整結果
                 validated_solutions.append(solution)
                 self.summary.validation_passed_count += 1
             else:
                 # 驗證失敗（grade D/F）
-                grade = getattr(result, 'grade', 'F')
-                solution._validation_grade = grade
-                solution._validation_result = result
                 failed_solutions.append(solution)
                 self.summary.validation_failed_count += 1
                 if self.verbose:
@@ -1588,8 +1752,16 @@ class UltimateLoopController:
                     )
                     continue
 
-                # 生成洞察
-                insights = self._generate_insights(objectives, market_state, grade)
+                # 從 validation result 獲取 overfit_probability（如果有）
+                validation_result = getattr(solution, '_validation_result', None)
+                overfit_probability = None
+                if validation_result:
+                    overfit_probability = getattr(validation_result, 'overfit_probability', None)
+
+                # 生成洞察（傳遞 overfit_probability 以符合 CLAUDE.md 規定）
+                insights = self._generate_insights(
+                    objectives, market_state, grade, overfit_probability
+                )
 
                 # 從 objectives 創建 BacktestResult（mock）
                 mock_result = self._create_result_from_objectives(objectives, params)
@@ -1708,16 +1880,24 @@ class UltimateLoopController:
         self,
         objectives: List[Any],
         market_state: Optional[Any],
-        grade: str
+        grade: str,
+        overfit_probability: Optional[float] = None
     ) -> List[str]:
-        """生成洞察
+        """生成洞察（符合 CLAUDE.md 規定的觸發條件）
 
         根據績效指標和市場狀態生成洞察。
+
+        觸發條件（CLAUDE.md 規定）：
+        1. Sharpe > 2.0 → 記錄成功
+        2. Sharpe < 0.5 → 記錄失敗
+        3. MaxDD > 25% → 記錄風險
+        4. MC 失敗率 > 30% → 記錄過擬合
 
         Args:
             objectives: 目標值列表（List[ObjectiveResult]）
             market_state: 市場狀態（MarketState 物件，可選）
             grade: 驗證評級（A/B/C/D/F/UNKNOWN/UNVALIDATED/ERROR）
+            overfit_probability: 過擬合機率（Monte Carlo 失敗率，可選）
 
         Returns:
             List[str]: 洞察列表
@@ -1740,15 +1920,31 @@ class UltimateLoopController:
             elif name == 'win_rate':
                 win_rate = value
 
-        # 高 Sharpe 洞察（使用類別常數）
-        if sharpe > self.INSIGHT_HIGH_SHARPE_THRESHOLD:
-            insights.append(f"高夏普表現 (Sharpe={sharpe:.2f})，參數組合值得記錄")
+        # ===== CLAUDE.md 規定的觸發條件 =====
 
-        # 低回撤洞察（使用類別常數）
+        # 1. 高 Sharpe 洞察（Sharpe > 2.0 → 記錄成功）
+        if sharpe > self.INSIGHT_HIGH_SHARPE_THRESHOLD:
+            insights.append(f"🌟 異常優異表現 (Sharpe={sharpe:.2f} > {self.INSIGHT_HIGH_SHARPE_THRESHOLD})，參數組合值得記錄")
+
+        # 2. 低 Sharpe 洞察（Sharpe < 0.5 → 記錄失敗）
+        if sharpe < self.INSIGHT_LOW_SHARPE_THRESHOLD:
+            insights.append(f"⚠️ 表現不佳 (Sharpe={sharpe:.2f} < {self.INSIGHT_LOW_SHARPE_THRESHOLD})，需檢查策略邏輯或市場狀態")
+
+        # 3. 高回撤洞察（MaxDD > 25% → 記錄風險）
+        if max_dd > self.INSIGHT_HIGH_DRAWDOWN_THRESHOLD:
+            insights.append(f"🔴 風險警訊 (MaxDD={max_dd:.1%} > {self.INSIGHT_HIGH_DRAWDOWN_THRESHOLD:.0%})，需改進風控")
+
+        # 4. 過擬合洞察（MC 失敗率 > 30% → 記錄過擬合）
+        if overfit_probability is not None and overfit_probability > self.INSIGHT_OVERFIT_THRESHOLD:
+            insights.append(f"📊 過擬合警訊 (MC失敗率={overfit_probability:.1%} > {self.INSIGHT_OVERFIT_THRESHOLD:.0%})，策略穩健性存疑")
+
+        # ===== 額外洞察（非必要但有價值） =====
+
+        # 低回撤洞察
         if max_dd < self.INSIGHT_LOW_DRAWDOWN_THRESHOLD:
             insights.append(f"低回撤策略 (MaxDD={max_dd:.1%})，風險控制優秀")
 
-        # 高勝率洞察（使用類別常數）
+        # 高勝率洞察
         if win_rate > self.INSIGHT_HIGH_WINRATE_THRESHOLD:
             insights.append(f"高勝率策略 (WinRate={win_rate:.1%})，進出場時機精確")
 
@@ -1774,6 +1970,51 @@ class UltimateLoopController:
             insights.append(f"記錄 Pareto 解：Sharpe={sharpe:.2f}, MaxDD={max_dd:.1%}, WinRate={win_rate:.1%}")
 
         return insights
+
+    # ============= 監控服務輔助方法 =============
+
+    def _get_best_solution(self, solutions: List[Any]) -> Optional[Any]:
+        """從解列表中選擇最佳解（基於 Sharpe Ratio）"""
+        if not solutions:
+            return None
+
+        best = None
+        best_sharpe = float('-inf')
+
+        for sol in solutions:
+            sharpe = self._extract_sharpe(sol)
+            if sharpe > best_sharpe:
+                best_sharpe = sharpe
+                best = sol
+
+        return best
+
+    def _extract_sharpe(self, solution: Any) -> float:
+        """從解中提取 Sharpe Ratio"""
+        objectives = getattr(solution, 'objectives', [])
+        for obj in objectives:
+            name = getattr(obj, 'name', '').lower()
+            if 'sharpe' in name:
+                return float(getattr(obj, 'value', 0.0))
+        return 0.0
+
+    def _extract_return(self, solution: Any) -> float:
+        """從解中提取總報酬率"""
+        objectives = getattr(solution, 'objectives', [])
+        for obj in objectives:
+            name = getattr(obj, 'name', '').lower()
+            if 'return' in name or 'profit' in name:
+                return float(getattr(obj, 'value', 0.0))
+        return 0.0
+
+    def _extract_drawdown(self, solution: Any) -> float:
+        """從解中提取最大回撤"""
+        objectives = getattr(solution, 'objectives', [])
+        for obj in objectives:
+            name = getattr(obj, 'name', '').lower()
+            if 'drawdown' in name or 'max_dd' in name:
+                return abs(float(getattr(obj, 'value', 0.0)))
+        return 0.0
 
     def _create_result_from_objectives(
         self,
@@ -2161,6 +2402,10 @@ class UltimateLoopController:
     async def _optimize_strategy(self, strategy_name: str) -> Optional[Any]:
         """優化單個策略
 
+        Skills 對齊：支援兩階段參數搜索
+        1. 粗搜索（大步長）→ 找有效區域
+        2. 細搜索（小步長）→ 在有效區域內精細優化
+
         根據參數空間大小選擇優化方式：
         1. 參數組合 > param_sweep_threshold 且 GPU 可用 → GPU 批量優化
         2. 否則 → 標準 MultiObjectiveOptimizer（CPU）
@@ -2182,12 +2427,16 @@ class UltimateLoopController:
                 logger.warning(f"No param_space for strategy '{strategy_name}'")
                 return None
 
+            # Skills 對齊：參數預生成（基於歷史最佳參數 ±30%）
+            if self.config.use_param_pregeneration:
+                param_space = self._narrow_param_space_from_history(
+                    strategy_name, param_space
+                )
+
             # 計算參數空間大小（估算）
             param_space_size = self._estimate_param_space_size(param_space)
 
             # Phase 12.7 TODO: GPU 優化整合
-            # 目前所有優化都使用 CPU（MultiObjectiveOptimizer）
-            # GPU 優化需要 DataPool 提供市場數據後才能實現
             gpu_would_be_beneficial = (
                 self.gpu_optimizer is not None and
                 param_space_size >= self.config.param_sweep_threshold
@@ -2196,23 +2445,267 @@ class UltimateLoopController:
             if gpu_would_be_beneficial and self.verbose:
                 logger.info(
                     f"GPU optimization would be beneficial for {strategy_name} "
-                    f"(param_space_size={param_space_size} >= threshold={self.config.param_sweep_threshold}), "
-                    f"but requires Phase 12.7 DataPool integration. Using CPU optimization."
-                )
-            elif self.verbose:
-                logger.debug(
-                    f"Using CPU optimization for {strategy_name} "
-                    f"(param_space_size={param_space_size})"
+                    f"(param_space_size={param_space_size}), using CPU optimization."
                 )
 
-            # 使用 CPU 優化（Phase 12.7 完成後將支援 GPU）
-            result = await self._optimize_with_cpu(strategy_name, param_space)
+            # Skills 對齊：兩階段參數搜索
+            if self.config.two_stage_search and param_space_size >= 100:
+                result = await self._two_stage_optimize(strategy_name, param_space)
+            else:
+                # 標準單階段優化
+                result = await self._optimize_with_cpu(strategy_name, param_space)
 
             return result
 
         except Exception as e:
             logger.error(f"Failed to optimize {strategy_name}: {e}", exc_info=True)
             return None
+
+    async def _two_stage_optimize(
+        self,
+        strategy_name: str,
+        param_space: Dict[str, Any]
+    ) -> Optional[Any]:
+        """兩階段參數搜索（Skills 對齊）
+
+        Stage 1: 粗搜索（大步長，少試驗）→ 找有效區域
+        Stage 2: 細搜索（小步長，多試驗）→ 在有效區域內精細優化
+
+        Args:
+            strategy_name: 策略名稱
+            param_space: 參數空間
+
+        Returns:
+            MultiObjectiveResult: 優化結果
+        """
+        if self.verbose:
+            logger.info(f"Starting two-stage optimization for {strategy_name}")
+
+        # Stage 1: 粗搜索
+        coarse_param_space = self._expand_param_space(
+            param_space,
+            step_multiplier=self.config.coarse_step_multiplier
+        )
+
+        # 暫時調整 n_trials
+        original_n_trials = self.config.n_trials
+        self.config.n_trials = self.config.coarse_trials
+
+        if self.verbose:
+            logger.debug(f"Stage 1: Coarse search with {self.config.coarse_trials} trials")
+
+        coarse_result = await self._optimize_with_cpu(strategy_name, coarse_param_space)
+
+        # 恢復 n_trials
+        self.config.n_trials = original_n_trials
+
+        if not coarse_result or not hasattr(coarse_result, 'pareto_front'):
+            if self.verbose:
+                logger.warning("Stage 1 failed, falling back to standard optimization")
+            return await self._optimize_with_cpu(strategy_name, param_space)
+
+        # 找出有效區域（取 Pareto front 的參數範圍）
+        promising_region = self._find_promising_region(coarse_result, param_space)
+
+        if not promising_region:
+            if self.verbose:
+                logger.warning("No promising region found, using original param space")
+            promising_region = param_space
+
+        # Stage 2: 細搜索
+        self.config.n_trials = self.config.fine_trials
+
+        if self.verbose:
+            logger.debug(f"Stage 2: Fine search with {self.config.fine_trials} trials")
+
+        fine_result = await self._optimize_with_cpu(strategy_name, promising_region)
+
+        # 恢復 n_trials
+        self.config.n_trials = original_n_trials
+
+        if self.verbose:
+            logger.info(f"Two-stage optimization completed for {strategy_name}")
+
+        return fine_result
+
+    def _expand_param_space(
+        self,
+        param_space: Dict[str, Any],
+        step_multiplier: float = 3.0
+    ) -> Dict[str, Any]:
+        """擴展參數空間步長（用於粗搜索）
+
+        Args:
+            param_space: 原始參數空間
+            step_multiplier: 步長倍數
+
+        Returns:
+            擴展後的參數空間
+        """
+        expanded = {}
+        for param_name, param_def in param_space.items():
+            if isinstance(param_def, dict):
+                new_def = param_def.copy()
+                if 'step' in new_def:
+                    new_def['step'] = new_def['step'] * step_multiplier
+                expanded[param_name] = new_def
+            else:
+                expanded[param_name] = param_def
+        return expanded
+
+    def _find_promising_region(
+        self,
+        coarse_result: Any,
+        original_space: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """從粗搜索結果找出有效區域
+
+        取 Pareto front 中最佳解的參數 ±30% 作為新的搜索範圍。
+
+        Args:
+            coarse_result: 粗搜索結果
+            original_space: 原始參數空間
+
+        Returns:
+            縮小後的參數空間
+        """
+        pareto_front = getattr(coarse_result, 'pareto_front', [])
+        if not pareto_front:
+            return original_space
+
+        # 取最佳解的參數（按 Sharpe 排序）
+        best_solution = max(
+            pareto_front,
+            key=lambda s: getattr(s, 'metrics', {}).get('sharpe_ratio', 0)
+            if isinstance(getattr(s, 'metrics', {}), dict)
+            else getattr(getattr(s, 'metrics', None), 'sharpe_ratio', 0)
+        )
+        best_params = getattr(best_solution, 'params', {})
+
+        if not best_params:
+            return original_space
+
+        # 建立 ±30% 的縮小空間
+        promising_space = {}
+        for param_name, param_def in original_space.items():
+            if param_name not in best_params:
+                promising_space[param_name] = param_def
+                continue
+
+            best_value = best_params[param_name]
+
+            if isinstance(param_def, dict):
+                param_type = param_def.get('type', 'float')
+                original_low = param_def.get('low', 0)
+                original_high = param_def.get('high', 1)
+
+                # 計算 ±30% 範圍
+                range_size = (original_high - original_low) * 0.3
+                new_low = max(original_low, best_value - range_size)
+                new_high = min(original_high, best_value + range_size)
+
+                new_def = param_def.copy()
+                new_def['low'] = new_low if param_type == 'float' else int(new_low)
+                new_def['high'] = new_high if param_type == 'float' else int(new_high)
+
+                # 縮小步長
+                if 'step' in new_def:
+                    new_def['step'] = new_def['step'] / self.config.coarse_step_multiplier
+
+                promising_space[param_name] = new_def
+            else:
+                promising_space[param_name] = param_def
+
+        return promising_space
+
+    def _narrow_param_space_from_history(
+        self,
+        strategy_name: str,
+        original_space: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """基於歷史最佳參數縮小搜索範圍（Skills 對齊）
+
+        從 ExperimentRecorder 獲取策略的歷史最佳參數，
+        然後將搜索範圍縮小到 ±30%。
+
+        Args:
+            strategy_name: 策略名稱
+            original_space: 原始參數空間
+
+        Returns:
+            縮小後的參數空間（如果有歷史資料），否則返回原始空間
+        """
+        # 檢查 recorder 是否可用
+        if not self.recorder:
+            return original_space
+
+        try:
+            # 從 recorder 獲取策略的最佳實驗
+            best_experiments = self.recorder.get_best_experiments(
+                metric='sharpe_ratio',
+                n=1,
+                filters={'strategy_type': strategy_name}
+            )
+
+            if not best_experiments:
+                # 嘗試使用策略名稱前綴匹配
+                stats = self.recorder.get_strategy_stats(strategy_name)
+                if not stats:
+                    if self.verbose:
+                        logger.debug(f"無 {strategy_name} 歷史記錄，使用原始參數空間")
+                    return original_space
+
+            # 獲取最佳參數
+            best_params = {}
+            if best_experiments:
+                best_exp = best_experiments[0]
+                best_params = best_exp.params if hasattr(best_exp, 'params') else {}
+
+            if not best_params:
+                if self.verbose:
+                    logger.debug(f"無 {strategy_name} 最佳參數記錄，使用原始參數空間")
+                return original_space
+
+            # 基於最佳參數縮小範圍
+            ratio = self.config.param_pregeneration_ratio
+            narrowed_space = {}
+
+            for param_name, param_def in original_space.items():
+                if param_name not in best_params:
+                    narrowed_space[param_name] = param_def
+                    continue
+
+                best_value = best_params[param_name]
+
+                if isinstance(param_def, dict):
+                    param_type = param_def.get('type', 'float')
+                    original_low = param_def.get('low', 0)
+                    original_high = param_def.get('high', 1)
+
+                    # 計算 ±ratio 範圍
+                    range_size = (original_high - original_low) * ratio
+                    new_low = max(original_low, best_value - range_size)
+                    new_high = min(original_high, best_value + range_size)
+
+                    new_def = param_def.copy()
+                    new_def['low'] = new_low if param_type == 'float' else int(new_low)
+                    new_def['high'] = new_high if param_type == 'float' else int(new_high)
+
+                    narrowed_space[param_name] = new_def
+                else:
+                    narrowed_space[param_name] = param_def
+
+            if self.verbose:
+                logger.info(
+                    f"參數預生成: {strategy_name} 基於歷史最佳參數縮小範圍 "
+                    f"(ratio=±{ratio:.0%})"
+                )
+
+            return narrowed_space
+
+        except Exception as e:
+            logger.warning(f"參數預生成失敗 ({strategy_name}): {e}")
+            return original_space
 
     def _estimate_param_space_size(self, param_space: Dict[str, Any]) -> int:
         """估算參數空間大小
