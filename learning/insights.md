@@ -1,7 +1,7 @@
 # 交易策略洞察彙整
 
 > 最後更新：2026-01-19
-> 總實驗數：541（含 4 個 Bayesian 優化實驗）
+> 總實驗數：643（含 4 個 Bayesian 優化實驗）
 > Phase 6 Backtest Loop：✅ 已完成
 
 ---
@@ -123,6 +123,414 @@ Stage 5: Monte Carlo → 1000 次模擬過擬合率 < 30%？
 ---
 
 ## 過擬合教訓
+
+### 失敗案例：exp_20260119_100458_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_100425_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_100352_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_100319_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_100247_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_100214_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_100141_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_100108_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_100036_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_100002_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095930_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095857_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095825_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095753_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095720_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095648_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095615_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095543_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095511_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095438_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095406_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095334_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095301_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095232_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095202_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095133_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095104_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095034_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_095005_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094935_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094908_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094842_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094815_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094749_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094722_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094656_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094629_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094603_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094536_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094509_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094443_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094413_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094343_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094313_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094243_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094213_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094143_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094113_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094043_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_094013_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093943_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093913_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093843_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093813_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093743_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093715_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093647_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093616_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093548_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093517_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093446_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093416_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093345_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093315_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093245_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093214_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093144_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093114_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093043_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_093013_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092943_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092912_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092842_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092811_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092741_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092710_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092640_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092607_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092533_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092503_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092432_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092402_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092329_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092256_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092223_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092150_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092117_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092044_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_092013_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091942_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091911_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091842_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091813_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091745_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091716_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091647_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091619_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091550_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091523_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_091456_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_022228_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
+
+### 失敗案例：exp_20260119_022201_momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 策略：momentum_rsi+momentum_macd+momentum_stochastic+mean_reversion_bollinger+mean_reversion_rsi
+- 問題：基礎績效不達標
 
 ### 失敗案例：exp_20260119_011541_mean_reversion_bollinger+trend_supertrend+momentum_macd
 - 策略：mean_reversion_bollinger+trend_supertrend+momentum_macd
